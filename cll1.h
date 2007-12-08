@@ -1,8 +1,8 @@
 
-/* C<<1 header file v0.6 - style sheet for ANSI C  */
+/* C<<1 header file v0.6.1 - style sheet for ANSI C  */
 /* Please pronounce as "cee-shift-left-by-one" :)  */
 
-/* Copyright (G) 2004-2006 Michael xChaos Polak, x@n.cz
+/* Copyright (G) 2004-2007 Michael xChaos Polak, x(at)n.cz
 
    The C<<1 header file is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -24,6 +24,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <malloc.h>
+#include <stdlib.h>
 #include <time.h>
 
 /* Section For Dummies part 1, updated 2004-05-07 by xCh. */
