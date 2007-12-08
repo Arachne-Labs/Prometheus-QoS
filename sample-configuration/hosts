@@ -1,0 +1,3264 @@
+# --------------------------------------------------------------------------
+# Zadne dve alokovane IP adresy by nemely mit stejny hostname!!
+# Kvuli skriptu pro generovani zony brevnov.czf je treba pouzivat tabulatory.
+# --------------------------------------------------------------------------
+# DULEZITE - VYZNAM POZNAMEK ZA KOMENTAREM:
+# --------------------------------------------------------------------------
+# Poznamky a komentare, ktere zpracovava primo Prometheus QoS:
+#
+# wifi-normal-128-MAX      wifi pripojeni s FUP 2 GB/48h
+# wifi-plus-256-MAX        wifi pripojeni s FUP 6 GB/48h
+# backbone-normal-128-MAX  paterni pripojeni s FUP 3 GB/48h
+# backbone-plus-MIN-MAX    paterni pripojeni s mirnejsim FUP
+# backbone-bezfup-MIN-MAX  paterni pripojeni bez FUP, s nizsi prioritou 
+# sharing-hostname         sdileni konektivity, pozor - nelze pouzit aliasy
+
+127.0.0.1	localhost.localdomain localhost
+
+# --------------------------------------------------------------------------
+# CZFree.Net
+# --------------------------------------------------------------------------
+
+10.0.0.0	czfree-wlan				#255.0.0.0
+10.24.1.2	connected.czf
+10.XX.0.1	arachne					#nagios, 7-backbone-bezfup-128-1280
+10.XX.0.2	nastrese				#nagios, sharing-arachne
+10.XX.0.3	podvoknem				#nagios, sharing-arachne
+10.XX.0.4	xchaos					#nagios, sharing-arachne
+10.XX.0.5	proxima-centauri			#nagios, sharing-arachne
+10.XX.0.6	nakomine2				#nagios, sharing-arachne
+10.XX.0.7	liborova14				#nagios, sharing-arachne
+10.XX.0.8	marten					#nagios, sharing-arachne
+10.XX.0.9	talich1					#nagios, 4-backbone-plus-256-2048
+10.XX.0.10	sway					#nagios, sharing-arachne
+10.XX.0.11	guru					#nagios, sharing-arachne
+10.XX.0.12	elses					#nagios, sharing-arachne
+10.XX.0.13	horal					#2-[212.24.150.236] wifi-normal-128-896
+10.XX.0.14	pohorelec				#3-wifi-normal-128-1280
+10.XX.0.15	jim					#nagios, 4-backbone-plus-256-4096
+#
+# POZOR, adresy 10.XX.0.16-31 by mely podle rfc-addressing patrit asi spis satoye -aq.
+# ... no, ve skutecnosti je podle rfc-subcloud resp. rfc-classless-addressing
+# nemuzou pouzit, meli by pouzit spis 10.XX.16.16-10.XX.16.31, ale to je fuk -xCh.
+#
+10.XX.0.16	navezaku1				#nagios, 5-nova-backbone-2006, sharing-arachne
+10.XX.0.17	navezaku2				#nagios, 5-nova-backbone-2006, sharing-arachne
+10.XX.0.18	navytahu				#nagios, 5-nova-backbone-2006, sharing-arachne
+10.XX.0.31	tcx-temp				#[AA.BB.89.55] sharing-tcx
+#
+# loopbacky pro brenvovsky subcloud 32-47 wifi routery + 48-63 backbone routery
+#
+10.XX.0.32	parlerova19				#nagios, 5-nova-backbone-2006, sharing-arachne
+10.XX.0.33	octarna					#nagios, 3-wifi-plus-256-1024
+10.XX.0.34	tcx					#4-[AA.BB.89.7] wifi-plus-256-1024
+10.XX.0.35	felinus					#nagios, 5-nova-backbone-2006, sharing-arachne
+10.XX.0.36	pulytr					#nagios, 4-backbone-plus-512-8192
+10.XX.0.37	oskar					#nagios, 3-backbone-plus-256-2048
+10.XX.0.38	brody					#3-wifi-plus-256-1024
+10.XX.0.39	poliklinika				#nagios, backbone-plus-256-2048
+10.XX.0.40	roumen					#2-wifi-normal-128-896
+10.XX.0.41	stkat					#3-wifi-plus-256-1024
+10.XX.0.42	sugarcook				#sharing-critter.arachne
+10.XX.0.43	petynka					#nagios, sharing-critter.arachne
+10.XX.0.44	jim5					#nagios, sharing-jim
+10.XX.0.45	alef					#nagios, sharing-jim
+10.XX.0.46	nakomine1				#nagios, sharing-arachne
+10.XX.0.47	alles32					#nagios, sharing-arachne
+10.XX.0.48	microshop				#nagios, backbone-plus-512-4096
+10.XX.0.49	marx					#nagios, sharing-talich1
+10.XX.0.50	hippokrates				#nagios, sharing-poliklinika
+10.XX.0.51	octopus					#nagios, sharing-octarna
+10.XX.0.53	daimon 					#nagios, 2-backbone-normal-128-2048
+10.XX.0.59	jetynka					#nagios, sharing-critter.arachne
+#
+# Subcloud Stresovice kopec+Beranka
+# co takhle loopback sten-ap prejmenovat na sten ? -xCh.
+#
+10.XX.0.64	vega gandalfus				#nagios, sharing-gandalf
+10.XX.0.65	beranka					#nagios, [AA.BB.89.8] 3-backbone-plus-256-2048
+10.XX.0.67	sten-ap					#nagios, 3-backbone-plus-256-2048
+#
+# Sub-cloud Stresovice, Evropska ulice, Hadofka
+#
+10.XX.0.97	e55					#sharing-arachne
+10.XX.0.98	hadofka					#nagios, 3-backbone-plus-256-1024
+10.XX.0.99	gandalf					#nagios, [XX.YY.90.8] 7-backbone-bezfup-256-8192
+10.XX.0.100	xmas					#nagios, 4-backbone-plus-512-1024
+10.XX.0.101	altair					#nagios, sharing-gandalf
+10.XX.0.102	molekula				#nagios, backbone-normal-128-1024
+10.XX.0.103	hadofka2				#nagios, sharing-hadofka
+10.XX.0.104	triton					#nagios, sharing-arachne
+10.XX.0.105	nastozaru				#nagios, sharing-arachne
+#
+# Sub-cloud Petriny a Bila Hora
+#
+10.XX.0.129	aquarius				#3-wifi-plus-256-1024
+#
+# Sub-cloud Zizkov
+#
+10.XX.0.161	vaclavka				#wifi-plus-256-1024
+#
+# Cloud Dejvice
+#
+10.YY.0.1	winel.dejvice.czf			#nagios, 3-wifi-plus-256-1024
+10.YY.0.5	klecanky.dejvice.czf			#3-wifi-plus-256-1024
+10.YY.0.7	hobbit.dejvice.czf			#3-wifi-plus-256-1024
+10.YY.0.9	phoenix.dejvice.czf			#5-novy-cenik-2006, wifi-plus-256-1500
+10.YY.0.10	ahoj.dejvice.czf			#3-wifi-plus-256-1024
+10.YY.0.11	emilly.dejvice.czf			#wifi-normal-128-896
+10.YY.0.12	mirek.dejvice.czf			#[AA.BB.89.11] wifi-plus-256-1024
+10.YY.0.13	jas.dejvice.czf				#2-wifi-normal-128-512
+10.YY.0.15	maty.dejvice.czf			#[AA.BB.89.54] 3-wifi-plus-256-1024
+10.YY.0.18	miksa.dejvice.czf			#backbone-normal-128-2048
+10.34.0.129	basama.letna.czf			#3-wifi-plus-256-1024
+
+# --------------------------------------------------------------------------
+# Brevnovsky CZFree.Net - opticka, FWA a ethernetova backbone
+# --------------------------------------------------------------------------
+
+10.XX.10.0	prometheus-eth				#255.255.255.252
+10.XX.10.1	prometheus.arachne prometheus
+10.XX.10.2	eth-veskrini.prometheus.arachne		#sharing-arachne
+
+10.XX.11.0	natwor-eth				#255.255.255.252
+10.XX.11.1	natwor.arachne natwor
+10.XX.11.2	eth-charon.natwor.arachne		#sharing-arachne
+
+10.XX.11.8	arachne-winel-eth			#255.255.255.248
+10.XX.11.9	alcoma-winel.arachne
+10.XX.11.11	alcoma-arachne.winel winel		#[AA.BB.89.13] sharing-winel.dejvice.czf
+
+10.XX.10.4	crusader-elses-eth			#255.255.255.252
+10.XX.10.5	crusader-elses.arachne
+10.XX.10.6	crusader-arachne.elses			#sharing-arachne
+
+10.XX.10.8	crusader-guru-eth			#255.255.255.252
+10.XX.10.9	crusader-guru.arachne
+10.XX.10.10	crusader-arachne.guru			#sharing-arachne
+
+10.XX.10.12	crusader-liborova14-eth			#255.255.255.252
+10.XX.10.13	crusader-liborova14.arachne
+10.XX.10.14	crusader-arachne.liborova14		#sharing-arachne
+
+10.XX.10.16	crusader-petynka-eth			#255.255.255.252
+10.XX.10.17	crusader-petynka.elses
+10.XX.10.18	crusader-elses.petynka			#sharing-arachne
+
+10.XX.10.20	crusader-octarna-eth			#255.255.255.252
+10.XX.10.21	crusader-octarna.guru
+10.XX.10.22	crusader-guru.octarna			#sharing-arachne
+
+#10.XX.10.112	crusader-slikova45-eth			#255.255.255.252
+#10.XX.10.113	crusader-slikova45.liborova14
+#10.XX.10.114	crusader-liborova14.slikova45		#sharing-arachne
+
+10.XX.10.240	atheros-guru-parlerova19-eth		#255.255.255.252
+10.XX.10.241	atheros-parlerova19.guru
+10.XX.10.242	atheros-guru.parlerova19		#sharing-arachne
+
+10.XX.10.56	atheros-sway-eth			#255.255.255.248
+#10.XX.10.57	br0.nakomine nakomine			#sharing-arachne
+10.XX.10.58	atheros-sway.arachne			#sharing-arachne
+10.XX.10.59	atheros-arachne.sway			#sharing-arachne
+
+10.XX.10.128	atheros-arachne-elses-eth		#255.255.255.248
+#10.XX.10.129	br1.nakomine				#sharing-arachne
+10.XX.10.130	atheros-arachne.elses			#sharing-arachne
+10.XX.10.131	atheros-elses.arachne			#sharing-arachne
+
+10.XX.10.80	atheros-sway2jim-eth			#255.255.255.248
+10.XX.10.81	atheros-jim.sway			#sharing-arachne
+10.XX.10.82	atheros-sway.jim			#sharing-jim
+
+10.XX.10.88	atheros-elses2pulytr-eth		#255.255.255.252
+10.XX.10.89	atheros-pulytr.elses			#sharing-arachne
+10.XX.10.90	atheros-elses.pulytr			#sharing-pulytr
+
+10.XX.10.92	atheros-elses2microshop-eth		#255.255.255.252
+10.XX.10.93	atheros-microshop.elses			#sharing-arachne
+10.XX.10.94	atheros-elses.microshop			#sharing-arachne
+
+10.XX.96.16	crusader-xmas-eth			#255.255.255.252
+10.XX.96.17	crusader-xmas.hadofka			#sharing-hadofka
+10.XX.96.18	crusader-hadofka.xmas			#sharing-xmas
+
+#10.XX.96.20	volna-sit				#255.255.255.252
+
+10.XX.10.136	elses-wrapbackbone-eth			#255.255.255.248
+10.XX.10.137	eth3-1-ori.elses			#sharing-arachne
+10.XX.10.138	navezaku2.elses elses4			#sharing-arachne
+10.XX.10.139	navezaku1.elses elseswrap elses3	#sharing-arachne
+10.XX.10.140	felinus.elses elses5	 		#sharing-arachne
+
+10.XX.96.32	atheros-elses2alles32-eth		#255.255.255.252
+10.XX.96.33	atheros-alles32.elses			#sharing-arachne
+10.XX.96.34	atheros-elses.alles32			#sharing-arachne
+
+#10.XX.96.36	volna-sit				#255.255.255.252
+
+10.XX.10.228	jim-backup-oskar-wlan			#255.255.255.252
+10.XX.10.229	wlan-oskar.jim				#sharing-jim
+10.XX.10.230	wlan-jim.oskar				#sharing-oskar
+
+#10.XX.64.32	volna-sit				#255.255.255.248
+
+10.XX.64.40	atheros-hadofka2gandalf-eth		#255.255.255.248
+10.XX.64.41	atheros-gandalf.hadofka			#sharing-hadofka
+10.XX.64.42	atheros-hadofka.gandalf			#sharing-gandalf
+
+10.XX.64.48	hadofka-wrapbackbone-eth		#255.255.255.248
+10.XX.64.49	eth1-router.hadofka			#sharing-hadofka
+10.XX.64.50	wrap.hadofka hadofkawrap		#sharing-arachne
+10.XX.64.51	br0-molekula.hadofka asus.hadofka 	#sharing-molekula
+10.XX.64.52	atheros-hadofka.molekula 		#sharing-molekula
+
+10.XX.64.56	atheros-sway-sten-eth			255.255.255.248
+10.XX.64.57	atheros-sten.sway			#sharing-arachne
+10.XX.64.58	atheros-sway.sten			#sharing-sten-ap
+
+10.XX.64.64	atheros-sway2hadofka-eth		#255.255.255.252
+10.XX.64.65	atheros-hadofka.sway			#sharing-arachne
+10.XX.64.66	atheros-sway.hadofka			#sharing-arachne
+
+10.XX.64.68	sway-wrapbackbone-eth			#255.255.255.252
+10.XX.64.69	nastozaru.sway				#sharing-arachne
+10.XX.64.70	triton.sway				#sharing-arachne
+
+10.XX.64.72	atheros-sway2oskar-eth			#255.255.255.252
+10.XX.64.73	atheros-oskar.sway			#sharing-arachne
+10.XX.64.74	atheros-sway.oskar			#sharing-arachne
+
+10.XX.64.76	atheros-sway2arachne-2-eth		#255.255.255.252
+10.XX.64.77	atheros-arachne-2.sway			#sharing-arachne
+10.XX.64.78	atheros-sway-2.arachne			#sharing-arachne
+
+# --------------------------------------------------------------------------
+# Brevnovsky CZFree.Net - Wi-Fi backupy 
+# --------------------------------------------------------------------------
+
+10.XX.10.252	jim-p2p-mototechna-eth			#255.255.255.252
+10.XX.10.253	mototechna.jim				#sharing-jim
+10.XX.10.254	jim.mototechna
+
+10.XX.10.224	crusader-guru-backup-wlan		#255.255.255.252
+10.XX.10.225	wlan-guru.marten			#sharing-arachne
+10.XX.10.226	wlan-marten.guru			#sharing-arachne
+
+10.XX.11.104	crusader-liborova14-backup-wlan		#255.255.255.252
+10.XX.11.105	wlan-liborova14.arachne			#sharing-arachne
+10.XX.11.106	wlan-arachne.liborova14			#sharing-arachne
+
+#10.XX.11.108	volna sit				#255.255.255.252
+
+#10.XX.10.232	volna sit				#255.255.255.252
+
+#10.XX.10.236	volna sit				#255.255.255.252
+
+10.XX.10.32	backup-crusader-wlan			#255.255.255.248
+10.XX.10.33	wlan-petynka.elses			#sharing-arachne
+10.XX.10.34	wlan-elses.petynka			#sharing-petynka
+
+# --------------------------------------------------------------------------
+# Brevnovsky CZFree.Net - Wi-Fi backbone
+# --------------------------------------------------------------------------
+
+10.XX.10.40	talich1-jim-wlan			#255.255.255.248
+10.XX.10.41	wlan-jim.talich1			#sharing-talich1
+10.XX.10.42	wlan-talich1.jim			#sharing-jim
+
+10.XX.10.48	arachne-pohorelec-wlan			#255.255.255.248
+10.XX.10.49	wlan2.nastrese
+10.XX.10.50	wlan-arachne.pohorelec			#sharing-arachne
+10.XX.10.52	wlan-arachne.basama			#sharing-basama.letna.czf
+
+10.XX.10.116	aquarius-oskar-backup-wlan		#255.255.255.252
+10.XX.10.117	wlan-aquarius.oskar			#sharing-oskar
+10.XX.10.118	wlan-oskar.aquarius			#sharing-poliklinika
+
+10.XX.11.64	guru-severozapad-wlan			#255.255.255.248
+10.XX.11.65	ap-severozapad.guru guru-severozapad
+10.XX.11.66	cartmen cartmen.guru			#3-backbone-normal-128-2048
+10.XX.11.67	bridge-guru.parlerova19
+10.XX.11.68	wlan-guru.parlerova19			#sharing-arachne
+
+10.XX.11.72	petynka-south-wlan			#255.255.255.248
+10.XX.11.73	wlan1-ap.petynka			#sharing-petynka
+10.XX.11.74	kolat2.petynka				#sharing-petynka
+10.XX.11.75	kubaiz.petynka				#[XX.YY.90.6] wifi-plus-256-1408
+10.XX.11.76	bridge-petynka.kubaiz
+10.XX.11.77	hostalkova2.petynka			#wifi-plus-256-640
+10.XX.11.78	bridge-petynka.hostalkova2
+
+10.XX.11.80	microshop-wrap-eth			#255.255.255.248
+10.XX.11.81	navytahu.microshop microshopwrap microshop2	#sharing-arachne
+10.XX.11.82	router.microshop microshop1		#sharing-arachne
+
+10.XX.10.244	pulytr-talich1-wlan			#255.255.255.252
+10.XX.10.245	wlan-talich1.pulytr			#sharing-pulytr
+10.XX.10.246	wlan-pulytr.talich1			#sharing-talich1
+
+10.XX.10.248	brody-backup-wlan			#255.255.255.252
+10.XX.10.249	wlan-alles32.brody			#sharing-arachne
+10.XX.10.250	wlan-brody.alles32			#sharing-alles32
+
+10.XX.11.16	jim-roumen-wlan				#255.255.255.252
+10.XX.11.17	wlan-roumen.jim				#sharing-jim
+10.XX.11.18	wlan-jim.roumen				#[AA.BB.89.2] sharing-roumen
+
+10.XX.11.24	pulytr-jih-wlan				#255.255.255.248
+10.XX.11.25	ap-jih.pulytr
+10.XX.11.26	jorge jorge.pulytr			#wifi-normal-128-896
+10.XX.11.27	schimanskij.pulytr-jih			#wifi-plus-256-1024
+10.XX.11.28	bridge-pulytr.pimpara
+10.XX.11.29	pc.pimpara				#wifi-normal-128-512
+10.XX.11.30	patockova97.pulytr patockova97
+
+10.XX.11.32	pulytr-jih-2-wlan			#255.255.255.248
+10.XX.11.33	ap-jih2.pulytr
+10.XX.11.34	sin.pulytr				#[XX.YY.90.55], sharing-ovis.sin
+10.XX.11.35	bridge-haberman.pulytr			#reserved-docasne-reseni-do-vyjasneni-situace-u-Horala
+10.XX.11.36	nat.haberman				#wifi-normal-128-512
+
+10.XX.11.48	octarna-vaclavka-wlan			#255.255.255.248
+10.XX.11.49	wlan-vaclavka.octarna
+10.XX.11.50	wlan-octarna.vaclavka			#sharing-vaclavka
+
+10.XX.11.56	octarna-sugarcook-wlan			#255.255.255.248
+10.XX.11.57	wlan-sugarcook.octarna
+10.XX.11.58	wlan-octarna.sugarcook			#sharing-critter.arachne
+
+10.XX.11.96	liborova14-tcx-wlan			#255.255.255.248
+10.XX.11.101	wlan-tcx.liborova14			#sharing-arachne
+10.XX.11.102	wlan-liborova14.tcx			#sharing-pulytr
+
+10.XX.11.104	liborova14-backup-arachne-wlan		#255.255.255.252
+10.XX.11.105	wlan-liborova14.arachne			#sharing-arachne
+10.XX.11.106	wlan-arachne.liborova14			#sharing-arachne
+
+10.XX.34.32	poliklinika-backbone-wlan		#255.255.255.240
+10.XX.34.33	wlan-tcx.poliklinika			#sharing-poliklinika
+10.XX.34.34	wlan-poliklinika.tcx			#sharing-tcx
+
+10.XX.34.0	tcx-oskar-wlan				#255.255.255.240
+10.XX.34.1	wlan-oskar.tcx				#sharing-tcx
+10.XX.34.2	wlan-tcx.oskar				#sharing-jim
+#10.XX.34.3	debian.tcx				#3-wifi-plus-256-1024
+
+#10.XX.34.48	volna-sit				#255.255.255.240
+
+10.XX.34.64	elses5-vychod-wlan			#255.255.255.192
+10.XX.34.65	ath0.felinus				#sharing-arachne
+10.XX.34.67	ath0-octarna.elses			#sharing-arachne
+10.XX.34.68	bridge-petynka58.elses		
+10.XX.34.69	schneider.petynka58			#backbone-normal-128-1024
+
+10.XX.34.128	elses5-zapad-wlan			#255.255.255.192
+10.XX.34.129	ath1.felinus				#sharing-arachne
+10.XX.34.130	ath0-petynka.elses			#sharing-arachne
+10.XX.34.131	bridge-petynka58.elses			
+
+
+10.XX.10.120	marten-severovychod-wlan		#255.255.255.248
+10.XX.10.121	wlan-jeleni.marten			
+10.XX.10.122	wlan-marten.jeleni jeleni		#wifi-normal-128-896
+10.XX.10.123	3byt15.zastrahovem25			#sharing-1byt15.zastrahovem25
+10.XX.10.124	wlan-marten.dspcc dspcc
+	
+#10.XX.64.0	volna-sit				#255.255.255.248
+
+10.XX.64.8	sway-sever-wlan				#255.255.255.248
+10.XX.64.9	ap-sever.sway				#sharing-arachne
+10.XX.64.10	hanspaulka-m.sway			#wifi-normal-128-512
+10.XX.64.11	fasa.sway				#[XX.YY.90.59] sharing-wlan.fasa
+
+10.XX.64.16	beranka-2-gandalf-wlan			#255.255.255.248
+10.XX.64.17	wlan-gandalf.beranka			#sharing-beranka
+10.XX.64.18	wlan-beranka.gandalf			#sharing-gandalf
+
+10.XX.96.0	sugarcook2gandalf-dedicated-wlan	#255.255.255.252
+10.XX.96.1	wlan-gandalf.sugarcook			#sharing-critter.arachne
+10.XX.96.2	wlan-sugarcook.gandalf			#sharing-gandalf
+
+10.XX.96.8	e55-2-hadofka-wlan			#255.255.255.248	
+10.XX.96.9	wlan-hadofka.e55			#sharing-e55
+10.XX.96.10	wlan-e55.hadofka wlan-hadofka		#sharing-hadofka
+
+10.XX.96.24	gandalf-jih-wlan			#255.255.255.248
+10.XX.96.25	wlan-xmas.gandalf			#sharing-gandalf
+10.XX.96.26	wlan-gandalf.xmas			#[AA.BB.89.61] sharing-xmas
+
+# --------------------------------------------------------------------------
+# Brevnovsky CZee.Net - verejna Wi-Fi APcka
+# --------------------------------------------------------------------------
+
+10.XX.10.64	arachne-sever-wlan			#255.255.255.240
+10.XX.10.65	ap-sever.arachne arachne-sever		#sharing-arachne
+10.XX.10.67	viageos.arachne viageos			#backbone-plus-512-1408
+10.XX.10.68	mishutkova.arachne mishutkova		#[XX.YY.90.50] wifi-plus-256-1024
+10.XX.10.69	smoker77.arachne smoker77		#novy-cenik-2006, odpojil-se-128-512
+10.XX.10.70	hem14.arachne hem14			#wifi-normal-128-512
+10.XX.10.73	hem13.arachne hem13			#reserved-router
+10.XX.10.77	wifitelefon.arachne			#sharing-telefon.arachne
+
+10.XX.35.0	arachne-wlan				#255.255.255.0
+10.XX.35.1	ap.arachne				#sharing-arachne
+10.XX.35.2	horosport.arachne horosport		#wifi-normal-128-1280
+10.XX.35.3	vesna vesna.arachne			#[212.24.150.234] wifi-normal-128-1280
+10.XX.35.5	wlan-arachne.daimon			#sharing-daimon
+10.XX.35.9	dan.arachne				#wifi-plus-256-1024
+10.XX.35.10	satoya-test.arachne			#testuje-critter-20061212, wifi-plus-256-1024
+10.XX.35.65	bridge-arachne.bartek bartek
+10.XX.35.66	ap.bartek
+10.XX.35.67	nb.bartek				#wifi-normal-128-1280
+10.XX.35.99	wifitest.arachne			#sharing-laurel
+10.XX.35.123	dhcp.arachne				#dashboard-dhcp, 7-backbone-bezfup-128-1280
+10.XX.35.124	dhcp2.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.35.125	dhcp3.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.35.126	dhcp4.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.44.0	arachne-severovychod-wlan		#255.255.255.0
+10.XX.44.1	ap-severovychod24.arachne arachne-severovychod24	#sharing-arachne
+#10.XX.44.2	volna-ip
+#10.XX.44.3	volna-ip
+#10.XX.44.4	volna-ip
+#10.XX.44.6	volna-ip
+10.XX.44.7	brugy.arachne				# wifi-normal-128-896
+#10.XX.44.8	volna-ip
+10.XX.44.10	bridge-zelenystrom.arachne zelenystrom
+10.XX.44.11	kveta.zelenystrom			#wifi-normal-128-512
+10.XX.44.12	stuky.zelenystrom			#sharing-magdau.alles32
+10.XX.44.20	bridge-flsk.arachne
+10.XX.44.21	pc1.flsk				#wifi-normal-128-896
+10.XX.44.22	pc2.flsk				#sharing-pc1.flsk
+10.XX.44.23	pc3.flsk				#sharing-pc1.flsk
+10.XX.44.24	pc4.flsk				#sharing-pc1.flsk
+10.XX.44.30	bridge-ircatko.arachne
+10.XX.44.31	pc1.ircatko				#wifi-normal-128-512
+10.XX.44.32	pc2.ircatko				#sharing-pc1.ircatko
+10.XX.44.33	pc3.ircatko				#sharing-pc1.ircatko
+10.XX.44.100	dhcp5.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.44.101	dhcp6.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.44.102	dhcp7.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.44.103	dhcp8.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.2.0	arachne-zapad-wlan			#255.255.255.0
+10.XX.2.1	ap-zapad.arachne arachne-zapad
+10.XX.2.2	slikova43 slikova43.arachne		#neni to nahodou ted ve slikove45 ?
+10.XX.2.3	pavelb pavelb.arachne			#wifi-normal-128-512
+10.XX.2.4	zastrahovem30 zastrahovem30.arachne	#sharing-arachne
+10.XX.2.5	panuska.arachne panuska			#novy-cenik-2006, odpojil-se-128-896
+10.XX.2.6	slikova37.arachne slikova37		#wifi-normal-128-512
+10.XX.2.8	drap.arachne drap			#dashboard-neevidovany-128-512
+10.XX.2.11	pc.hlavka				#wifi-normal-128-896
+10.XX.2.12	tomanova.slikova30			#wifi-normal-128-512
+10.XX.2.13	ozzy.slikova26				#dashboard-neplatic, wifi-normal-128-512
+10.XX.2.15	pc.kosta				#[XX.YY.90.34], wifi-plus-256-1024
+10.XX.2.16	fiala.slikova30				#wifi-plus-256-1024
+10.XX.2.17	fiala2.slikova30			#sharing-fiala.slikova30
+10.XX.2.18	strejc.slikova30 strejc			#wifi-normal-128-896
+10.XX.2.19	overman.arachne				#wifi-normal-128-512
+10.XX.2.20	alex.arachne				#wifi-normal-128-512
+10.XX.2.21	pc2.kostal				#sharing-pc.kostal
+10.XX.2.30	koum.arachne				#wifi-normal-128-512
+10.XX.2.31	koum2.arachne				#sharing-koum.arachne
+10.XX.2.65	bridge-arachne.liborova9 liborova9
+10.XX.2.66	bilek.liborova9 bilek			#wifi-plus-256-1024
+#10.XX.2.67	rachel.liborova9 rachel 		#dashboard-neplatic, neplati-faktury-128-512
+10.XX.2.68	krbecek.liborova9 krbecek		#wifi-normal-128-1280
+10.XX.2.69	krbecek2.liborova9			#sharing-krbecek.liborova9
+10.XX.2.88	bridge-arachne.kostal kostal
+10.XX.2.100	dhcp9.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.2.101	dhcp10.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.2.102	dhcp11.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.2.103	dhcp12.arachne				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.2.130	nemec.petrnarohu			#sharing-hrubosova.petrnarohu
+10.XX.2.131	hrubosova.petrnarohu			#wifi-plus-256-1024
+10.XX.2.161	bridge-arachne.hlavka hlavka
+10.XX.2.162	jarin.hlavka jarin			#sharing-pc.hlavka
+10.XX.2.163	pc3.hlavka				#sharing-pc.hlavka
+10.XX.2.164	pc4.hlavka				#sharing-pc.hlavka
+10.XX.2.165	pc5.hlavka				#sharing-pc.hlavka
+10.XX.2.166	pc6.hlavka				#sharing-pc.hlavka
+10.XX.2.167	pc7.hlavka				#sharing-pc.hlavka
+10.XX.2.170	bridge-arachne.salek salek
+10.XX.2.171	pc1.salek				#wifi-normal-128-896
+10.XX.2.172	pc2.salek				#sharing-pc1.salek
+10.XX.2.173	pc3.salek				#sharing-pc1.salek
+10.XX.2.240	bridge-arachne.petr-na-rohu petr-na-rohu
+10.XX.2.241	bridge-arachne.fiala fiala
+
+10.XX.11.32	marten-vychod-wlan			#255.255.255.240
+10.XX.11.33	ap-vychod.marten
+
+10.XX.10.96	elses-zapad-wlan			#255.255.255.240
+10.XX.10.97	ap-zapad.elses elses-zapad
+10.XX.10.98	wlan-elses.horal			#sharing-horal
+10.XX.10.99	wlan-elses.aquarius			#sharing-poliklinika
+#10.XX.10.100	volna-ip
+#10.XX.10.101	cisco.drino-net drino-net
+#10.XX.10.102	volna-ip
+#10.XX.10.103	bridge-elses.microshop 			#old-reserved
+#10.XX.10.110	bridge-elses.drino-net
+
+10.XX.3.0	elses-severozapad-wlan			#255.255.255.0
+10.XX.3.1	ap-severozapad.elses elses-severozapad
+10.XX.3.2	pascal pascal.elses			#[212.24.150.232] wifi-normal-128-896
+10.XX.3.3	wlan-elses.brody			#[AA.BB.89.24] sharing-brody
+10.XX.3.4	koleje.elses				#wifi-normal-128-512
+10.XX.3.5	corsa.elses corsa			#wifi-normal-128-512
+10.XX.3.6	delo1.elses delo1			#odpojil-se-128-512
+10.XX.3.7	teekay.elses teekay			#odpojil-se-128-512
+10.XX.3.9	irs2.elses irs2				#sharing-broz.irs
+10.XX.3.10	wlan-elses.xchaos			#sharing-arachne
+#10.XX.3.11	j3n6.elses j3n6				#dashboard-neplatic, neplati-faktury-128-512
+10.XX.3.13	8dpp 8dpp.elses				#sharing-slunicko.darkone
+10.XX.3.14	rc.elses				#czf
+10.XX.3.18	zlodejip18				#dashboard-zlodej-ip
+10.XX.3.20	bridge-coqi.elses
+10.XX.3.21	pc.coqi					#dashboard-neevidovany-128-512
+10.XX.3.25	bridge-mareksa.elses
+10.XX.3.26	pc1.mareksa				#wifi-normal-128-512
+10.XX.3.27	pc2.mareksa				#sharing-pc1.mareksa
+10.XX.3.30	bridge-elses.nadkajetankou1414 nadkajetankou1414
+10.XX.3.31	filip.nadkajetankou1414			#wifi-normal-128-896
+10.XX.3.32	bridge.1212
+10.XX.3.33	pc.1212					#wifi-normal-128-1280
+10.XX.3.34	pc2.1212				#sharing-pc.1212
+10.XX.3.35	pc3.1212				#sharing-pc.1212
+10.XX.3.36	nb.1212					#sharing-pc.1212
+10.XX.3.40	prodr-severozapad.elses			#sharing-prodr.elses
+10.XX.3.48	bridge-elses.plavec plavec
+10.XX.3.49	pc.plavec				#novy-cenik-2006, odpojil-se-128-512
+10.XX.3.50	nb.plavec				#sharing-pc.plavec
+10.XX.3.60	bridge-pavelm.elses
+10.XX.3.61	ap-pavelm.elses
+10.XX.3.62	pc1.pavelm				#wifi-normal-128-896
+10.XX.3.63	pc2.pavelm				#sharing-pc1.pavelm
+10.XX.3.64	pc3.pavelm				#sharing-pc1.pavelm
+10.XX.3.123	dhcp5.elses				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.3.124	dhcp6.elses				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.3.125	dhcp7.elses 				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.3.126	dhcp8.elses				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.4.0	xchaos-wlan				#255.255.255.0
+10.XX.4.1	ap.xchaos xchaos-ap
+10.XX.4.3	rautik.xchaos rautik			#novy-cenik-2006, odpojil-se-256-1024
+10.XX.4.4	styf.xchaos styf			#dashboard-neplatic, wifi-normal-128-512
+10.XX.4.5	papina.xchaos papina			#wifi-normal-128-512
+10.XX.4.8	mezera.xchaos				#backbone-normal-128-1024
+10.XX.4.9	mbwinxp.xchaos				#wifi-plus-256-1024
+10.XX.4.10	bridge-xchaos.grandomucho grandomucho
+10.XX.4.11	pc.grandomucho				#wifi-plus-256-1024
+10.XX.4.12	nb.grandomucho				#sharing-pc.grandomucho
+10.XX.4.13	nadkajetankou13.xchaos			#[], odpojila-se-128-1280
+10.XX.4.17	marketa.svojsikova9			#wifi-normal-128-512
+10.XX.4.18	jitka.svojsikova9			#wifi-normal-128-512
+10.XX.4.19	bridge-svojsikova9.xchaos
+10.XX.4.21	nadkajetankou11.xchaos			#wifi-plus-256-640
+10.XX.4.65	bridge-xchaos.dave263 dave263
+10.XX.4.66	pc.dave263				#[XX.YY.90.18] wifi-normal-128-896
+10.XX.4.67	nb.dave263				#sharing-pc.dave263
+10.XX.4.68	soused.dave263				#wifi-normal-128-512
+10.XX.4.90	bridge-xchaos.cisticz-hq cisticz-hq cisticz
+10.XX.4.91	91-4.cisticz-hq				#wifi-plus-256-256
+10.XX.4.92	92-4.cisticz-hq				#sharing-91-4.cisticz-hq
+10.XX.4.100	dhcp.xchaos				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.4.101	dhcp1.xchaos				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.4.102	dhcp2.xchaos				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.4.103	dhcp3.xchaos				#dashboard-dhcp, sharing-dhcp.arachne
+#10.XX.4.131	crapnik.xchaos crapnik
+10.XX.4.243	nb.xchaos				#sharing-panter.arachne
+
+10.XX.11.160	microshop-wlan				#255.255.255.224
+10.XX.11.161	ap.microshop microshop-ap
+10.XX.11.162	bridge-microshop.mladeze5 wrt.mladeze5 mladeze5
+10.XX.11.163	hajkova.mladeze7 hajkova		#wifi-normal-128-512
+10.XX.11.164	zima.mladeze5 zima			#wifi-normal-128-512
+10.XX.11.165	zima2.mladeze5				#sharing-zima.mladeze5
+10.XX.11.166	vavros.mladeze5 vavros			#wifi-normal-128-512
+10.XX.11.167	vavros2.mladeze5			#sharing-vavros.mladeze5
+10.XX.11.168	kalatovi.poddrinopolem6	kalatovi	#wifi-normal-128-1280
+10.XX.11.169	mosnova.mladeze5 mosnova		#wifi-normal-128-512
+10.XX.11.170	ntb-kalatovi.poddrinopolem6		#sharing-kalatovi.poddrinopolem6
+10.XX.11.171	dhcp.microshop				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.11.172	dhcp2.microshop				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.11.173	dhcp3.microshop				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.11.174	dhcp4.microshop				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.11.175	offi.microshop				#wifi-normal-128-512
+10.XX.11.178	wlan-microshop.mladeze7
+10.XX.11.179	tichy.microshop				#wifi-normal-128-1280
+10.XX.11.180	angada angada.microshop			#sharing-arachne
+10.XX.11.181	kysilka.microshop kysilka		#wifi-normal-128-512
+10.XX.11.182	tancl.microshop	tancl			#wifi-normal-128-1280
+10.XX.11.183	ovis-tancl.microshop
+10.XX.11.184	horal-test.microshop			#sharing-horal
+10.XX.11.189	ovis.microshop
+10.XX.11.190	compex.microshop			#sharing-microshop
+
+10.XX.11.220	ethernet-nakomine1-eth			#255.255.255.252
+10.XX.11.221	eth7-veskrini.arachne			#sharing-arachne
+10.XX.11.222	nakomine1.arachne			#sharing-arachne
+
+10.XX.11.224	ethernet-nakomine2-eth			#255.255.255.252
+10.XX.11.225	eth5-veskrini.arachne			#sharing-arachne
+10.XX.11.226	nakomine2.arachne			#sharing-arachne
+
+10.XX.12.0	elses-wlan				#255.255.255.0
+10.XX.12.1	ap.elses elses-ap
+10.XX.12.3	merlin merlin.elses			#[212.24.150.233] 1-wifi-normal-128-512
+10.XX.12.5	srollerova-zaloha.elses			#sharing-srollerova.slikova4
+10.XX.12.6	mirack.elses mirack			#novy-cenik-2006, odpojil-se-128-512
+10.XX.12.9	pleskot					#sharing-arachne
+10.XX.12.10	kratiknot kratiknot.elses		#sharing-arachne
+#10.XX.12.13	strictly-reserved-by-xCh !! ;-)
+10.XX.12.14	johana-zaloha.elses			#sharing-johana.slikova8
+10.XX.12.15	tomko tomko.elses			#sharing-viageos.arachne
+10.XX.12.16	saimon.elses saimon			#dashboard-neevidovany
+10.XX.12.17	prodr.elses prodr			#wifi-plus-256-1024
+10.XX.12.18	horal-test.elses			#sharing-horal
+#10.XX.12.20	bridge-mareksa.elses
+#10.XX.12.21	pc1.mareksa				#reserved-presun
+#10.XX.12.22	pc2.mareksa				#sharing-pc1.mareksa
+10.XX.12.25	bridge-zastrahovem48.elses zastrahovem48
+10.XX.12.26	pc1.zastrahovem48.elses			#wifi-normal-128-512
+10.XX.12.27	pc2.zastrahovem48.elses			#sharing-pc1.zastrahovem48
+10.XX.12.28	pc3.zastrahovem48.elses			#sharing-pc1.zastrahovem48
+10.XX.12.40	airport.belohorska25			#novy-cenik-2006, odpojil-se-256-1024
+10.XX.12.66	pc.longmatys				#novy-cenik-2006, odpojil-se-128-512
+10.XX.12.123	dhcp.elses				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.12.124	dhcp2.elses				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.12.125	dhcp3.elses 				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.12.126	dhcp4.elses				#dashboard-dhcp, sharing-dhcp.arachne
+#10.XX.12.242	bridge-elses.longmatys longmatys	#reserved-unreachable
+
+10.XX.13.0	horal-wlan				#255.255.255.0
+10.XX.13.1	ap.horal horal-ap
+10.XX.13.2	yed.horal yed				#czf
+10.XX.13.3	wlan-horal.mirax			#sharing-mirax
+#10.XX.13.4	verunek.horal verunek			#reserved-prelozeno na AP Alles32
+10.XX.13.6	danny.horal danny			#wifi-normal-128-512
+10.XX.13.7	sediva.horal sediva			#sharing-horal
+10.XX.13.9	kamelie.horal kamelie			#czf
+10.XX.13.10	terasy.horal terasy			#czf
+10.XX.13.11	pharlap.horal pharlap			#[212.24.150.238] wifi-normal-128-512
+10.XX.13.13	martina.horal				#wifi-normal-128-512
+10.XX.13.14	semid.horal 				#sharing-semid
+10.XX.13.19	vorel.horal 				#sharing-horal
+#10.XX.13.20	bridge-horal.haberman haberman
+#10.XX.13.21	nat.haberman haberman.horal		#reserved-docasne-presunuto-na-pulytra
+10.XX.13.22	horall.horal				#sharing-horal
+10.XX.13.23	barta1.horal barta1			#sharing-horal
+10.XX.13.24	barta2.horal barta2			#sharing-horal
+10.XX.13.77	tomasso.horal tomasso			#wifi-normal-128-512
+10.XX.13.110	jan.mojzis.horal jan.mojzis		#wifi-normal-128-512
+10.XX.13.211	horall211.horal				#sharing-horal
+10.XX.13.251	bridge-horal.aronax aronax
+10.XX.13.253	apollo-tmp.horal			#sharing-horal
+
+10.XX.14.0	pohorelec-wlan				#255.255.255.0
+10.XX.14.1	ap.pohorelec pohorelec-ap
+10.XX.14.2	puncocha.pohorelec puncocha		#novy-cenik-2006, odpojil-se-128-896
+10.XX.14.3	notas.pohorelec25			#sharing-pohorelec
+10.XX.14.14	bridge-pohorelec.pohorelec14 pohorelec14
+10.XX.14.15	comp.pohorelec14			#wifi-normal-128-512
+10.XX.14.64	vorel2.pohorelec26			#sharing-vorel.pohorelec26
+10.XX.14.65	bridge-pohorelec.pohorelec26 pohorelec26
+10.XX.14.66	vorel.pohorelec26 vorel			#wifi-normal-128-512
+10.XX.14.67	ticha.pohorelec26 ticha			#wifi-normal-128-512
+10.XX.14.68	zarsky1.pohorelec26 zarsky1		#wifi-normal-128-512
+10.XX.14.69	zarsky2.pohorelec26 zarsky2		#sharing-zarsky1.pohorelec26
+10.XX.14.70	storkanova.pohorelec26 storkanova	#wifi-normal-128-512
+10.XX.14.71	lustigova.pohorelec26			#wifi-normal-128-512
+10.XX.14.100	dhcp.pohorelec				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.14.101	dhcpp.pohorelec				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.14.102	dhcppp.pohorelec			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.14.103	dhcpppp.pohorelec			#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.15.0	jim-wlan				#255.255.255.0
+10.XX.15.1	ap.jim jim-ap
+10.XX.15.3	wanderer wanderer.jim			#wifi-normal-128-1280
+10.XX.15.4	gotcha gotcha.jim			#wifi-normal-128-1280
+10.XX.15.5	minas.jim minas				#wifi-normal-128-512
+10.XX.15.9	kopeckeho.jim kopeckeho			#wifi-normal-128-896
+10.XX.15.10	lojky.jim lojky				#odpojil-se-256-1024
+10.XX.15.11	myslivna.jim myslivna			#wifi-normal-128-512
+10.XX.15.13	jimovo.jim				#sharing-jim
+10.XX.15.37	wlan-jim.oskar				#sharing-oskar
+10.XX.15.66	router.hwb hwb				#wifi-normal-128-1280
+10.XX.15.67	smidek.hwb smidek			#sharing-router.hwb
+10.XX.15.129	bridge-jim.maceo maceo
+10.XX.15.130	pc1.maceo				#[XX.YY.90.48], wifi-normal-128-896
+10.XX.15.131	pc2.maceo				#sharing-pc1.maceo
+10.XX.15.140	bridge-jim.roski			
+10.XX.15.141	pc.roski 				#wifi-normal-128-512
+10.XX.15.150	klariska.jim				#wifi-normal-128-896
+10.XX.15.151	klariska2.jim				#sharing-klariska.jim
+10.XX.15.152	klariska3.jim				#sharing-klariska.jim
+
+10.XX.10.192	jim-zapad-wlan				#255.255.255.240
+10.XX.10.193	ap-zapad.jim jim-zapad
+10.XX.10.194	ankara ankara.jim			#[AA.BB.89.25] wifi-normal-128-512
+10.XX.10.195	maktecka.jim maktecka			#wifi-normal-128-512
+10.XX.10.196	alej alej.jim				#sharing-arachne
+10.XX.10.197	maktecka2.jim				#sharing-maktecka.jim
+10.XX.10.198	vera vera.jim				#wifi-normal-128-512
+10.XX.10.199	bridge.maktecka				
+10.XX.10.200	test.jim				#sharing-jim
+10.XX.10.203	gt_rider.WiFi notebook			#sharing-gt_rider.bridge
+10.XX.10.204	gt_rider.router				#sharing-gt_rider.bridge
+10.XX.10.205	gt_rider.bridge gt_rider		#wifi-normal-128-512
+
+10.XX.32.0	parlerova19-wlan			#255.255.255.0
+10.XX.32.1	ap.parlerova19
+10.XX.32.2	loopie.parlerova19 loopie		#[XX.YY.90.20],wifi-normal-128-1280
+10.XX.32.3	sklep.parlerova19 sklep			#testuje-xchaos-20070221, wifi-normal-128-512
+10.XX.32.8	parlerova8.parlerova19 parlerova8	#wifi-normal-128-512
+10.XX.32.9	bridge-vesel.parlerova19 vesel
+10.XX.32.10	bridge-loki.parlerova19 loki
+10.XX.32.11	pc1.loki				#wifi-plus-256-640
+10.XX.32.12	pc2.loki				#sharing-pc1.loki
+10.XX.32.13	pc3.loki				#sharing-pc1.loki
+10.XX.32.14	bridge-parlerova19.jmv parlerova10
+10.XX.32.15	pc.jmv					#wifi-normal-128-512
+10.XX.32.16	bridge-par7.parlerova19
+10.XX.32.17	pc1.par7				#wifi-normal-128-896
+10.XX.32.18	pc1.vesel				#wifi-normal-128-512
+10.XX.32.19	pc2.vesel				#sharing-pc1.vesel
+10.XX.32.20	kunk.parlerova19			#testuje-ahoj-20060303, sharing-ahoj.dejvice.czf
+10.XX.32.21	darktroll.parlerova19			#wifi-plus-256-1024
+10.XX.32.100	dhcp.parlerova19			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.32.101	dhcp101.parlerova19			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.32.102	dhcp102.parlerova19			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.32.103	dhcp103.parlerova19			#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.33.0	octarna-wlan				#255.255.255.0
+10.XX.33.1	ap.octarna octarna-ap
+10.XX.33.2	dusek.zahladkovem2a dusek		#wifi-normal-128-512
+10.XX.33.3	vindis.zahladkovem2a vindis		#odpojil-se
+10.XX.33.4	pc.micr					#wifi-normal-128-1280
+10.XX.33.5	pc.ivanl				#novy-cenik-2006, odpojil-se-128-512
+10.XX.33.6	kairra kairra.octarna			#[XX.YY.90.7] wifi-plus-256-1024
+10.XX.33.7	akp.octarna akp				#novy-cenik-2006, odpojil-se-128-1280
+10.XX.33.9	honzahodek-nb.octarna honzahodek-nb	#sharing-octarna
+10.XX.33.10	myslbekova19.octarna myslbekova19	#wifi-plus-256-1024
+#10.XX.33.12	klapka.octarna klapka
+10.XX.33.13	bolzano.octarna bolzano			#wifi-plus-256-1024
+10.XX.33.16	lukesovi.octarna			#dashboard-neevidovany
+10.XX.33.17	honza.klapka				#sharing-klapka.octarna
+10.XX.33.18	pc1.myslbekova19			#sharing-myslbekova19.octarna
+10.XX.33.19	pc2.myslbekova19			#sharing-myslbekova19.octarna
+10.XX.33.20	pc3.myslbekova19			#sharing-myslbekova19.octarna
+10.XX.33.21	pc4.myslbekova19			#sharing-myslbekova19.octarna
+10.XX.33.65	bridge-spule.octarna cifka
+10.XX.33.66	spule1.cifka spule1	 		#wifi-normal-128-896
+10.XX.33.67	spule2.cifka spule2			#sharing-spule1.cifka
+10.XX.33.68	burda1.cifka burda1			#wifi-normal-128-896
+10.XX.33.69	burda2.cifka burda2			#sharing-burda1.cifka
+10.XX.33.70	spule3.cifka spule3			#sharing-spule1.cifka
+10.XX.33.71	spule4.cifka spule4			#sharing-spule1.cifka
+10.XX.33.77	bridge-octarna.marax marax
+10.XX.33.78	pc.marax				#wifi-normal-128-512
+10.XX.33.79	nb.marax				#sharing-pc.marax
+10.XX.33.80	marax3					#sharing-pc.marax
+10.XX.33.81	bridge-ivanl.octarna ivanl
+10.XX.33.82	pc1.ivanl				#sharing-pc.ivanl
+10.XX.33.83	voip.ivanl				#sharing-pc.ivanl
+10.XX.33.100	dhcp.octarna				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.33.101	dhcp1.octarna				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.33.102	dhcp2.octarna				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.33.103	dhcp3.octarna				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.33.130	sindelar.zahladkovem2a sindelar		#wifi-normal-128-512
+10.XX.33.132	biker.zahladkovem2a biker		#wifi-normal-128-512
+10.XX.33.133	whistler.zahladkovem2a whistler		#sharing-biker.zahladkovem2a
+10.XX.33.240	bridge-octarna.zahladkovem2a zahladkovem2a
+10.XX.33.241	bridge-octarna.micr micr
+10.XX.33.243	bridge-octarna.laska-old		#reserved-unreachable
+
+10.XX.36.0	pulytr-wlan				#255.255.255.0
+10.XX.36.1	ap.pulytr pulytr-ap
+10.XX.36.2	gluon.pulytr gluon			#wifi-plus-256-1024
+10.XX.36.3	zlatnik.pulytr zlatnik			#wifi-normal-128-896
+10.XX.36.4	klokan.pulytr klokan			#wifi-normal-128-512
+10.XX.36.5	logic.pulytr logic			#wifi-normal-128-896
+10.XX.36.6	krizala.pulytr krizala			#wifi-normal-128-512
+10.XX.36.7	kastan.pulytr kastan			#wifi-plus-256-1024
+10.XX.36.8	iwi.pulytr iwi				#dashboard-neplatic, wifi-normal-128-512
+10.XX.36.9	knap.pulytr knap			#sharing-qayx.pulytr
+10.XX.36.10	wifitest.pulytr				#testuje-pulytr, wifi-normal-128-512
+10.XX.36.11	pimpara-old.pulytr			#sharing-pc.pimpara
+10.XX.36.12	iwi2.pulytr				#sharing-iwi.pulytr
+10.XX.36.13	rogers.pulytr rogers			#reserved
+10.XX.36.14	qayx2.pulytr qayx2			#sharing-qayx.pulytr
+10.XX.36.15	skuba.pulytr skuba
+10.XX.36.16	lucka.pulytr lucka			#wifi-normal-128-512
+10.XX.36.17	freerec.pulytr freerec			#czf
+10.XX.36.18	lukas.pulytr lukas			#wifi-plus-256-1024
+10.XX.36.30	bridge-pulytr-old.pimpara
+10.XX.36.32	bridge-pulytr.logic
+10.XX.36.33	pc.logic				#wifi-normal-128-896
+10.XX.36.34	pc2.logic				#sharing-pc.logic
+10.XX.36.35	pc3.logic				#sharing-pc.logic
+10.XX.36.36	pc4.logic				#sharing-pc.logic
+10.XX.36.65	bridge-pulytr.simy simy
+10.XX.36.66	pc.simy					#wifi-normal-128-512
+10.XX.36.67	pc2.simy				#sharing-pc.simy
+10.XX.36.68	pc3.simy				#sharing-pc.simy
+10.XX.36.101	dhcp1.pulytr				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.36.102	dhcp2.pulytr				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.36.103	dhcp3.pulytr				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.36.104	dhcp4.pulytr				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.37.0	oskar-wlan				#255.255.255.128
+10.XX.37.1	ap.oskar oskar-ap
+10.XX.37.3	mdfk.oskar mdfk
+10.XX.37.5	palantir.oskar palantir			#wifi-normal-128-896
+10.XX.37.6	rabbon.oskar rabbon			#wifi-normal-128-1280
+10.XX.37.7	bobabobek.oskar bobabobek		#novy-cenik-2006, odpojil-se-128-512
+10.XX.37.9	monca.oskar monca			#novy-cenik-2006, odpojil-se-128-512
+10.XX.37.11	bridge.toffee
+10.XX.37.12	ws1.toffee				#wifi-plus-256-1024
+10.XX.37.13	ws2.toffee				#sharing-ws1.toffee
+10.XX.37.14	ws3.toffee				#sharing-ws1.toffee
+10.XX.37.15	ws4.toffee				#sharing-ws1.toffee
+10.XX.37.17	bridge-oskar.zoidberg zoidberg
+10.XX.37.18	nat.zoidberg				#wifi-plus-256-1024
+10.XX.37.42	haba.oskar haba				#wifi-plus-256-1024
+10.XX.37.50	pc1.palantir				#sharing-palantir.oskar
+10.XX.37.51	pc2.palantir				#sharing-palantir.oskar
+10.XX.37.52	pc3.palantir				#sharing-palantir.oskar
+10.XX.37.100	dhcp1.oskar				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.37.101	dhcp2.oskar				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.37.102	dhcp3.oskar				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.37.103	dhcp4.oskar				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.37.128	oskar-zapad-wlan			#255.255.255.192
+10.XX.37.129	ap-zapad.oskar oskar-zapad
+10.XX.37.131	sarson.oskar sarson			#dashboard-neevidovany
+10.XX.37.132	msj.oskar msj				#wifi-normal-128-512
+10.XX.37.133	munin.oskar munin			#czf
+10.XX.37.134	golem.oskar golem			#[XX.YY.90.51] wifi-normal-128-896
+10.XX.37.135	bridge-golem.oskar
+10.XX.37.138	m.sokol.oskar m.sokol			#wifi-plus-256-1024
+10.XX.37.147	ladronka.oskar ladronka			#wifi-plus-256-1024
+10.XX.37.150	bridge-oskar.liborekk liborekk			
+10.XX.37.151	pc.liborekk				#dashboard-neplatic, wifi-normal-128-512
+10.XX.37.161	bridge-oskar.antservis antservis
+10.XX.37.162	pc.antservis				#wifi-normal-128-896
+
+10.XX.38.0	brody-wlan				#255.255.255.0
+10.XX.38.1	ap.brody brody-ap
+10.XX.38.2	wlan-brody.madman madman
+10.XX.38.3	hnik.brody hnik				#dashboard-neplatic,NOTORICKY-NEPLATIC-128-896
+10.XX.38.4	ilci.brody ilci				#wifi-normal-128-512
+10.XX.38.5	skullx.brody skullx			#docasne-se-odpojil
+10.XX.38.6	spacek.brody spacek
+10.XX.38.7	cyberpic.brody cyberpic
+10.XX.38.8	hnik2.brody				#sharing-hnik.brody
+10.XX.38.9	ilci2.brody				#sharing-ilci.brody
+10.XX.38.40	pc.grawes				#novy-cenik-2006, odpojil-se-128-1280
+10.XX.38.41	ipaq.grawes				#sharing-pc.grawes
+10.XX.38.44	bridge-vosa007.brody
+10.XX.38.45	pc1.vosa007				#wifi-normal-128-512
+10.XX.38.46	pc2.vosa007				#sharing-pc1.vosa007
+10.XX.38.65	bridge-brody.inquisitor inquisitor
+10.XX.38.66	pc1.inquisitor				#odpojil-se-128-512
+10.XX.38.67	pc2.inquisitor				#sharing-pc1.inquisitor
+10.XX.38.97	bridge-brody.vojtom tomicek
+10.XX.38.98	pc1.tomicek				#wifi-normal-128-512
+10.XX.38.99	pc2.tomicek				#sharing-pc1.tomicek
+10.XX.38.100	pc2.tomicek				#sharing-pc1.tomicek
+10.XX.38.101	pc3.tomicek				#sharing-pc1.tomicek
+10.XX.38.102	pc4.tomicek				#sharing-pc1.tomicek
+10.XX.38.103	pc5.tomicek				#sharing-pc1.tomicek
+10.XX.38.105	ter.vojtom				#wifi-plus-256-640
+10.XX.38.106	ter2.vojtom				#sharing-ter.vojtom
+10.XX.38.120	dhcp.brody				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.38.121	dhcp1.brody				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.38.122	dhcp2.brody				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.38.123	dhcp3.brody				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.39.0	poliklinika-wlan			#255.255.255.224
+10.XX.39.1	ap.poliklinika poliklinika-ap		#sharing-poliklinika
+10.XX.39.2	bridge-poliklinika.lapiduch
+10.XX.39.3	lapiduch.poliklinika lapiduch		#wifi-normal-128-512
+10.XX.39.4	semid.poliklinika semid			#9-neplati-faktury, dashboard-neplatic
+10.XX.39.5	hanz.poliklinika hanz			#odpojit-01042007, wifi-normal-128-896
+10.XX.39.6	benes.poliklinika benes			#wifi-normal-128-896
+10.XX.39.7	ariciu.poliklinika ariciu		#wifi-plus-256-1024
+10.XX.39.8	adr-sys.poliklinika adr-sys		#wifi-normal-128-512
+10.XX.39.9	bridge-poliklinika.sosty
+10.XX.39.10	sosty.poliklinika sosty			#novy-cenik-2006, dashboard-neevidovany-128-128
+10.XX.39.11	zuzova.poliklinika			#wifi-normal-128-512
+10.XX.39.12	oxyg3ne.poliklinika oxyg3ne		#novy-cenik-2006, odpojil-se-128-512
+10.XX.39.13	grawes.poliklinika			#sharing-pc.grawes
+10.XX.39.14	haloun.poliklinika			#wifi-plus-256-256
+10.XX.39.15	haloun2.poliklinika			#sharing-haloun.poliklinika
+10.XX.39.16	kolejkajetanka.poliklinika		#odpojil-se-128-512
+10.XX.39.17	kolejkajetanka2.poliklinika		#czf
+10.XX.39.19	udelnickehocviciste1.poliklinika	#wifi-normal-128-512
+10.XX.39.20	dhcp.poliklinika			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.39.21	dhcp2.poliklinika			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.39.22	dhcp3.poliklinika			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.39.23	dhcp4.poliklinika			#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.40.0	roumen-wlan				#255.255.255.0
+10.XX.40.1	ap.roumen roumen-ap
+10.XX.40.2	v.q.roumen v.q				#wifi-normal-128-512
+10.XX.40.3	kmosi.roumen kmosi			#wifi-normal-128-896
+10.XX.40.5	vladahan.roumen vladahan		#wifi-normal-128-512
+10.XX.40.7	akim.roumen akim			#wifi-normal-128-512
+10.XX.40.11	houmr.roumen houmr			#wifi-normal-128-512
+
+10.XX.41.0	stkat-wlan				#255.255.255.0
+10.XX.41.1	ap.stkat stkat-ap
+10.XX.41.2	berny.stkat berny			#1-wifi-normal-128-896
+10.XX.41.4	muller.stkat muller			#novy-cenik-2006, odpojil-se-128-896
+10.XX.41.5	bug.stkat				#wifi-normal-128-896
+10.XX.41.6	adatel.stkat adatel			#wifi-normal-128-512
+10.XX.41.7	denis007.stkat denis007			#[XX.YY.90.157] dashboard-neplatic, wifi-normal-128-896
+10.XX.41.8	alderan.stkat alderan			#[AA.BB.89.53] sharing-berny.stkat
+10.XX.41.9	kamil.stkat kamil			#novy-cenik-2006, odpojil-se-128-512
+10.XX.41.10	ondra.stkat ondra			#sharing-berny.stkat
+10.XX.41.11	santy.stkat santy			#wifi-normal-128-896
+10.XX.41.12	berny5.stkat berny5			#sharing-berny.stkat
+10.XX.41.13	fori.stkat fori				#sharing-santy.stkat
+10.XX.41.14	vild.stkat				#novy-cenik-2006, odpojil-se-128-512
+10.XX.41.15	soukup.stkat				#wifi-normal-128-896
+10.XX.41.16	muller2.stkat				#sharing-muller.stkat
+10.XX.41.17	u1baterie35.stkat
+10.XX.41.25	bridge-soukup.stkat
+10.XX.41.88	smidak.stkat				#wifi-normal-128-896
+10.XX.41.100	dhcp.stkat				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.41.101	dhcp2.stkat				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.41.102	dhcp3.stkat				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.41.103	dhcp4.stkat				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.42.0	sugarcook-wlan				#255.255.255.128
+10.XX.42.1	ap.sugarcook sugarcook-ap
+10.XX.42.7	bridge-sugarcook.spalova8 spalova8
+10.XX.42.8	nb.spalova8				#wifi-normal-128-512
+10.XX.42.9	pc1.spalova8				#sharing-nb.spalova8
+10.XX.42.10	pc2.spalova8				#sharing-nb.spalova8
+10.XX.42.11	pc3.spalova8				#sharing-nb.spalova8
+#10.XX.42.12	pajab.sugarcook	pajab			#reserved
+10.XX.42.13	bridge-sugarcook.zezula zezula
+10.XX.42.14	lan.zezula				#wifi-normal-128-896
+10.XX.42.15	supajz.sugarcook supajz			#wifi-plus-256-1024
+10.XX.42.20	bridge-sugarcook.mikulasek mikulasek
+10.XX.42.21	pc1.mikulasek				#wifi-normal-128-1280
+10.XX.42.22	pc2.mikulasek				#sharing-pc1.mikulasek
+10.XX.42.30	bridge-sugarcook.duchoslafka duchoslafka-bridge
+10.XX.42.31	pc1.duchoslafka duchoslafka		#wifi-normal-128-896
+10.XX.42.32	pc2.duchoslafka				#sharing-pc1.duchoslafka
+10.XX.42.42	critternb.sugarcook			#sharing-critter.arachne
+10.XX.42.50	bridge-sugarcook.zert zert
+10.XX.42.51	pc.zert					#[XX.YY.90.60] wifi-normal-128-896
+10.XX.42.100	dhcp.sugarcook				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.101	dhcp2.sugarcook				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.102	dhcp3.sugarcook				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.103	dhcp4.sugarcook				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.42.128	sugarcook-sever-wlan			#255.255.255.128
+10.XX.42.129	ap-sever.sugarcook
+10.XX.42.130	bridge-sugarcook.zbrojnicka16
+10.XX.42.131	pc.zbrojnicka16				#wifi-normal-128-512
+10.XX.42.132	delostrelecka.sugarcook delostrelecka
+10.XX.42.133	pajab.sugarcook	pajab			#wifi-normal-128-512
+10.XX.42.135	bridge-sugarcook.maxpe maxpe
+10.XX.42.136	pc.maxpe				#[XX.YY.90.41] wifi-normal-128-896
+10.XX.42.137	wlanbridge.maxpe			#sharing-pc.maxpe
+10.XX.42.142	critterwlan.sugarcook			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.143	critterwifi.sugarcook			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.200	dhcp-sever.sugarcook			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.201	dhcp2-sever.sugarcook			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.202	dhcp3-sever.sugarcook			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.42.203	dhcp4-sever.sugarcook			#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.43.0	petynka-wlan				#255.255.255.0
+10.XX.43.1	ap.petynka petynka-ap
+10.XX.43.2	vopice.petynka vopice			#wifi-normal-128-896
+10.XX.43.3	viki viki.petynka
+10.XX.43.4	petynka154 petynka154.petynka
+10.XX.43.6	eving.petynka 				#wifi-normal-128-512
+10.XX.43.7	eving-nb.petynka			#sharing-eving.petynka
+10.XX.43.9	elm.petynka elm				#wifi-normal-128-896
+10.XX.43.10	czihy.petynka czihy			#sharing-pc1.czihy
+10.XX.43.13	mikolasek mikolasek.petynka		#wifi-normal-128-896
+10.XX.43.14	pc.chvojkovi				#wifi-normal-128-512
+10.XX.43.17	brkoun brkoun.petynka			#sharing-arachne
+10.XX.43.20	bridge.jamo				
+10.XX.43.21	jamo.petynka jamo			#wifi-normal-128-512
+10.XX.43.22	telefon-jamo.petynka jamo.telefon	#sharing-jamo.petynka
+10.XX.43.30	nakocourkach18.petynka			#wifi-normal-128-512
+10.XX.43.31	patockova31.petynka			#wifi-normal-128-1280
+#10.XX.43.33	volna-ip
+#10.XX.43.35	volna-ip
+10.XX.43.37	zastrahovem37.petynka			#testuje-critter-20060303, wifi-normal-128-512
+10.XX.43.40	stanet.petynka				#czf
+10.XX.43.43	critternb.petynka			#sharing-critter.arachne
+10.XX.43.46	hasektour-nb-vsesmer.petynka		#sharing-hasektour.cerny
+10.XX.43.56	vestresovickach56.petynka		#sharing-vestresovickach56.stkat 
+10.XX.43.65	bridge-petynka.kocourky kocourky
+10.XX.43.66	pc1.kocourky				#wifi-normal-128-1280
+10.XX.43.67	pc2.kocourky				#sharing-pc1.kocourky
+10.XX.43.68	pc3.kocourky				#sharing-pc1.kocourky
+10.XX.43.69	pc4.kocourky				#sharing-pc1.kocourky
+10.XX.43.70	pc5.kocourky				#sharing-pc1.kocourky
+10.XX.43.71	pc6.kocourky				#sharing-pc1.kocourky
+10.XX.43.72	pc7.kocourky				#sharing-pc1.kocourky
+10.XX.43.73	pc8.kocourky				#sharing-pc1.kocourky
+10.XX.43.81	bridge-nabateriich11
+10.XX.43.82	bemda.nabateriich11 bemda		#wifi-plus-256-1024
+10.XX.43.100	dhcp.petynka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.43.101	101-43-streetaccess.petynka		#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.43.102	102-43-streetaccess.petynka		#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.43.103	103-43-streetaccess.petynka		#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.43.110	bridge-petynka.napetynce74 napetynce74
+10.XX.43.111	pc.napetynce74				#wifi-normal-128-512
+10.XX.43.112	tlfn.napetynce74			#sharing-pc.napetynce74
+10.XX.43.240	bridge-petynka.chvojkovi chvojkovi
+
+10.XX.45.0	guru-sever-wlan				#255.255.255.0
+10.XX.45.1	ap-sever.guru guru-sever
+10.XX.45.2	carli.guru carli			#wifi-normal-128-512
+10.XX.45.3	couder.guru				#wifi-normal-128-512
+#10.XX.45.4	loopie.guru				#reserved
+10.XX.45.5	svehla.guru svehla
+10.XX.45.6	nobl.guru nobl				#dashboard-neplatic, wifi-normal-128-1280
+10.XX.45.7	seka.guru seka				#testing-vitex-20060228, sharing-dhcp.arachne
+10.XX.45.21	jura-cz.zapohorelcem21			#[XX.YY.90.40] wifi-normal-128-896
+10.XX.45.22	bridge-guru.zapohorelcem21
+10.XX.45.18	pc-guru.longmatys			#sharing-pc.longmatys
+#10.XX.45.10	volna-ip
+10.XX.45.11	parlerova11 parlerova11.guru
+10.XX.45.20	kozuch.guru kozuch			#[AA.BB.89.41] wifi-normal-128-896
+10.XX.45.23	sibeliova23.guru sibeliova23		#wifi-normal-128-896
+10.XX.45.33	bridge-guru.reichlova reichlova		#sharing-reichlova.guru
+10.XX.45.34	reichlova.guru				#wifi-normal-128-512
+10.XX.45.61	nobl2.guru				#sharing-nobl.guru
+10.XX.45.62	nobl3.guru				#sharing-nobl.guru
+10.XX.45.65	bridge-guru.tucnak tucnak
+10.XX.45.66	petruska.tucnak petruska		#sharing-klarka.tucnak
+10.XX.45.67	klarka.tucnak klarka			#wifi-plus-256-1024
+10.XX.45.82	bridge-guru.xue
+10.XX.45.83	pc2.xue					#dashboard-neevidovany-128-512
+10.XX.45.95	bridge-guru.plextor plextor
+10.XX.45.96	pc1.plextor				#1-wifi-normal-128-1280
+10.XX.45.97	pc2.plextor				#sharing-pc1.plextor
+10.XX.45.98	nb.plextor				#sharing-pc1.plextor
+10.XX.45.99	smida1.plextor				#wifi-normal-128-512
+10.XX.45.100	smida2.plextor				#sharing-smida1.plextor
+10.XX.45.123	dhcp.guru				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.45.124	dhcp124.guru				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.45.125	dhcp125.guru				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.45.126	dhcp126.guru				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.46.0	petynka-severozapad-wlan		#255.255.255.128
+10.XX.46.1	wlan-stkat.petynka			#sharing-petynka
+10.XX.46.2	wlan-petynka.stkat			#sharing-stkat
+
+10.XX.46.128	petynka-vertikal-wlan			#255.255.255.128
+10.XX.46.129	ap-vertikal.petynka petynka-vertikal
+10.XX.46.130	eth2wlan-bridge.petynka
+10.XX.46.131	cernapaji.petynka			#sharing-markus
+10.XX.46.133	hasektour.petynka			#sharing-hasektour.cerny
+10.XX.46.134	hasektour2.petynka			#sharing-hasektour.cerny
+10.XX.46.135	grosmanovi.petysnka			#sharing-filip.nadkajetankou1414
+10.XX.46.145	145-46.petynka				#sharing-critter.arachne
+10.XX.46.146	146-46.petynka				#sharing-critter.arachne
+
+10.XX.47.0	alles32-wlan				#255.255.255.128
+10.XX.47.1	ap.alles32 alles32-ap
+10.XX.47.2	wifi.alles32				#sharing-binar.binary-bros
+10.XX.47.3	bridge-alles32.belohorska117
+10.XX.47.4	belohorska117				#wifi-normal-128-512
+10.XX.47.5	mirax mirax.alles32			#wifi-normal-128-1280
+10.XX.47.6	wlan-alles32.horal			#sharing-horal
+10.XX.47.7	zamek.alles32 zamek			#8-wifi-normal-128-512
+10.XX.47.8	bridge-alles32.markuson markuson
+10.XX.47.9	bridge-indoor.markuson
+10.XX.47.10	pc1.markuson				#wifi-normal-128-512
+10.XX.47.11	pc2.markuson				#sharing-pc1.markuson
+10.XX.47.12	pc3.markuson				#sharing-pc1.markuson
+10.XX.47.13	bedn.alles32				#wifi-normal-128-512
+10.XX.47.14	grawes.alles32				#sharing-pc.grawes
+10.XX.47.15	wlan-alles32.ukastanu2 ukastanu2
+10.XX.47.16	8list1a.alles32				#novy-cenik-2006, wifi-normal-128-512
+10.XX.47.17	verunek.alles32				#wifi-normal-128-512
+10.XX.47.20	bridge-stkat.ztom ztom
+10.XX.47.21	pc1.ztom				#wifi-normal-128-512
+10.XX.47.22	pc2.ztom				#sharing-pc1.ztom
+10.XX.47.23	ovis.patockova69                        #
+10.XX.47.24	salacova.patockova69			#wifi-normal-128-512
+10.XX.47.36	bridge-alles32.sandhu sandhu-bridge sandhu
+10.XX.47.37	pc.sandhu				#wifi-plus-256-1024
+10.XX.47.40	bridge-alles32.anastazova21 anastazova21
+10.XX.47.41	pc.anastazova21				#wifi-normal-128-896
+10.XX.47.42	geminigem.anastazova21			#wifi-normal-128-512
+10.XX.47.50	bridge-alles32.belohorska81 belohorska81
+10.XX.47.51	pc1.belohorska81			#wifi-normal-128-512
+10.XX.47.52	pc2.belohorska81			#sharing-pc1.belohorska81
+10.XX.47.100	streetaccess.alles32			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.47.101	stre3taccess.alles32			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.47.102	str3etaccess.alles32			#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.47.103	str33taccess.alles32			#dashboard-dhcp, sharing-dhcp.arachne
+
+#10.XX.48.0	volna-sit-pro-nove-sektory		#255.255.255.0
+
+# --------------------------------------------------------------------------
+# Brevnovsky CZFree.Net - ethernetove site
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+# vnitrni sit Zaverka 8/Arachne Labs
+# --------------------------------------------------------------------------
+
+10.XX.1.0	arachne-eth				#255.255.255.0
+10.XX.1.1	veskrini.arachne veskrini		#sharing-arachne
+10.XX.1.2	kid.arachne kid				#4-backbone-plus-512-512
+10.XX.1.3	critter2.arachne			#sharing-critter.arachne
+10.XX.1.4	zewling.arachne				#sharing-critter.arachne
+10.XX.1.5	marvin.arachne aquarius-ntb		#sharing-panter.arachne
+10.XX.1.6	celtic.misamedu				#[AA.BB.89.10] reserved-HONEYNET, backbone-normal-128-1024
+10.XX.1.7	sysifos.arachne sysifos			#[XX.YY.90.254] server, 7-backbone-bezfup-256-30000
+10.XX.1.8	eth-arachne.marten			#sharing-arachne
+10.XX.1.9	radio.arachne radio			#[212.24.150.230] backbone-plus-1024-1024
+10.XX.1.10	nastrese.arachne			#sharing-arachne
+10.XX.1.11	podvoknem.arachne			#sharing-arachne
+10.XX.1.12	commanche.misamedu			#[XX.YY.90.36], reserved-HONEYNET, sharing-celtic.misamedu
+10.XX.1.13	compuglobalhypermeganet.misamedu	#reserved-HONEYNET, sharing-celtic.misamedu
+10.XX.1.14	laurel.arachne laurel			#sharing-panter.arachne
+10.XX.1.15	hardy.arachne hardy			#7-backbone-bezfup-256-30000
+10.XX.1.16	simon.arachne simon			#4-backbone-plus-256-2048
+10.XX.1.17	binar.binary-bros binar			#[XX.YY.90.27] backbone-plus-256-8192
+10.XX.1.18	wasil.binary-bros wasil			#sharing-binar.binary-bros
+10.XX.1.19	abe.binary-bros abe			#sharing-binar.binary-bros
+10.XX.1.20	wokno.binary-bros wokno			#sharing-binar.binary-bros
+10.XX.1.21	binaryhost.binary-bros binaryhost	#sharing-binar.binary-bros
+10.XX.1.22	gandalfnb.arachne			#sharing-panter.arachne
+10.XX.1.25	natwor.arachne				#backbone-plus-256-3072
+10.XX.1.30	smetalova.zaverka8			#backbone-plus-256-1024
+10.XX.1.31	smetalova2.zaverka8			#sharing-smetalova.zaverka8
+10.XX.1.32	smetalova3.zaverka8			#sharing-smetalova.zaverka8
+10.XX.1.33	smetalova4.zaverka8			#sharing-smetalova.zaverka8
+10.XX.1.34	ghost.zaverka8 ghost			#sharing-stafra.zaverka8
+10.XX.1.35	stafra.zaverka8 stafra			#backbone-normal-128-1024
+10.XX.1.39	cicnos.zaverka8 cicnos			#backbone-plus-256-1024
+10.XX.1.40	pooh.hospodanahradku			#sharing-pooh.sway
+10.XX.1.51	toshi.zaverka8 toshi			#sharing-hardy.arachne
+10.XX.1.80	stroufova.zaverka18 stroufova		#backbone-normal-128-2048
+10.XX.1.81	ovis.zaverka18
+10.XX.1.82	strych.zaverka18 strych			#backbone-normal-128-3072
+10.XX.1.83	strych2.zaverka18 strych2		#sharing-strych.zaverka18
+10.XX.1.90	rusove1.helenymalirove1			#backbone-normal-128-1024
+10.XX.1.91	rusove2.helenymalirove1			#sharing-rusove1.helenymalirove1
+10.XX.1.96	praguerecorders.helenymalirove3 praguerecorders	#backbone-normal-128-2048
+10.XX.1.97	comoros.helenymalirove3 comoros		#backbone-plus-256-3072
+10.XX.1.99	machackova.slikova15 machackova		#backbone-normal-128-4096
+10.XX.1.101	ns					#6-backbone-plus-256-2048
+10.XX.1.110	telefon.arachne				#6-backbone-plus-1024-8192
+10.XX.1.111	telefon2.arachne			#sharing-telefon.arachne
+10.XX.1.112	telefon3.arachne			#sharing-telefon.arachne
+10.XX.1.123	dhcp1.zaverka8				#dashboard-dhcp, dashboard-dhcp, sharing-dhcp.arachne
+10.XX.1.124	dhcp2.zaverka8				#dashboard-dhcp, dashboard-dhcp, sharing-dhcp.arachne
+10.XX.1.125	dhcp3.zaverka8				#dashboard-dhcp, dashboard-dhcp, sharing-dhcp.arachne
+10.XX.1.126	dhcp4.zaverka8				#dashboard-dhcp, dashboard-dhcp, sharing-dhcp.arachne
+10.XX.1.129	frog.slikova9 frog			#backbone-normal-128-1024
+10.XX.1.130	alf.slikova11				#sharing-toro.slikova11
+10.XX.1.131	kahlen.arachne kahlen			#nova-backbone-2006, odpojil-se-128-3072
+10.XX.1.132	horymir.slikova11 horymir 		#backbone-normal-128-3072
+10.XX.1.133	toro.slikova11 toro			#backbone-plus-256-4096
+10.XX.1.134	zoro.slikova11 zoro			#sharing-toro.slikova11
+10.XX.1.135	jef.slikova11 jef			#backbone-normal-128-1024
+10.XX.1.136	sara.slikova11 sara			#backbone-normal-128-1024
+10.XX.1.137	audience.slikova11 audience		#backbone-normal-128-2048
+10.XX.1.138	spageta.helenymalirove6 spageta		#backbone-normal-128-1024, odpojit-20070301
+10.XX.1.139	kesu.helenymalirove6 kesu		#odpojil-se-128-1024
+10.XX.1.140	bach.helenymalirove6 bach		#backbone-normal-128-1024
+10.XX.1.141	pm1.slikova13 pm1			#backbone-normal-128-2048
+10.XX.1.142	pm2.slikova13 pm2			#sharing-pm1.slikova13
+10.XX.1.143	srollerova.slikova4 srollerova		#backbone-normal-128-1024
+10.XX.1.144	ap.ctvrtnik.slikova4 ctvrtnik
+10.XX.1.145	ctvrtnik.slikova4			#backbone-normal-128-1024
+10.XX.1.146	ctvrtnikova.slikova4			#sharing-ctvrtnik.slikova4
+10.XX.1.147	johana.slikova8 johana			#backbone-normal-128-1024
+10.XX.1.148	spageta-nb.helenymalirove6		#sharing-spageta.helenymalirove6
+10.XX.1.149	blueserver.arachne blueserver		#[AA.BB.89.49] server, backbone-plus-512-30000
+10.XX.1.150	piskoviste.arachne piskoviste		#[AA.BB.89.21] server, backbone-plus-512-30000
+10.XX.1.151	chadima.arachne chadima			#[AA.BB.89.51] server, backbone-plus-512-30000
+10.XX.1.152	mates.arachne mates			#sharing-horymir.slikova11
+10.XX.1.153	stary.arachne				#[XX.YY.90.43] server, backbone-plus-512-30000
+#10.XX.1.155	artur.arachne artur			#zruseno-512-8192
+10.XX.1.156	ubuntu.arachne ubuntu			#[AA.BB.89.56] backbone-normal-512-30000
+10.XX.1.157	strejc.slikova4				#[XX.YY.90.49] backbone-normal-128-2048
+10.XX.1.158	slaspa.slikova13			#backbone-normal-128-512
+10.XX.1.159	slaspa-nb.slikova3			#sharing-slaspa.slikova13
+10.XX.1.162	fromberger.zaverka1 fromberger		#backbone-normal-128-1024
+10.XX.1.163	fialova.zaverka1 fialova		#backbone-normal-128-1024
+10.XX.1.165	srytr.zaverka1 srytr			#backbone-normal-128-2048
+10.XX.1.166	alena.zaverka1 alena			#[XX.YY.90.29] backbone-normal-128-1024
+10.XX.1.167	sichova.zaverka1 sichova		#backbone-normal-128-1024
+10.XX.1.168	chmelik.zaverka1 chmelik		#backbone-plus-256-3072
+10.XX.1.169	kanfi.zaverka1 kanfi			#backbone-plus-512-7424
+10.XX.1.170	molik.zaverka1 molik			#backbone-normal-128-1024
+10.XX.1.172	duchacek.zaverka1 duchacek		#backbone-normal-128-1024
+10.XX.1.173	duchacek-nb.zaverka1			#sharing-duchacek.zaverka1
+10.XX.1.174	pc1.berthier				#backbone-normal-128-1024
+10.XX.1.175	pc2.berthier				#sharing-pc1.berthier
+10.XX.1.176	drda.zaverka1				#backbone-normal-128-1024
+10.XX.1.177	drda2.zaverka1				#sharing-drda.zaverka1
+10.XX.1.178	sichova2.zaverka1			#sharing-sichova.zaverka1
+10.XX.1.180	zaverka10.arachne zaverka10		#backbone-normal-128-1024
+10.XX.1.184	mh.zav14 zav14				#backbone-normal-128-1024
+10.XX.1.190	opto.slikova13				#backbone-normal-128-2048
+10.XX.1.191	opto2.slikova13				#sharing-opto.slikova13
+10.XX.1.194	dita.zaverka8 dita			#backbone-normal-128-3072
+10.XX.1.195	pravnik.zaverka8 pravnik		#1-backbone-normal-128-1024
+10.XX.1.196	ivanag.zaverka8 ivanag			#backbone-normal-128-1024
+10.XX.1.197	honzag.zaverka8 honzag			#sharing-ivanag.zaverka8
+10.XX.1.198	koubova.zaverka8 koubova		#backbone-normal-128-1024
+10.XX.1.199	pavelg.zaverka8 pavelg			#sharing-ivanag.zaverka8
+10.XX.1.211	jecmikovi.zaverka3			#backbone-normal-128-1024
+10.XX.1.212	jecmikovi2.zaverka3			#sharing-jecmikovi.zaverka3
+10.XX.1.213	jecmikovi3.zaverka3			#sharing-jecmikovi.zaverka3
+10.XX.1.214	kahlen2					#sharing-kahlen.arachne
+10.XX.1.215	kahlen3					#sharing-kahlen.arachne
+10.XX.1.216	kahlen4					#sharing-kahlen.arachne
+10.XX.1.217	kahlen5					#sharing-kahlen.arachne
+10.XX.1.221	critter.arachne				#7-backbone-bezfup-256-8192
+10.XX.1.222	panter.arachne panter			#7-backbone-bezfup-256-30000
+10.XX.1.223	aoe.arachne				#sharing-panter.arachne
+10.XX.1.224	tmp1.arachne tmp1			#sharing-arachne
+10.XX.1.225	tmp2.arachne tmp2 			#[AA.BB.89.31], sharing-hardy.arachne
+10.XX.1.226	zkusenec.zaverka8 zkusenec		#sharing-arachne
+10.XX.1.227	akce					#sharing-hardy.arachne
+10.XX.1.228	verity.zaverka8 verity			#sharing-hardy.arachne
+10.XX.1.229	drat1.free				#sharing-server.free
+10.XX.1.230	cyberdelic.zaverka8 cyberdelic		#dashboard-virus, sharing-hardy.arachne
+10.XX.1.233	critter-bsd.zaverka8			#[212.24.150.231] sharing-critter.arachne
+10.XX.1.239	wrt_eth1.free				#sharing-server.free
+10.XX.1.240	inway.zaverka8 inway
+10.XX.1.241	navratil.zaverka12 navratil 		#backbone-plus-256-2048
+10.XX.1.242	hajek.zaverka14				#backbone-normal-128-1024
+10.XX.1.253	compex.arachne
+
+# --------------------------------------------------------------------------
+# lokalni sit Elses - Belohorska ulice
+# --------------------------------------------------------------------------
+
+10.XX.5.0	elses-eth				#255.255.255.0
+10.XX.5.1	ori.elses ori elses1			#sharing-arachne
+#10.XX.5.2	capka.podkralovkou1a capka		#odpojil-se-128-1024
+10.XX.5.5	vesely1.podkralovkou1a vesely1		#[XX.YY.90.52] backbone-normal-128-3072
+10.XX.5.6	vesely2.podkralovkou1a vesely2		#sharing-vesely1.podkralovkou1a
+10.XX.5.7	vesely3.podkralovkou1a vesely3		#sharing-vesely1.podkralovkou1a
+10.XX.5.8	ruzicka.podkralovkou1a			#nova-backbone-2006, odpojil-se-512-4096
+#10.XX.5.9	zenin.podkralovkou1a zenin	 	#odpojil-se-128-896
+10.XX.5.10	proxima-centauri.elses elses2		#sharing-arachne
+10.XX.5.11	kurek1.podkralovkou1a 			#backbone-plus-256-2048
+10.XX.5.12	kurek2.podkralovkou1a			#sharing-kurek1.podkralovkou1a
+10.XX.5.15	ap.vesely
+10.XX.5.18	matousek.podkralovkou1b matousek	#backbone-normal-128-1024
+10.XX.5.19	hajek.podkralovkou1b hajek		#backbone-normal-128-1024
+#10.XX.5.20	ip3.podkralovkou1b			#reserved-zatim-nepouzita
+#10.XX.5.21	ip4.podkralovkou1b			#reserved-zatim-nepouzita
+10.XX.5.22	krcal.elses				#sharing-krcal1.guru
+10.XX.5.23	critter.podkralovkou1a			#reserved-critter
+10.XX.5.34	ondra.podkralovkou1c			#dashboard-neevidovany-256-1024
+10.XX.5.35	stepan.podkralovkou1c			#sharing-ondra.podkralovkou1c
+10.XX.5.36	lupus.podkralovkou1c			#sharing-ondra.podkralovkou1c
+10.XX.5.37	pc4.podkralovkou1c			#sharing-ondra.podkralovkou1c
+10.XX.5.40	stola.belohorska30			#backbone-normal-128-1024
+10.XX.5.41	stola2.belohorska30			#sharing-stola.belohorska30
+10.XX.5.42	stola3.belohorska30			#sharing-stola.belohorska30
+10.XX.5.45	kubinova.belohorska30			#backbone-normal-128-1024
+10.XX.5.50	prague77.belohorska30			#[AA.BB.89.59] backbone-plus-256-4096
+10.XX.5.51	levovi.belohorska30 levovi		#3-backbone-plus-256-1024
+10.XX.5.52	levovi2.belohorska30			#sharing-levovi.belohorska30
+10.XX.5.53	levovi3.belohorska30			#sharing-levovi.belohorska30
+10.XX.5.54	hruby.belohorska30 hruby		#nova-backbone-2006, odpojil-se-128-1024
+#10.XX.5.55	volna-ip
+10.XX.5.56	zizka.belohorska30 zizka		#backbone-normal-128-2048
+10.XX.5.57	rezek.belohorska30 rezek		#backbone-normal-128-3072
+10.XX.5.60	abder.belohorska38 abder		#backbone-plus-256-3072
+10.XX.5.61	donaldg.belohorska40 donaldg		#je-pryc-256-6144
+10.XX.5.62	sommer.belohorska36 sommer		#backbone-normal-128-1024
+10.XX.5.63	donaldg2.belohorska40			#sharing-donaldg.belohorska40
+10.XX.5.64	telefon.sommer				#sharing-telefon.arachne
+10.XX.5.65	convoy.belohorska48 convoy		#backbone-normal-128-3072
+10.XX.5.73	joras1.belohorska50 joras1		#backbone-normal-256-4096
+10.XX.5.74	joras2.belohorska50 joras2		#sharing-joras1.belohorska50
+10.XX.5.77	bernard.belohorska48			#backbone-plus-256-256
+
+10.XX.6.0	pytel-eth				#255.255.255.240
+10.XX.6.1	elses.pytel
+10.XX.6.2	ono-sendai.pytel			#odpojil-se-128-2048
+10.XX.6.3	prokupek.pytel				#sharing-ono-sendai.pytel
+10.XX.6.4	houba.pytel				#sharing-ono-sendai.pytel
+
+10.XX.6.32	pascal-eth				#255.225.255.240
+10.XX.6.33	router.pascal pascal-router
+10.XX.6.34	pc.pascal				#sharing-pascal
+
+#z tohoto rozsahu uz se nemela alkovat nova IPcka, akorat jsem to jaksi
+#zapomel nekam napsat... xCh. pouzivejte ipcka ze site 10.XX.9.96
+10.XX.6.48	microshop-eth				#255.225.255.240
+10.XX.6.49	nell.microshop nell			
+10.XX.6.50	superadapter.microshop			#sharing-microshop
+10.XX.6.51	stul.podmarjankou4			#backbone-normal-128-1024
+10.XX.6.53	ms-srv1.microshop			#[AA.BB.89.3] sharing-microshop
+10.XX.6.54	datarecovery.microshop datarecovery	#[AA.BB.89.4] sharing-microshop
+10.XX.6.55	remote.microshop			#[AA.BB.89.5] sharing-microshop
+10.XX.6.56	honza.microshop				#[AA.BB.89.6] sharing-microshop
+10.XX.6.57	kir.belohorska54 kir			#backbone-normal-128-2048
+10.XX.6.58	novak-pc2.microshop			#sharing-novak.microshop
+10.XX.6.59	novak.microshop novak			#backbone-normal-128-2048
+10.XX.6.60	horackova.belohorska54 horackova	#backbone-normal-128-1024
+10.XX.6.61	karpoff.belohorska58 karpoff		#backbone-normal-128-2048
+10.XX.6.62	lekarna.belohorska54 lekarna		#[AA.BB.89.42] backbone-plus-512-8192
+
+10.XX.6.64	pohorelec-eth				#255.255.255.192
+10.XX.6.65	router.pohorelec
+#10.XX.6.66	aurka.pohorelec aurka			#odpojil-se
+#10.XX.6.67	burka.pohorelec burka			#odpojil-se
+10.XX.6.70	eurka.pohorelec eurka			#novy-cenik-2006, odpojil-se-256-1024
+10.XX.6.71	furka.pohorelec furka			#sharing-eurka.pohorelec
+10.XX.6.72	gurka.pohorelec gurka			#sharing-pohorelec
+10.XX.6.73	hurka.pohorelec hurka			#sharing-pohorelec
+10.XX.6.98	automat.pohorelec automat		#wifi-normal-128-512
+10.XX.6.100	misapisa.pohorelec misapisa		#wifi-normal-128-1280
+10.XX.6.101	jlud.pohorelec				#wifi-normal-128-512
+10.XX.6.102	jlud2.pohorelec				#sharing-jlud.pohorelec
+
+
+10.XX.6.128	cartmen-eth				#255.255.255.192
+10.XX.6.129	router.cartmen
+10.XX.6.133	pc.cartmen				#sharing-cartmen
+10.XX.6.134	nb.cartmen				#sharing-cartmen
+10.XX.6.135	ap.cartmen				#sharing-cartmen
+10.XX.6.136	tomik.cartmen tomik			#backbone-normal-128-1024
+10.XX.6.138	ipaq.cartmen				#sharing-cartmen
+10.XX.6.140	koutny.cartmen koutny			#backbone-normal-128-1024
+10.XX.6.141	blue-h.cartmen blue-h			#backbone-normal-128-1024
+10.XX.6.142	aphakia.cartmen aphakia			#sharing-blue-h.cartmen
+10.XX.6.146	kojenec.cartmen kojenec			#backbone-plus-256-1024
+10.XX.6.147	kusy.cartmen kusy			#backbone-normal-128-1024
+10.XX.6.148	bartikova.cartmen bartikova		#[AA.BB.89.18] sharing-cartmen
+10.XX.6.149	rekl.cartmen rekl			#backbone-normal-128-1024
+10.XX.6.150	schiestlova.cartmen schiestlova		#backbone-normal-128-2048
+10.XX.6.151	lemoch.cartmen lemoch			#backbone-normal-128-1024
+10.XX.6.152	bartik.cartmen bartik			#backbone-normal-128-1024
+10.XX.6.153	koutny2.cartmen				#sharing-koutny.cartmen
+10.XX.6.154	patkova.cartmen				#backbone-normal-128-1024
+
+10.XX.6.224	arachne-router-subnet			#255.255.255.240
+10.XX.6.225	eth-veskrini.arachne			#sharing-arachne
+10.XX.6.226	nakomine2.arachne			#sharing-arachne
+
+
+#10.XX.6.224	nora-eth 				#255.255.255.240
+#10.XX.6.225	gateway.nora
+#10.XX.6.226	bart.nora				#sharing-binar.binary-bros
+#10.XX.6.227	toshi.nora				#nepouziva se
+#10.XX.6.228	critter.nora				#sharing-critter.arachne
+#10.XX.6.229	zubar.nora zubar			#sharing-critter.arachne
+#10.XX.6.230	stepik.nora stepik			##AA.BB.89.34# sharing-critter.arachne
+#10.XX.6.231	wolf.nora wolf				#sharing-critter.arachne
+#10.XX.6.232	niky.nora niky				#sharing-critter.arachne
+#10.XX.6.233	aix.nora aix				#sharing-critter.arachne
+#10.XX.6.234	router.nora				#sharing-critter.arachne
+#10.XX.6.235	dhcp.nora				#sharing-critter.arachne
+#10.XX.6.236	dhcp2.nora				#sharing-critter.arachne
+#10.XX.6.237	dhcp3.nora				#sharing-critter.arachne
+#10.XX.6.238	dhcp4.nora				#sharing-critter.arachne
+
+10.XX.6.240	abder-wlan 				#255.255.255.240
+10.XX.6.241	ap.abder				#sharing-abder.belohorska38
+10.XX.6.242	vercak.abder				#sharing-abder.belohorska38
+10.XX.6.243	jakes.abder				#sharing-abder.belohorska38
+10.XX.6.244	dhcp1.abder				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.6.245	dhcp2.abder				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.6.246	dhcp3.abder				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.6.247	dhcp4.abder				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.6.248	dhcp5.abder				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.6.249	dhcp6.abder				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.7.0	horal-eth				#255.255.255.240 
+10.XX.7.1	router.horal horal-router
+10.XX.7.2	michalka2.horal michalka2		#sharing-horal
+10.XX.7.3	michalka3.horal michalka3		#sharing-horal
+10.XX.7.4	horal4.horal horal4			#sharing-horal
+10.XX.7.5	apollo.horal apollo			#sharing-horal
+10.XX.7.6	hsr.horal hsr				#sharing-horal
+10.XX.7.7	lukasek.horal lukasek			#sharing-horal
+10.XX.7.8	horal8.horal horal8			#sharing-horal
+10.XX.7.9	horal9.horal horal9			#sharing-horal
+10.XX.7.10	horal10.horal horal10			#sharing-horal
+10.XX.7.11	horal11.horal horal11			#sharing-horal
+10.XX.7.12	horal12.horal horal12			#sharing-horal
+10.XX.7.13	horal13.horal horal13			#sharing-horal
+10.XX.7.14	dlink.horal dlink			#sharing-horal
+
+10.XX.7.16	dum-liborova14-eth			#255.255.255.240
+10.XX.7.17	eth0-31.liborova14			#sharing-arachne
+10.XX.7.18	18-7-hajek.liborova14			#dashboard-neplatic, backbone-normal-128-1024
+10.XX.7.19	19-7-hajek.liborova14			#sharing-18-7-hajek.liborova14
+10.XX.7.20	20-7-hajek.liborova14			#sharing-18-7-hajek.liborova14
+10.XX.7.21	21-7-hajek.liborova14			#sharing-18-7-hajek.liborova14
+10.XX.7.22	zemanova.liborova14			#backbone-normal-128-1024
+
+#10.XX.7.32	volna-sit				#255.255.255.240 
+
+10.XX.7.48	munin-eth				#255.255.255.240
+10.XX.7.49	router.munin				#czf
+10.XX.7.50	munix.munin				#czf
+10.XX.7.51	munin.munin				#czf
+10.XX.7.52	brbl.munin				#czf
+
+10.XX.7.64	oskar-eth				#255.255.255.240
+10.XX.7.65	router.oskar oskar-router
+10.XX.7.66	pc1.oskar				#sharing-oskar
+10.XX.7.67	pc2.oskar				#sharing-oskar
+10.XX.7.68	gr1.oskar				#sharing-oskar
+10.XX.7.69	gr2.oskar				#sharing-oskar
+10.XX.7.70	gr3.oskar				#sharing-oskar
+10.XX.7.71	gr4.oskar				#sharing-oskar
+
+10.XX.7.80	wanderer-eth				#255.255.255.240
+10.XX.7.81	router.wanderer wanderer-router
+10.XX.7.82	wanda.wanderer wanda			#sharing-wanderer
+10.XX.7.83	michal.wanderer				#sharing-wanderer
+10.XX.7.84	dole.wanderer				#sharing-wanderer
+10.XX.7.85	nahore.wanderer				#sharing-wanderer
+
+10.XX.7.96	jim-eth					#255.255.255.240
+10.XX.7.97	jim0.jim jim0				#sharing-jim
+10.XX.7.98	jim1					#sharing-jim
+10.XX.7.99	jim2					#sharing-jim
+10.XX.7.100	jim3					#sharing-jim
+10.XX.7.101	jim4					#[XX.YY.90.11] sharing-jim
+10.XX.7.102	telefon.jim				#sharing-telefon.arachne
+10.XX.7.103	experimenty				#sharing-jim
+10.XX.7.107	jim5.jim				#sharing-jim
+10.XX.7.110	alef.jim				#sharing-jim
+
+10.XX.7.112	pesk-eth				#255.255.255.240
+10.XX.7.113	router.pesk pesk-router
+10.XX.7.114	pesk1					#docasne-se-odpojil
+10.XX.7.115	pesk2					#czf
+10.XX.7.116	pesk3					#czf
+10.XX.7.117	pesk4					#czf
+
+10.XX.7.160	gotcha-eth				#255.255.255.240
+10.XX.7.161	router.gotcha gotcha-router
+10.XX.7.162	heriz.gotcha heriz			#sharing-gotcha
+
+10.XX.7.176	kopeckeho-eth				#255.255.255.240
+10.XX.7.177	ovis.kopeckeho				#sharing-kopeckeho.jim
+10.XX.7.178	pc1.kopeckeho				#sharing-kopeckeho.jim
+10.XX.7.179	pc2.kopeckeho				#sharing-kopeckeho.jim
+
+10.XX.7.192	jim2cabral-5ghz-wlan			#255.255.255.248
+10.XX.7.193	wlan-cabral.jim
+10.XX.7.194	bridge-jim.cabral cabral-airca airca.cabral
+10.XX.7.195	nat.cabral cabral			#[XX.YY.90.23] backbone-plus-1024-1024
+
+10.XX.7.208	jorge-eth				#255.255.255.240
+10.XX.7.209	router.jorge
+10.XX.7.210	pc1.jorge				#sharing-jorge
+10.XX.7.211	sebor1.jorge sebor1			#wifi-normal-128-512
+10.XX.7.212	sebor2.jorge sebor2			#sharing-sebor1.jorge
+10.XX.7.213	sebor3.jorge sebor3			#sharing-sebor1.jorge
+10.XX.7.214	krejci.jorge krejci			#wifi-normal-128-1280
+10.XX.7.215	kaderabek.jorge kaderabek		#wifi-normal-128-1280
+10.XX.7.216	pc2.jorge				#sharing-jorge
+10.XX.7.217	sebor4.jorge sebor4			#sharing-sebor1.jorge
+
+10.XX.8.0	zaverka18-wlan				#255.255.255.240
+10.XX.8.1	ap.zaverka18
+10.XX.8.2	bridge-zaverka18.zaverka11 zaverka11
+10.XX.8.3	canon.zaverka11				#wifi-normal-128-1280
+10.XX.8.4	darkbug2.zaverka11			#sharing-jiri.darkbug
+10.XX.8.5	liborova2.zaverka18			#sharing-pc1.tomicek
+10.XX.8.10	dhcp1.zaverka18				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.8.11	dhcp2.zaverka18				#dashboard-dhcp, sharing-dhcp.arachne
+
+#10.XX.8.16	volna-sit				#255.255.255.240
+
+10.XX.8.32	abder-eth				#255.255.255.224
+10.XX.8.33	server.abder
+10.XX.8.34	pc1.abder				#[XX.YY.90.38] sharing-abder.belohorska38
+10.XX.8.35	pc2.abder				#sharing-abder.belohorska38
+10.XX.8.36	pc3.abder				#sharing-abder.belohorska38
+10.XX.8.37	pc4.abder				#sharing-abder.belohorska38
+10.XX.8.38	pc5.abder				#sharing-abder.belohorska38
+10.XX.8.39	pc6.abder				#sharing-abder.belohorska38
+10.XX.8.40	pc7.abder				#sharing-abder.belohorska38
+10.XX.8.41	pc8.abder				#sharing-abder.belohorska38
+10.XX.8.42	pc9.abder				#sharing-abder.belohorska38
+10.XX.8.43	pc10.abder				#sharing-abder.belohorska38
+10.XX.8.44	pc11.abder				#sharing-abder.belohorska38
+10.XX.8.45	pc12.abder				#sharing-abder.belohorska38
+10.XX.8.46	pc13.abder				#sharing-abder.belohorska38
+10.XX.8.47	pc14.abder				#sharing-abder.belohorska38
+10.XX.8.48	pc15.abder				#sharing-abder.belohorska38
+
+10.XX.8.64	pulytr-vychod-sektor-wlan		#255.255.255.192
+10.XX.8.65	ap-vychod.pulytr			#sharing-pulytr
+10.XX.8.66	test-pulytr				#testuje-pulytr-20061115, sharing-wifitest.pulytr
+10.XX.8.67	zlatnnik1.pulytr			#sharing-zlatnik.pulytr
+10.XX.8.68	lucka1.pulytr				#sharing-lucka.pulytr
+10.XX.8.69	gluon1.pulytr				#sharing-gluon.pulytr
+10.XX.8.70	lukas1.pulytr				#sharing-lukas.pulytr
+
+10.XX.8.128	octarna-jihozapad-sektor-wlan		#255.255.255.192
+10.XX.8.129	ap-jihozapad.octarna			#sharing-octarna
+10.XX.8.130	bridge-octarna.vlkk
+10.XX.8.131	pc1.vlkk				#[XX.YY.90.31] wifi-plus-256-1024
+10.XX.8.132	pc2.vlkk				#sharing-pc1.vlkk
+10.XX.8.133	bolzano2.octarna 			#testuje-phil, wifi-plus-256-1024
+10.XX.8.134	ahn.octarna ahn
+10.XX.8.135	bridge-honzak.octarna
+10.XX.8.136	pc.honzak				#wifi-normal-128-512
+10.XX.8.137	parlerova5.octarna			#wifi-normal-128-512
+
+
+10.XX.8.192	petynka-south-2-wlan			#255.255.255.224
+10.XX.8.193	ap-south2.petynka			#sharing-petynka
+10.XX.8.194	smajchl.petynka smajchl			#wifi-plus-256-1024
+
+10.XX.8.224	petynka-jihovychod-wlan			#255.255.255.224
+10.XX.8.225	ap-jihovychod.petynka
+
+10.XX.9.64	tomko-eth				#255.255.255.240
+10.XX.9.65	router.tomko				#sharing-viageos.arachne
+10.XX.9.66	pc.tomko				#sharing-viageos.arachne
+10.XX.9.67	notebook.tomko				#sharing-viageos.arachne
+
+10.XX.9.80	8dpp-eth				#255.255.255.248
+10.XX.9.81	router.8dpp
+10.XX.9.82	ws1.kalousovi.8dpp ws1.kalousovi	#czf
+10.XX.9.83	ws2.kalousovi.8dpp ws2.kalousovi	#czf
+10.XX.9.84	jilly.8dpp jilly			#czf
+
+10.XX.9.96	podmarjankou-eth			#255.255.255.224
+10.XX.9.97	nell.podmarjankou
+10.XX.9.98	marjanka marjanka.marjanka		#[AA.BB.89.45] backbone-normal-128-2432
+10.XX.9.99	vp.marjanka				#sharing-marjanka
+10.XX.9.100	mne.marjanka				#sharing-marjanka
+10.XX.9.101	kata.marjanka				#sharing-marjanka
+10.XX.9.102	host1.marjanka				#sharing-marjanka
+10.XX.9.103	host2.marjanka				#sharing-marjanka
+10.XX.9.108	karpoff1.belohorska58			#sharing-karpoff.belohorska58
+10.XX.9.109	karpoff2.belohorska58			#sharing-karpoff.belohorska58
+10.XX.9.110	pc.parik				#1-50 backbone-normal-128-3072
+10.XX.9.111	ap.parik parik				#sharing-pc.parik
+10.XX.9.112	novakovaeva2.podmarjankou6		#backbone-normal-128-2048
+10.XX.9.113	novakovaeva3.podmarjankou6		#sharing-novakovaeva2.podmarjankou6
+10.XX.9.114	wieder.podmarjankou6 wieder		#backbone-normal-128-1024
+
+10.XX.9.128	pleskot-eth				#255.255.255.192
+10.XX.9.129	router.pleskot
+10.XX.9.130	pc.pleskot				#1-wifi-normal-128-128
+10.XX.9.131	conti.pleskot conti			#[AA.BB.89.39] wifi-plus-256-1024
+10.XX.9.132	ntb.pleskot				#sharing-pc.pleskot
+
+10.XX.9.192	merlin-eth				#255.255.255.240
+10.XX.9.193	router.merlin
+10.XX.9.194	test.merlin				#sharing-merlin
+10.XX.9.195	petr.merlin				#sharing-merlin
+
+10.XX.9.208	nemo-eth				#255.255.255.240
+10.XX.9.209	trikavky.nemo trikavky
+10.XX.9.210	carlos.nemo carlos			#1-wifi-normal-128-512
+10.XX.9.211	nemochovsky.nemo nemochovsky		#wifi-normal-128-512
+10.XX.9.212	vrabelova.nemo vrabelova		#wifi-normal-128-512
+10.XX.9.213	rosinova.nemo rosinova			#wifi-normal-128-512
+10.XX.9.214	iva.nemo iva				#wifi-normal-128-512
+
+10.XX.9.224	talich1-eth				#255.255.255.240
+10.XX.9.225	router.talich1
+10.XX.9.226	nemec.talich1				#sharing-talich1
+10.XX.9.227	svarc.talich1 svarc			#[212.24.150.237] backbone-normal-128-2048
+10.XX.9.228	zvolsky.talich1 zvolsky			#backbone-plus-256-2048
+10.XX.9.229	tylova.talich1 tylova			#backbone-plus-256-2048
+#10.XX.9.230	doskocil.talich1 doskocil		#odpojil-se
+10.XX.9.231	nemec2.talich1				#sharing-talich1
+10.XX.9.232	dina.talich1 dina			#backbone-normal-128-1024
+10.XX.9.238	marx.talich1				#sharing-talich1
+
+10.XX.9.240	xchaos-eth				#255.255.255.240
+10.XX.9.241	router.xchaos
+10.XX.9.243	hyperion.xchaos hyperion		#[XX.YY.90.16] 3-wifi-plus-256-1024
+10.XX.9.244	ip2.xchaos				#sharing-critter.arachne
+10.XX.9.245	telefon.xchaos				#sharing-telefon.arachne
+
+10.XX.10.24	kratiknot-old-eth			#255.255.255.248
+10.XX.10.25	router-old.kratiknot
+10.XX.10.26	nb.kratiknot				#sharing-jb.kratiknot
+10.XX.10.27	hovorka.kratiknot			#wifi-normal-128-512
+10.XX.10.28	jb.kratiknot jb				#wifi-normal-128-896
+10.XX.10.29	ab.kratiknot ab				#sharing-jb.kratiknot
+10.XX.10.30	ap.kratiknot
+
+10.XX.9.48	kratiknot-eth				#255.255.255.240
+10.XX.9.49	router.kratiknot
+10.XX.9.50	climber.kratiknot climber		#[XX.YY.90.56] wifi-normal-128-1280
+10.XX.9.57	nb-new.kratiknot			#sharing-jb.kratiknot
+10.XX.9.58	jb-new.kratiknot			#sharing-jb.kratiknot
+10.XX.9.59	ab-new.kratiknot			#sharing-jb.kratiknot
+10.XX.9.60	ap-new.kratiknot
+
+10.XX.10.144	zastrahovem30-eth			#255.255.255.240
+10.XX.10.145	router.zastrahovem30
+10.XX.10.146	frodo4.zastrahovem30			#sharing-frodo.zastrahovem30
+10.XX.10.147	valenta.zastrahovem30 valenta		#odpojil-se
+10.XX.10.148	kucera.zastrahovem30			#wifi-normal-128-512
+10.XX.10.149	frodo.zastrahovem30 frodo		#wifi-normal-128-1280
+10.XX.10.150	frodo2.zastrahovem30 frodo2		#sharing-frodo.zastrahovem30
+10.XX.10.151	frodo3.zastrahovem30 frodo3		#sharing-frodo.zastrahovem30
+10.XX.10.152	novysoused.zastrahovem30		#wifi-normal-128-1280
+10.XX.10.153	153-10-novysoused.zastrahovem30		#sharing-novysoused.zastrahovem30
+10.XX.10.154	blichova.zastrahovem30			#wifi-plus-256-1024
+10.XX.10.156	evas.zastrahovem30 evas 		#wifi-normal-128-128
+10.XX.10.157	knotek.zastrahovem30 knotek		#wifi-normal-128-512
+10.XX.10.158	wrt.zastrahovem30
+
+10.XX.10.160	sway-eth				#255.255.255.240
+10.XX.10.161	router.sway
+10.XX.10.162	nemec.sway				#3-backbone-normal-128-3072
+10.XX.10.163	pc.sway					#3-backbone-plus-256-1024
+10.XX.10.164	zavrsky.sway zavrsky			#backbone-normal-128-2048
+10.XX.10.165	spic.sway spic				#sharing-pooh.sway
+10.XX.10.166	pooh.sway pooh				#backbone-normal-128-2048
+10.XX.10.167	moron.sway				#sharing-zavrsky.sway
+10.XX.10.168	blazek.sway				#sharing-nemec.sway
+10.XX.10.169	choronzon.sway choronzon		#[XX.YY.90.61] sharing-pooh.sway
+10.XX.10.170	eth0-nastozaru.sway kubakk		#sharing-arachne
+10.XX.10.171	zavrsky2.sway				#sharing-zavrsky.sway
+#10.XX.10.171	nastozaru2.sway swaywrap		#sharing-arachne
+#10.XX.10.174	eth-sway.stresovice stresovice		#1-wifi-normal-128-128
+
+10.XX.10.208	parlerova11-eth				#255.255.255.240
+10.XX.10.209	fido.parlerova11 fido router.parlerova11
+10.XX.10.210	janprihara.parlerova11 janprihara	#wifi-normal-128-512
+10.XX.10.211	hyxova.parlerova11 hyxova		#testuje-xchaos-20070221, wifi-normal-128-512
+10.XX.10.213	fel1.parlerova11 fel1			#novy-cenik-2006, odpojil-se-256-1024
+10.XX.10.214	ondrash.parlerova11 ondrash		#[AA.BB.89.35] sharing-fel1.parlerova11
+10.XX.10.215	jandic.parlerova11 jandic		#[AA.BB.89.19] sharing-fel1.parlerova11
+10.XX.10.216	fel4.parlerova11 fel4			#sharing-fel1.parlerova11
+10.XX.10.217	fel5.parlerova11			#sharing-fel1.parlerova11
+
+10.XX.11.112	liborova14-eth				#255.255.255.248
+10.XX.11.113	router.liborova14
+10.XX.11.114	krakonos.wdsp krakonos			#[AA.BB.89.26] backbone-plus-512-8192
+10.XX.11.115	analema.wdsp webserver			#[AA.BB.89.62] sharing-krakonos.wdsp
+10.XX.11.117	stupka.liborova14 stupka		#[AA.BB.89.37] backbone-plus-512-4096
+10.XX.11.118	dusan.liborova14 dusan			#[AA.BB.89.33] backbone-normal-128-2048
+
+10.XX.11.128	angada-eth				#255.255.255.224
+10.XX.11.129	router.slikova56
+10.XX.11.130	klara.slikova56				#1-wifi-normal-128-512
+10.XX.11.131	zaneta.slikova56 zaneta			#wifi-normal-128-512
+10.XX.11.132	intercooler.slikova56 intercooler	#wifi-normal-128-512
+10.XX.11.133	stefan.slikova56 stefan			#wifi-normal-128-512
+10.XX.11.134	jachym.slikova56 jachym			#dashboard-neplatic-128-512
+10.XX.11.135	simakova.slikova46 simakova		#wifi-normal-128-896
+10.XX.11.136	fikrt.slikova56 fikrt			#wifi-normal-128-512
+10.XX.11.137	valkai.slikova56			#dashboard-neplatic-128-512
+10.XX.11.138	intercoller2.slikova56			#sharing-intercooler.slikova56 
+10.XX.11.146	gnc.slikova52 gnc			#wifi-normal-128-512
+10.XX.11.147	odu.slikova52 odu			#sharing-gnc.slikova52
+10.XX.11.148	lad.slikova52 lad			#sharing-gnc.slikova52
+10.XX.11.149	kralickova.slikova50 			#wifi-normal-128-512
+10.XX.11.150	hons.slikova50				#wifi-normal-128-896
+10.XX.11.151	edita.slikova50				#daashboard-neplatic, wifi-normal-128-1280
+10.XX.11.156	rybiz.slikova56				#[XX.YY.90.25] wifi-normal-128-896
+10.XX.11.158	matasovi.slikova50 matasovi		#novy-cenik-2006, odpojil-se-256-1024
+
+10.XX.11.192	guru5-eth				#255.255.255.248
+10.XX.11.193	eth0-router.guru			#sharing-arachne
+10.XX.11.194	erca.guru airca.guru			#sharing-arachne
+10.XX.11.195	wrap.guru				#sharing-arachne
+
+10.XX.11.200	parlerova19-5-eth			#255.255.255.248
+10.XX.11.201	eth0-router.parlerova19			#sharing-arachne
+10.XX.11.202	airca.parlerova19			#sharing-arachne
+
+10.XX.11.208	atheros-elses-p2p-talich1		#255.255.255.252
+10.XX.11.209	atheros-talich1.elses			#sharing-arachne
+10.XX.11.210	atheros-elses.talich1			#sharing-arachne
+
+10.XX.11.212	atheros-talich1-p2p-poliklinika		#255.255.255.252
+10.XX.11.213	atheros-poliklinika.talich1		#sharing-arachne
+10.XX.11.214	atheros-talich1.poliklinika		#sharing-arachne
+
+10.XX.11.216	elses-p2p-xchaos-wlan			#255.255.255.252
+10.XX.11.217	wlan-xchaos.elses			#sharing-arachne
+10.XX.11.218	wlan-elses.xchaos			#sharing-arachne
+
+10.XX.49.0	octarna-eth				#255.255.255.192
+10.XX.49.1	masa.octarna masa
+10.XX.49.2	balaban.octarna balaban			#sharing-octarna
+10.XX.49.3	zaba.octarna zaba			#sharing-octarna
+10.XX.49.4	imrvere.octarna imrvere			#[212.24.150.235] sharing-octarna
+10.XX.49.5	test.octarna				#sharing-octarna
+10.XX.49.6	vojta.octarna				#sharing-octarna
+10.XX.49.7	nb.octarna				#sharing-octarna
+10.XX.49.8	palm.octarna				#sharing-octarna
+10.XX.49.9	apimrvere.octarna			#sharing-octarna
+10.XX.49.10	crosfield.octarna crosfield		#sharing-octarna
+10.XX.49.11	mac-mini.octarna			#sharing-octarna
+10.XX.49.12	powerbook-g3.octarna			#sharing-octarna
+10.XX.49.13	indoor-apecko.octarna
+10.XX.49.14	matous-wlan.octarna			#sharing-octarna
+
+10.XX.49.32	marc-zahladkovem-eth			#255.255.255.240
+10.XX.49.33	wlan-zahladkovem22.elses
+10.XX.49.34	marc-indoorwlan-bridge.zahladkovem22
+10.XX.49.35	marc.zahladkovem22			#backbone-normal-128-1024
+10.XX.49.36	marc-36-49.zahladkovem22		#sharing-marc.zahladkovem22
+10.XX.49.37	dobry.zahladkovem22			#backbone-normal-128-1024
+10.XX.49.38	dobry-38-49.zahladkovem22		#sharing-dobry.zahladkovem22
+10.XX.49.39	dobry-39-49.zahladkovem22		#sharing-dobry.zahladkovem22
+10.XX.49.40	cakrt-indoorwlan-NAT.zahladkovem18	#sharing-cakrt.zahladkovem18
+10.XX.49.41	cakrt.zahladkovem18			#backbone-normal-128-2048
+10.XX.49.42	cakrt-42-49.zahladkovem18		#sharing-cakrt.zahladkovem18
+10.XX.49.43	bridgeAirCa-elses.zahladkovem22 marc-zahladkovem
+10.XX.49.44	kve.zahladkovem16			#dashboard-virus, backbone-normal-128-1024
+10.XX.49.46	cermakova.zahladkovem6			#backbone-normal-128-1024
+
+10.XX.49.48	ahn-eth					#255.255.255.240
+10.XX.49.49	ovis.ahn
+10.XX.49.50	kancl-1.ahn				#wifi-plus-256-1024
+10.XX.49.51	kancl-2.ahn				#sharing-kancl-1.ahn
+10.XX.49.52	kancl-3.ahn				#sharing-kancl-1.ahn
+10.XX.49.53	linda.ahn				#wifi-normal-128-512
+10.XX.49.54	verar.ahn verar				#wifi-plus-256-256
+10.XX.49.64	marc-zahladkovem-2-eth			#255.255.255.240
+10.XX.49.65	wlan-zahladkovem22-2.elses
+10.XX.49.66	marc-66-49.zahladkovem22		#sharing-marc.zahladkovem22
+10.XX.49.67	marc-67-49.zahladkovem22		#sharing-marc.zahladkovem22
+10.XX.49.68	marc-68-49.zahladkovem22		#sharing-marc.zahladkovem22
+10.XX.49.69	marc-69-49.zahladkovem22		#sharing-marc.zahladkovem22
+10.XX.49.70	jtpl.zahladkovem22			#backbone-normal-128-1024
+
+10.XX.49.192	kairra-eth				#255.255.255.240
+10.XX.49.193	router.kairra
+10.XX.49.194	pc.kairra				#sharing-kairra
+10.XX.49.195	brandejsova.kairra			#wifi-normal-128-1280
+10.XX.49.196	pc2.kairra				#sharing-kairra
+10.XX.49.197	uhlirova.Keplerova4 uhlirova		#wifi-plus-256-640
+10.XX.49.198	talavaskova.kairra			#wifi-normal-128-1280
+
+10.XX.49.208	octarna2-eth				#255.255.255.240
+10.XX.49.209	eth1-1-router.octarna			#sharing-octarna
+10.XX.49.210	octopus.octarna				#sharing-octarna
+
+10.XX.50.0	guru-eth				#255.255.255.192
+10.XX.50.1	router.guru
+10.XX.50.2	balak1.guru balak1			#3-wifi-plus-256-1024
+10.XX.50.3	balak2.guru balak2			#sharing-balak1.guru
+10.XX.50.4	snajdr.belohorska12 snajdr		#backbone-normal-128-2048
+10.XX.50.5	hruskova.belohorska10 hruskova		#backbone-normal-128-1024
+10.XX.50.6	kalvasova.belohorska10 kalvasova	#backbone-normal-128-1408
+10.XX.50.11	egamed2.belohorska12 egamed2		#backbone-normal-128-3072
+10.XX.50.12	dataguru.guru dataguru			#sharing-balak1.guru
+10.XX.50.13	feiglova.belohorska12 feiglova		#backbone-normal-128-2048
+10.XX.50.14	tomanova1.belohorska12 tomanova1	#backbone-normal-128-1024
+10.XX.50.15	tomanova2.belohorska12 tomanova2	#sharing-tomanova1.belohorska12
+10.XX.50.16	krulis.beohorska12			#backbone-normal-128-2048
+10.XX.50.17	boban.guru				#backbone-normal-128-3072
+10.XX.50.18	krcal1.guru				#[XX.YY.90.57], testuje-kid-20070201, backbone-plus-256-1024
+10.XX.50.19	krcal2.guru				#sharing-krcal1.guru
+
+10.XX.50.64	slikova45-eth				#255.255.255.224
+10.XX.50.65	router.slikova45
+10.XX.50.66	monika01.slikova43 monika01		#sharing-slikova43
+10.XX.50.67	cikhart01.slikova43 cikhart01		#sharing-slikova43
+10.XX.50.68	mrkvicka.slikova39 mrkvicka		#wifi-normal-128-512
+10.XX.50.70	cihakovi-karlikova.slikova45		#sharing-cihakovi.slikova45
+10.XX.50.71	cihakovi.slikova45			#wifi-normal-128-512
+10.XX.50.72	cihakovi-roesink.slikova45		#sharing-cihakovi.slikova45
+10.XX.50.73	maynka.slikova47 maynka			#wifi-normal-128-896
+10.XX.50.74	soused1.slikova47			#sharing-maynka.slikova47
+10.XX.50.75	soused2.slikova47			#sharing-maynka.slikova47
+10.XX.50.76	soused3.slikova47			#sharing-maynka.slikova47
+10.XX.50.77	soused4.slikova47			#sharing-maynka.slikova47
+10.XX.50.78	kolu.slikova47				#wifi-plus-256-1024
+10.XX.50.81	cikhart-bridge.slikova43
+10.XX.50.82	cikhart-wlan1.slikova43			#sharing-slikova43
+10.XX.50.83	cikhart-wlan2.slikova43			#sharing-slikova43
+10.XX.50.84	cikhart-nb2.slikova43			#sharing-slikova43
+
+10.XX.50.96	svehla-eth				#255.255.255.240
+10.XX.50.97	owis.svehla
+10.XX.50.98	zdenek.svehla				#sharing-sea
+10.XX.50.100	eth2wlan.svehla				#sharing-sea
+10.XX.50.101	101-50.svehla				#sharing-sea
+10.XX.50.102	102-50.svehla				#sharing-sea
+10.XX.50.103	103-50.svehla				#sharing-sea
+10.XX.50.104	104-50.svehla				#sharing-sea
+10.XX.50.105	105-50.svehla				#sharing-sea
+10.XX.50.106	106-50.svehla				#sharing-sea
+10.XX.50.107	107-50.svehla				#sharing-sea
+10.XX.50.108	108-50.svehla				#sharing-sea
+10.XX.50.109	109-50.svehla				#sharing-sea
+10.XX.50.110	110-50.svehla				#sharing-sea
+10.XX.50.111	111-50.svehla				#sharing-sea
+
+10.XX.50.128	park-strahov-wlan			#255.255.255.224
+10.XX.50.129	router.park-strahov			#
+10.XX.50.130	bridge.nadzaverkou13			#
+10.XX.50.131	daniela.nadzaverkou13			#wifi-normal-128-896
+10.XX.50.140	bridge-marten.nadzaverkou12 nadzaverkou12wifi
+10.XX.50.141	vitek.nadzaverkou12			#wifi-normal-128-512
+#10.XX.50.191	broadcast.marten-strahov		#broadcast 62adres
+
+10.XX.52.0	pulytr-eth				#255.255.255.240
+10.XX.52.1	router.pulytr pulytr1			#sharing-pulytr
+10.XX.52.2	barton1.pulytr barton1			#[AA.BB.89.28] sharing-pulytr
+10.XX.52.3	barton2.pulytr barton2			#sharing-pulytr
+10.XX.52.4	tata1.pulytr				#sharing-pulytr
+10.XX.52.5	qayx.pulytr qayx			#wifi-plus-256-1024
+10.XX.52.6	dee.pulytr dee				#wifi-normal-128-3072
+10.XX.52.7	tata2.pulytr				#backobne-normal-128-1024
+10.XX.52.8	kacik.pulytr kacik			#backbone-normal-128-1024 
+10.XX.52.10	nasidlisti.pulytr nasidlisti		#sharing-pulytr
+10.XX.52.11	barton3.pulytr barton3			#sharing-pulytr
+10.XX.52.12	barton4.pulytr barton4			#sharing-pulytr
+10.XX.52.13	barton5.pulytr barton5			#sharing-pulytr
+10.XX.52.14	jangim.pulytr				#dashboard-neplatic, backbone-normal-128-2048
+
+10.XX.52.32	patockova97-eth				#255.255.255.240
+10.XX.52.33	router.patockova97
+10.XX.52.34	pospisilova.patockova97 pospisilova	#wifi-normal-128-512
+10.XX.52.35	vojtova.patockova97 vojtova		#wifi-normal-128-1280
+10.XX.52.36	paneu.patockova97			#wifi-normal-128-1280
+10.XX.52.37	c3yk4.patockova97			#dashboard-neplatic, neplati-faktury-nechcem pripojovat!!!
+
+10.XX.52.48	marty-hostalkova-eth			#255.255.255.240
+10.XX.52.49	router.sin
+10.XX.52.50	ovis.sin				#wifi-normal-128-896
+10.XX.52.51	marty-nb.sin				#sharing-ovis.sin
+10.XX.52.52	skyline.sin				#sharing-ovis.sin
+
+10.XX.53.0	daimon-eth				#255.255.255.192
+10.XX.53.1	router.daimon
+10.XX.53.4	sajagi.daimon sajagi			#[AA.BB.89.36] sharing-daimon
+10.XX.53.5	jane.daimon jane			#sharing-daimon
+10.XX.53.6	devel.daimon				#sharing-daimon
+10.XX.53.7	guest.daimon				#sharing-daimon
+10.XX.53.10	krizanek1.nadzaverkou12			#backbone-normal-128-2048
+10.XX.53.11	krizanek2.nadzaverkou12			#sharing-krizanek1.nadzaverkou12
+10.XX.53.12	horacek.daimon horacek			#[XX.YY.90.32] nezapojovat!!!FO, dashboard-neplatic-512-2048
+10.XX.53.13	houda.nadzaverkou12 houda		#dashboard-neevidovany-128-128
+10.XX.53.16	salac.nadzaverkou12			#backbone-normal-128-1024
+10.XX.53.20	kgutt.nadzaverkou11			#backbone-normal-128-1024
+10.XX.53.21	bosramek.nadzaverkou11			#backbone-normal-128-1024
+10.XX.53.22	navratil.nadzaverkou11			#[XX.YY.90.35] backbone-normal-128-1024
+10.XX.53.23	navratil2.nadzaverkou11			#sharing-navratil.nadzaverkou11
+10.XX.53.24	jisramek.nadzaverkou11			#backbone-normal-128-1024
+10.XX.53.25	kgutt-voip.nadzaverkou11		#sharing-kgutt.nadzaverkou11
+10.XX.53.26	jisramek-voip.nadzaverkou11		#sharing-jisramek.nadzaverkou11
+
+10.XX.53.64	vesna-eth				#255.255.255.240
+10.XX.53.65	router.vesna				
+10.XX.53.66	ip1.vesna				#sharing-vesna
+10.XX.53.67	ip2.vesna				#sharing-vesna
+10.XX.53.68	ip3.vesna				#sharing-vesna
+10.XX.53.69	ip4.vesna				#sharing-vesna
+10.XX.53.78	pc.vesna pc				#[AA.BB.89.30] wifi-normal-128-896
+
+10.XX.53.80	pc-eth					#255.255.255.240
+10.XX.53.81	router.pc
+10.XX.53.82	ip1.pc					#sharing-pc.vesna
+10.XX.53.83	ip2.pc					#sharing-pc.vesna
+10.XX.53.84	ip3.pc					#sharing-pc.vesna
+10.XX.53.85	ip4.pc					#sharing-pc.vesna
+10.XX.53.86	ip5.pc					#sharing-pc.vesna
+10.XX.53.87	ip6.pc					#sharing-pc.vesna
+
+10.XX.53.96	hem13-eth				#255.255.255.240
+10.XX.53.97	wrt.hem13
+10.XX.53.98	milerikova.hem13			#wifi-normal-128-896
+10.XX.53.99	vyskovsky.hem13				#wifi-normal-128-896
+10.XX.53.100	malarik.hem13				#wifi-normal-128-896
+10.XX.53.101	lichterman.hem13			#wifi-normal-128-896
+
+10.XX.53.112	dspcc-eth				#255.255.255.240
+10.XX.53.113	ovislink.dspcc
+10.XX.53.114	pc1.dspcc 				#wifi-normal-128-512
+10.XX.53.115	pc2.dspcc				#[XX.YY.90.12] sharing-pc1.dspcc
+
+10.XX.54.0	free-eth				#255.255.255.240
+10.XX.54.1	router.free
+10.XX.54.2	server.free				#7-backbone-bezfup-256-30000
+10.XX.54.3	dhcp1.free				#sharing-server.free
+10.XX.54.4	dhcp2.free				#sharing-server.free
+10.XX.54.5	dhcp3.free				#sharing-server.free
+10.XX.54.6	dhcp4.free				#sharing-server.free
+10.XX.54.7	warp.free				#sharing-server.free
+10.XX.54.8	eva.free				#sharing-server.free
+10.XX.54.9	slim.free				#[XX.YY.90.44], sharing-server.free
+10.XX.54.10	1.free			        	#[XX.YY.90.45], sharing-server.free
+10.XX.54.11	2.free				        #sharing-server.free
+10.XX.54.12	3.free			        	#sharing-server.free
+10.XX.54.13	4.free				        #sharing-server.free
+10.XX.54.14	5.free				        #sharing-server.free
+
+
+
+10.XX.54.16	madman-eth				#255.255.255.240
+10.XX.54.17	ovis.madman
+10.XX.54.18	kalivoda.madman				#wifi-normal-128-1280
+10.XX.54.19	knapova.madman				#wifi-normal-128-512
+10.XX.54.20	madman.madman				#[XX.YY.90.37], wifi-normal-128-896
+10.XX.54.21	madman2.madman				#sharing-madman.madman
+10.XX.54.22	madman3.madman				#sharing-madman.madman
+10.XX.54.23	madman4.madman				#sharing-madman.madman
+10.XX.54.24	madman4.madman				#sharing-madman.madman
+10.XX.54.25	madman4.madman				#sharing-madman.madman
+10.XX.54.25	madman4.madman				#sharing-madman.madman
+
+
+# --------------------------------------------------------------------------
+# lokalni sit Marten - ulice Zastrahovem a Nad Zaverkou 19
+# --------------------------------------------------------------------------
+
+10.XX.53.128	marten-eth				#255.255.255.128
+10.XX.53.129	router.marten	
+10.XX.53.130	kram.marten kram			#5-backbone-plus-512-9216
+10.XX.53.131	telefon.marten telefon			#[XX.YY.90.10] sharing-telefon.arachne
+10.XX.53.133	xbox.marten xbox			#sharing-kram.marten
+10.XX.53.134	pc.marten				#sharing-kram.marten
+10.XX.53.135	host.marten				#sharing-kram.marten
+10.XX.53.136	testneevidovany.fakturace		#dashboard-neevidovany, backbone-normal-128-2048
+10.XX.53.137	testneplatic.fakturace			#dashboard-neplatic, backbone-normal-128-8192
+10.XX.53.138	testvirus.fakturace			#dashboard-virus, backbone-normal-128-128
+10.XX.53.139	mumu.marten mumu			#backbone-normal-128-4096
+10.XX.53.140	cityman.zastrahovem25 cityman		#[XX.YY.90.24] backbone-plus-256-6144
+10.XX.53.141	maral.zastrahovem25 maral		#3-marten, backbone-normal-128-3072
+10.XX.53.143	1byt15.zastrahovem25			#backbone-normal-128-2048
+10.XX.53.144	2byt15.zastrahovem25			#sharing-1byt15.zastrahovem25
+10.XX.53.153	zewling					#[AA.BB.89.43] sharing-critter.arachne
+10.XX.53.154	hajkar.nadzaverkou19 hajkar		#backbone-normal-128-3072
+10.XX.53.158	tenisa.zastrahovem25 tenisa		#odpojil-se-128-2048
+10.XX.53.160	bejsovec.nadzaverkou19 bejsovec		#backbone-normal-128-1024
+10.XX.53.161	delia1.nadzaverkou19 delia1		#backbone-plus-256-2048
+10.XX.53.162	delia2.nadzaverkou19 delia2		#sharing-delia1.nadzaverkou19
+10.XX.53.163	delia3.nadzaverkou19 delia3		#sharing-delia1.nadzaverkou19
+10.XX.53.164	doktorica.nadzaverkou19 doktorica	#backbone-normal-128-1024
+10.XX.53.165	melondeagua.nadzaverkou19 melondeagua	#backbone-normal-128-3072
+10.XX.53.166	novotny.nadzaverkou17 novotny		#backbone-normal-128-2048
+10.XX.53.170	bauer.wdsp bauer			#sharing-krakonos.wdsp
+10.XX.53.180	lukasenko.zastrahovem27 lukasenko	#backbone-normal-128-2048
+10.XX.53.181	kolacek.zastrahovem27 kolacek		#backbone-normal-128-1024
+10.XX.53.188	piskoviste.marten			#sharing-piskoviste.arachne
+10.XX.53.189	sokrates				#czf
+10.XX.53.190	klouda.zastrahovem21 klouda		#2-backbone-normal-128-1024
+10.XX.53.191	freestyle.zastrahovem21 freestyle	#backbone-normal-128-1024
+10.XX.53.192	freestyle2.zastrahovem21 freestyle2	#sharing-freestyle.zastrahovem21
+10.XX.53.193	janeckova.zastrahovem21 janeckova	#backbone-normal-128-2048
+10.XX.53.195	plzak.zastrahovem21 plzak		#backbone-normal-128-1024
+10.XX.53.196	budkovska.zastrahovem21 budkovska	#backbone-normal-128-1024
+10.XX.53.197	novakova.zastrahovem21 novakova		#backbone-normal-128-2048
+10.XX.53.198	opto.zastrahovem21 opto			#nova-backbone-2006, odpojil-se-128-2048
+10.XX.53.199	opto2.zastrahovem21 			#sharing-opto.zastrahovem21
+10.XX.53.200	jcline.zastrahovem21 jcline		#nova-backbone-2006, reserved-presun-adresy-512-4096
+10.XX.53.201	gabule.zastrahovem21 gabule		#backbone-normal-128-2048
+10.XX.53.202	reinberger.nadzaverkou15 reinberger	#[XX.YY.90.21] backbone-plus-512-2048
+10.XX.53.203	tomouja.zastrahovem21 tomouja		#nova-backbone-2006, dashboard-neplatic
+10.XX.53.204	novakova2.zastrahovem21			#sharing-novakova.zastrahovem21
+10.XX.53.205	kalabza.zastrahovem21			#backbone-normal-128-1024
+10.XX.53.206	sedivy.zastrahovem21			#backbone-plus-1024-2048
+10.XX.53.210	jcline.zastrahovem21 jcline		#dashboard-neplatic, neplati-faktury-512-4096
+10.XX.53.211	jcline2.zastrahovem21			#sharing-jcline.zastrahovem21
+10.XX.53.212	jcline3.zastrahovem21			#sharing-jcline.zastrahovem21
+10.XX.53.213	jcline4.zastrahovem21			#sharing-jcline.zastrahovem21
+10.XX.53.214	jcline5.zastrahovem21			#sharing-jcline.zastrahovem21
+10.XX.53.215	jcline6.zastrahovem21			#sharing-jcline.zastrahovem21
+10.XX.53.254	eth-marten.daimon			#sharing-daimon
+
+# --------------------------------------------------------------------------
+
+10.XX.55.0	poliklinika-eth				#255.255.255.224
+10.XX.55.1	blackbox.poliklinika
+10.XX.55.2	fedora.poliklinika fedora		#backbone-normal-128-2048
+10.XX.55.3	hippokrates.poliklinika			#sharing-poliklinika
+10.XX.55.8	pradelna.poliklinika			#sharing-poliklinika
+10.XX.55.9	urologie1.poliklinika			#sharing-poliklinika
+10.XX.55.10	urologie2.poliklinika			#sharing-poliklinika
+10.XX.55.11	urologie3.poliklinika			#sharing-poliklinika
+10.XX.55.12	server-rtg.poliklinika			#backbone-normal-128-1024
+10.XX.55.13	pc1-rtg.poliklinika			#sharing-server-rtg.poliklinika
+10.XX.55.14	pc2-rtg.poliklinika			#sharing-server-rtg.poliklinika
+10.XX.55.15	ntb1-rtg.poliklinika			#sharing-server-rtg.poliklinika
+10.XX.55.16	ntb2-rtg.poliklinika			#sharing-server-rtg.poliklinika
+10.XX.55.17	pc-ortopedie2.poliklinika
+10.XX.55.18	pc-ortopedie.poliklinika
+10.XX.55.19	ntb-plicni2.poliklinika
+10.XX.55.20	pc1.plicni1.poliklinika
+10.XX.55.21	pc2.plicni1.poliklinika
+10.XX.55.22	ntb1-chirurgie1.poliklinika
+10.XX.55.23	ntb2-chirurgie1.poliklinika
+10.XX.55.24	pc.neurologie1.poliklinika
+10.XX.55.25	ntb.chirurgie2.poliklinika
+#
+10.XX.55.32	orl.poliklinika-eth			#255.255.255.240
+10.XX.55.33	router-orl.poliklinika			#sharing-poliklinika
+10.XX.55.34	orl.poliklinika				#sharing-poliklinika
+10.XX.55.35	ntb-orl.poliklinika			#sharing-poliklinika
+10.XX.55.36	orl1b.poliklinika			#sharing-poliklinika
+10.XX.55.37	foniatrie.poliklinika			#sharing-poliklinika
+10.XX.55.38	foniatrie2.poliklinika			#sharing-poliklinika
+10.XX.55.39	orl1a.poliklinika			#sharing-poliklinika
+10.XX.55.45	hippokrates-tmp.poliklinika		#sharing-arachne
+10.XX.55.46	laserjet.poliklinika
+
+10.XX.55.192	volhejn-eth				#255.255.255.248
+10.XX.55.193	router.volhejn
+10.XX.55.194	pc1.volhejn				#sharing-volhejn.poliklinika
+10.XX.55.195	pc2.volhejn				#sharing-volhejn.poliklinika
+10.XX.55.196	pc3.volhejn				#sharing-volhejn.poliklinika
+10.XX.55.197	pc4.volhejn				#sharing-volhejn.poliklinika
+
+10.XX.58.0	sugarcook-eth				#255.255.255.240
+10.XX.58.1	duron.sugarcook
+10.XX.58.2	2-58.sugarcook				#sharing-critter.arachne
+10.XX.58.3	3-58.sugarcook				#sharing-critter.arachne
+10.XX.58.4	4-58.sugarcook				#sharing-critter.arachne
+10.XX.58.5	5-58.sugarcook				#sharing-critter.arachne
+10.XX.58.6	6-58.sugarcook				#sharing-critter.arachne
+10.XX.58.7	7-58.sugarcook				#sharing-critter.arachne
+10.XX.58.8	8-58.sugarcook				#sharing-critter.arachne
+10.XX.58.9	9-58.sugarcook				#sharing-critter.arachne
+10.XX.58.10	10-58.sugarcook				#sharing-critter.arachne
+10.XX.58.11	11-58.sugarcook				#sharing-critter.arachne
+10.XX.58.12	12-58.sugarcook				#sharing-critter.arachne
+10.XX.58.13	13-58.sugarcook				#sharing-critter.arachne
+10.XX.58.14	14-58.sugarcook				#sharing-critter.arachne
+
+10.XX.58.16	delostrelecka-eth			#255.255.255.240
+10.XX.58.17	router.delostrelecka
+10.XX.58.18	pc1.delostrelecka			#[XX.YY.90.9] wifi-plus-256-1024
+10.XX.58.19	pc2.delostrelecka			#sharing-pc1.delostrelecka
+10.XX.58.20	pc3.delostrelecka			#sharing-pc1.delostrelecka
+
+10.XX.58.32	sugarcook-prevesy-eth			#255.255.255.240
+10.XX.58.33	prevesy.sugarcook
+10.XX.58.34	duchoslav.sugarcook duchoslav		#wifi-normal-128-1280
+#10.XX.58.35	svist21.sugarcook svist21		#odpojil-se
+10.XX.58.36	eva.sugarcook eva.duchoslav		#wifi-normal-128-512
+
+10.XX.59.0	petynka-eth				#255.255.255.224
+10.XX.59.1	jetynka.petynka
+10.XX.59.2	ftan-veliky.petynka			#sharing-critter.arachne
+10.XX.59.3	urbankovi.petynka			#1-backbone-normal-128-1024
+10.XX.59.4	jelinkovi.petynka			#sharing-urbankovi.petynka
+10.XX.59.5	andrea.petynka				#backbone-normal-128-1024
+10.XX.59.6	amonsystem.petynka			#[XX.YY.90.42] backbone-plus-512-8192
+10.XX.59.7	schulz.petynka92			#[XX.YY.90.58] backbone-plus-512-8192
+10.XX.59.10	wifirouter.petynka			#sharing-critter.arachne
+10.XX.59.11	alka.petynka94				#backbone-plus-256-2048
+10.XX.59.12	k2.petynka94				#sharing-alka.petynka94
+10.XX.59.13	markus markus.cerny			#[XX.YY.90.5] backbone-plus-256-1024
+10.XX.59.14	hasektour.cerny				#backbone-normal-128-3072
+10.XX.59.17	hasektour-nb.cerny			#sharing-hasektour.cerny
+
+10.XX.59.32	mikolasek-eth				#255.255.255.240
+10.XX.59.33	jiri33.mikolasek
+10.XX.59.34	jiri34.mikolasek			#sharing-mikolasek
+10.XX.59.35	jiri35.mikolasek			#sharing-mikolasek
+10.XX.59.36	jiri36.mikolasek			#sharing-mikolasek
+10.XX.59.37	jiri37.mikolasek			#sharing-mikolasek
+10.XX.59.38	jiri38.mikolasek			#sharing-mikolasek
+10.XX.59.39	jiri39.mikolasek			#sharing-mikolasek
+10.XX.59.40	jiri40.mikolasek			#sharing-mikolasek
+10.XX.59.41	jiri41.mikolasek			#sharing-mikolasek
+10.XX.59.42	jiri42.mikolasek			#sharing-mikolasek
+10.XX.59.43	jiri43.mikolasek			#sharing-mikolasek
+10.XX.59.44	jiri44.mikolasek			#sharing-mikolasek
+10.XX.59.45	jiri45.mikolasek			#sharing-mikolasek
+10.XX.59.46	jiri46.mikolasek			#sharing-mikolasek
+
+10.XX.59.48	petynka154-eth				#255.255.255.240
+10.XX.59.49	router.petynka154
+10.XX.59.50	fiala.petynka154			#wifi-normal-128-896
+10.XX.59.51	drdacky.petynka154			#wifi-normal-128-896
+10.XX.59.52	drdacky2.petynka154			#sharing-drdacky.petynka154
+10.XX.59.53	drdacky3.petynka154			#sharing-drdacky.petynka154
+
+10.XX.59.64	viki-eth				#255.255.255.240
+10.XX.59.65	router.viki
+10.XX.59.66	viki66					#odpojil-se-256-1024
+10.XX.59.67	viki67					#sharing-viki66
+10.XX.59.68	viki68					#sharing-viki66
+10.XX.59.70	viki70 					#sharing-viki69
+10.XX.59.71	viki71					#sharing-viki69
+
+10.XX.59.128	brkoun-eth				#255.255.255.240
+10.XX.59.129	router.brkoun
+10.XX.59.131	filip.brkoun filip			#neplati-faktury
+10.XX.59.132	bonek.brkoun bonek			#novy-cenik-2006, odpojil-se-256-1024
+10.XX.59.133	jekosh.brkoun jekosh			#wifi-plus-256-1024
+10.XX.59.134	jekosh2.brkoun				#sharing-jekosh.brkoun
+10.XX.59.135	zicha.brkoun				#wifi-normal-128-896
+
+#10.XX.59.144	volna-sit				#255.255.255.240
+
+10.XX.59.160	czihy-eth				#255.255.255.224
+10.XX.59.161	router.czihy
+10.XX.59.162	pc1.czihy				#1-wifi-normal-128-512
+10.XX.59.163	pc2.czihy				#sharing-pc1.czihy
+10.XX.59.164	pc3.czihy				#sharing-pc1.czihy
+10.XX.59.165	pc4.czihy				#sharing-pc1.czihy
+10.XX.59.166	hejl-1.czihy hejl			#odpojil-se-na-rok-2007-128-512
+10.XX.59.167	hejl-2.czihy
+10.XX.59.168	mata.czihy				#wifi-normal-128-896
+
+10.XX.59.192	kolat2-eth				#255.255.255.224
+10.XX.59.193	router.kolat2
+10.XX.59.194	akro.kolat2				#wifi-normal-128-512
+
+10.XX.60.64	parlerova19-eth				#255.255.255.240
+10.XX.60.65	router.parlerova19
+10.XX.60.66	calkovsky.parlerova19 calkovsky		#sharing-lekarna.belohorska54
+10.XX.60.67	tomsam.parlerova21 tomsam		#backbone-normal-128-2048
+10.XX.60.68	codr.parlerova21 codr			#[AA.BB.89.38] backbone-normal-128-2048
+10.XX.60.69	marvanova.parlerova21			#backbone-normal-128-1024
+10.XX.60.70	marvanova2.parlerova21			#sharing-marvanova.parlerova21
+10.XX.60.71	pp.parlerova19				#backbone-normal-128-1024
+10.XX.60.72	72-60-pp.parlerova19			#sharing-pp.parlerova19
+
+10.XX.60.112	brugy1-eth				#255.255.255.248
+10.XX.60.113	eth0.brugy
+10.XX.60.114	comp.brugy brugy			#[AA.BB.89.58], sharing-brugy.arachne
+10.XX.60.115	martin.brugy				#sharing-brugy.arachne
+10.XX.60.116	jindra.brugy				#sharing-brugy.arachne
+
+10.XX.60.120	brugy2-eth				#255.255.255.248
+10.XX.60.121	eth1.brugy
+10.XX.60.122	jindra.brugy				#sharing-brugy.arachne
+
+10.XX.61.0	u1baterie35-eth				#255.255.255.240
+10.XX.61.1	router.u1baterie35			
+10.XX.61.2	61-2.u1baterie35			#wifi-plus-256-640
+10.XX.61.3	61-3.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.4	61-4.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.5	61-5.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.6	61-6.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.7	61-7.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.8	61-8.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.9	61-9.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.10	61-10.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.11	61-11.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.12	61-12.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.13	61-13.u1baterie35			#sharing-61-2.u1baterie35
+10.XX.61.14	61-14.u1baterie35			#sharing-61-2.u1baterie35
+
+10.XX.63.0	alles32-eth				#255.255.255.192
+10.XX.63.1	lisa.alles32 router.alles32		#sharing-binar.binary-bros
+10.XX.63.2	bart.alles32 bart			#[AA.BB.89.32] sharing-binar.binary-bros
+10.XX.63.3	greenghost1.alles32 greenghost1		#backbone-normal-128-1024
+10.XX.63.4	greenghost2.alles32 greenghost2		#sharing-greenghost1.alles32
+10.XX.63.5	denis.alles32 denis			#backbone-normal-128-1024
+10.XX.63.6	greenghost-nb.alles32 greenghost-nb	#sharing-greenghost1.alles32
+10.XX.63.7	marge.alles32 marge			#sharing-binar.binary-bros
+10.XX.63.10	abe.alles32				#sharing-binar.binary-bros
+10.XX.63.16	visitor1.alles32			#sharing-binar.binary-bros
+10.XX.63.17	visitor2.alles32			#sharing-binar.binary-bros
+10.XX.63.18	visitor3.alles32			#sharing-binar.binary-bros
+10.XX.63.19	visitor4.alles32			#sharing-binar.binary-bros
+10.XX.63.20	suchac.alles32 suchac			#backbone-normal-128-1024
+10.XX.63.21	za2.alles32				#dashboard-neevidovany, backbone-normal-128-1024
+#10.XX.63.21	11-63-karel.alles32			#sharing-karel.alles32
+#10.XX.63.22	12-63-karel.alles32			#sharing-karel.alles32
+10.XX.63.23	magdau.alles32				#backbone-normal-128-1024
+10.XX.63.24	tina.alles32				#nova-backbone-2006, reserved-porad-jeste-neni-pripojena-128-1024
+10.XX.63.40	magda.alles32				#backbone-normal-128-1024
+10.XX.63.41	magda2.alles32				#sharing-magda.alles32
+
+10.XX.63.160	mirax-eth				#255.255.255.240
+10.XX.63.161	router.mirax mirax-router
+10.XX.63.162	p1.mirax				#[AA.BB.89.29] sharing-mirax
+10.XX.63.163	p2.mirax				#sharing-mirax
+10.XX.63.164	p3.mirax				#sharing-mirax
+10.XX.63.165	p4.mirax				#sharing-mirax
+
+10.XX.63.176	ukastanu2-eth				#255.255.255.240
+10.XX.63.177	wrt.ukastanu2
+10.XX.63.178	autrata.ukastanu2			#[XX.YY.90.39] wifi-normal-128-896
+10.XX.63.179	autrata2.ukastanu2			#sharing-autrata.ukastanu2
+10.XX.63.180	autrata3.ukastanu2			#sharing-autrata.ukastanu2
+
+10.XX.81.0	beranka-eth				#255.255.255.240
+10.XX.81.1	eth0-router.beranka			#sharing-beranka
+10.XX.81.2	duron.beranka				#sharing-beranka
+10.XX.81.3	modry.beranka				#sharing-beranka
+10.XX.81.4	pentak.beranka				#sharing-beranka
+10.XX.81.5	notak.beranka				#sharing-beranka
+10.XX.81.6	ip6.beranka				#sharing-beranka
+10.XX.81.7	ip7.beranka				#sharing-beranka
+10.XX.81.8	ip8.beranka				#sharing-beranka
+10.XX.81.9	ip9.beranka				#sharing-beranka
+10.XX.81.10	ip10.beranka				#sharing-beranka
+10.XX.81.11	ip11.beranka				#sharing-beranka
+10.XX.81.12	ip12.beranka				#sharing-beranka
+10.XX.81.13	ip13.beranka				#sharing-beranka
+10.XX.81.14	ip14.beranka				#sharing-beranka
+
+10.XX.81.64	beranka-preves-eth			#255.255.255.240
+10.XX.81.65	eth1-router.beranka			#sharing-beranka
+10.XX.81.66	eth1-server.sten			#[AA.BB.89.14] sharing-sten-ap
+10.XX.81.67	wrap.sten				#sharing-sten-ap
+
+10.XX.81.128	sten-byt-eth				#255.255.255.240
+10.XX.81.129	eth0-server.sten			#sharing-sten-ap
+10.XX.81.130	pc2.sten				#sharing-sten-ap
+10.XX.81.131	pc3.sten				#sharing-sten-ap
+10.XX.81.132	pc4.sten	
+
+10.XX.81.144	sten-dum-eth				#255.255.255.240
+10.XX.81.145	br0-server.sten				#sharing-sten-ap
+10.XX.81.146	patera1.sten				#backbone-normal-128-1024
+10.XX.81.147	patera2.sten				#sharing-patera1.sten
+10.XX.81.148	patera3.sten				#sharing-patera1.sten
+10.XX.81.149	thomas1.sten				#wifi-normal-128-2048
+10.XX.81.150	thomas2.sten				#sharing-thomas1.sten
+10.XX.81.151	thomas3.sten				#sharing-thomas1.sten
+
+10.XX.82.32	uberanky7-eth				#255.255.255.240
+10.XX.82.33	gateway.uberanky7 uberanky7
+10.XX.82.34	horvath.uberanky7			#backbone-plus-256-2048
+10.XX.82.35	dobr.uberanky7				#backbone-normal-128-1024
+10.XX.82.36	vales.uberanky7				#backbone-normal-128-1024
+10.XX.82.37	mlynsky.uberanky7			#backbone-normal-128-1024
+10.XX.82.38	benes.uberanky7				#backbone-normal-128-1024
+10.XX.82.39	hedvabny.uberanky7			#backbone-normal-128-1024
+10.XX.82.40	pesta.uberanky7				#backbone-normal-128-1024
+10.XX.82.41	eth2wlan-bridge.uberanky7
+
+10.XX.82.48	fasa-eth				#255.255.255.240
+10.XX.82.49	eth0-router.fasa
+10.XX.82.50	wlan.fasa				#wifi-normal-128-896
+10.XX.82.51	pc1.fasa				#sharing-wlan.fasa
+10.XX.82.52	pc2.fasa				#sharing-wlan.fasa
+10.XX.82.53	pc3.fasa				#sharing-wlan.fasa
+10.XX.82.54	pc4.fasa				#sharing-wlan.fasa
+10.XX.82.55	pc5.fasa				#sharing-wlan.fasa
+10.XX.82.56	pc6.fasa				#sharing-wlan.fasa
+10.XX.82.57	pc7.fasa				#sharing-wlan.fasa
+10.XX.82.58	pc8.fasa				#sharing-wlan.fasa
+10.XX.82.59	pc9.fasa				#sharing-wlan.fasa
+10.XX.82.60	pc10.fasa				#sharing-wlan.fasa
+10.XX.82.61	pc11.fasa				#sharing-wlan.fasa
+10.XX.82.62	pc12.fasa				#sharing-wlan.fasa
+
+10.XX.82.64	fasa-byt-eth				#255.255.255.240
+10.XX.82.65	eth1-router.fasa
+10.XX.82.66	pc1-byt.fasa				#sharing-wlan.fasa
+10.XX.82.67	pc2-byt.fasa				#sharing-wlan.fasa
+10.XX.82.68	pc3-byt.fasa				#sharing-wlan.fasa
+10.XX.82.69	pc4-byt.fasa				#sharing-wlan.fasa
+10.XX.82.70	pc5-byt.fasa				#sharing-wlan.fasa
+10.XX.82.71	pc6-byt.fasa				#sharing-wlan.fasa
+10.XX.82.72	pc7-byt.fasa				#sharing-wlan.fasa
+10.XX.82.73	pc8-byt.fasa				#sharing-wlan.fasa
+10.XX.82.74	pc9-byt.fasa				#sharing-wlan.fasa
+10.XX.82.75	pc10-byt.fasa				#sharing-wlan.fasa
+10.XX.82.76	pc11-byt.fasa				#sharing-wlan.fasa
+10.XX.82.77	pc12-byt.fasa				#sharing-wlan.fasa
+10.XX.82.78	pc13-byt.fasa				#sharing-wlan.fasa
+
+# --------------------------------------------------------------------------
+# sub-cloud Evropska - wifi AP
+# --------------------------------------------------------------------------
+
+10.XX.64.24	gandalf-vychod-wlan			#255.255.255.248
+10.XX.64.25	wlan2-ap.gandalf			#sharing-gandalf
+10.XX.64.26	wlan3-ap.sugarcook			#sharing-sugarcook
+10.XX.64.27	orech39.gandalf				#wifi-normal-128-1280
+
+
+10.XX.65.0	beranka-wlan				#255.255.255.0
+10.XX.65.1	ap.beranka beranka-ap
+10.XX.65.3	toxik.beranka toxik			#novy-cenik-2006, odpojil-se-256-1024
+10.XX.65.4	dino.beranka dino			#wifi-normal-128-1280
+10.XX.65.5	hany333.beranka hany333			#odpojil-se
+10.XX.65.7	cernahora.beranka cernahora		#odpojil-se
+10.XX.65.8	malota.beranka malota			#dashboard-neplatic, neplati-faktury-128-1280
+10.XX.65.9	sutrolog.beranka sutrolog		#[XX.YY.90.54], wifi-normal-128-896
+10.XX.65.10	bridge-beranka.moravec moravec
+10.XX.65.11	pc1.moravec				#wifi-normal-128-896
+10.XX.65.12	pc2.moravec				#sharing-pc1.moravec
+10.XX.65.13	notas.beranka				#sharing-beranka
+#10.XX.65.17	bridge-faukner.beranka faukner
+#10.XX.65.18	pc.faukner				#novy-cenik-2006, presun-128-512
+#10.XX.65.19	pc2.faukner				#sharing-pc.faukner
+10.XX.65.20	landa.beranka landa			#wifi-normal-128-896
+#10.XX.65.25	pc3.faukner				#sharing-pc.faukner
+10.XX.65.33	bridge-dusa64.beranka dusa64
+10.XX.65.34	pc1.dusa64				#wifi-plus-256-1024
+10.XX.65.35	pc2.dusa64				#sharing-pc1.dusa64
+10.XX.65.36	pc3.dusa64				#sharing-pc1.dusa64
+10.XX.65.37	pc4.dusa64				#sharing-pc1.dusa64
+10.XX.65.81	ip1.toxik				#sharing-toxik.beranka
+10.XX.65.82	ip2.toxik				#sharing-toxik.beranka
+10.XX.65.83	ip3.toxik				#sharing-toxik.beranka
+10.XX.65.84	ip4.toxik				#sharing-toxik.beranka
+10.XX.65.85	ip5.toxik				#sharing-toxik.beranka
+
+
+10.XX.66.0	sway-wlan				#255.255.255.192
+10.XX.66.1	ap.sway sway-ap
+#10.XX.66.2	volna-ip
+10.XX.66.4	u5b29.sway				#wifi-normal-128-512
+10.XX.66.5	nemo.sway nemo				#sharing-carlos.nemo
+10.XX.66.6	fox.sway fox				#wifi-normal-128-512
+10.XX.66.10	bridge-sway.irs irs
+10.XX.66.11	kosiwaki.irs				#wifi-plus-256-1024
+10.XX.66.12	26-43-kosiwaki.irs			#sharing-kosiwaki.irs
+10.XX.66.13	broz.irs broz				#wifi-normal-128-896
+10.XX.66.14	brozova.irs brozova			#sharing-broz.irs
+10.XX.66.15	notebook.irs				#sharing-broz.irs
+10.XX.66.16	mannarino.irs				#wifi-normal-128-512
+10.XX.66.17	stolc.sway				#wifi-plus-256-640
+10.XX.66.18	klient4.irs				#wifi-normal-128-512
+#10.XX.66.20	volna-ip
+#10.XX.66.21	volna-ip
+#10.XX.66.22	volna-ip
+10.XX.66.26	x-web.sway				#[XX.YY.90.30], wifi-normal-128-896
+10.XX.66.27	u5b27.sway				#wifi-normal-128-512
+10.XX.66.28	u5b27-2.sway				#sharing-u5b27.sway
+10.XX.66.48	bridge-smidak			
+10.XX.66.49	smidak.sway				#[XX.YY.90.22] sharing-smidak.stkat
+10.XX.66.50	misak.sway				#wifi-normal-128-512
+10.XX.66.59	dhcp1.sway				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.66.60	dhcp2.sway				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.66.61	dhcp3.sway				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.66.62	dhcp4.sway				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.66.64	sway-zapad-wlan				#255.255.255.192
+10.XX.66.65	ap-zapad.sway
+10.XX.66.66	xhor.sway				#wifi-normal-128-1280
+10.XX.66.67	u5b29-test.sway				#sharing-u5b29.sway
+10.XX.66.68	fox-test.sway				#sharing-fox.sway
+10.XX.66.70	bridge-este.sway
+10.XX.66.71	pc.este					#wifi-normal-128-1280
+10.XX.66.72	notak.este				#sharing-pc.este
+10.XX.66.75	u5b27-test.sway				#sharing-u5b27.sway
+10.XX.66.76	u5b27-2-test.sway			#sharing-u5b27.sway
+
+10.XX.67.0	sten-wlan				#255.255.255.192
+10.XX.67.1	ath1.sten				#sharing-sten-ap
+10.XX.67.2	bridge-naberance1a.sten
+10.XX.67.4	bridge-faukner.sten
+10.XX.67.8	bridge-sten.mvolejnik mvolejnik
+10.XX.67.9	pc.mvolejnik				#[XX.YY.90.47] wifi-normal-128-896
+10.XX.67.10	naberance1a.sten			#wifi-normal-128-512
+10.XX.67.11	pc.faukner				#wifi-normal-128-512
+10.XX.67.12	pc2.faukner				#sharing-pc.faukner
+10.XX.67.13	pc3.faukner				#sharing-pc.faukner
+10.XX.67.14	pc4.faukner				#sharing-pc.faukner	
+10.XX.67.15	notas.mvolejnik				#sharing-pc.mvolejnik
+10.XX.67.17	sach.sten sach				#wifi-normal-128-512
+10.XX.67.60	sa1.sten				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.67.61	sa2.sten				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.67.62	sa3.sten				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.69.0	garsonka-wlan				#255.255.255.240
+10.XX.69.1	garsonka-ap
+10.XX.69.2	garsonka-dhcp1				#sharing-hardy.arachne
+10.XX.69.3	garsonka-dhcp2				#sharing-hardy.arachne
+10.XX.69.4	garsonka-dhcp3				#sharing-hardy.arachne
+10.XX.69.9	critter-garsonka.arachne		#sharing-critter.arachne
+
+
+
+10.XX.97.0	e55-wlan				#255.255.255.128
+10.XX.97.1	ap.e55 e55-router
+10.XX.97.2	wrt.e55	e55-ap				#sharing-e55
+10.XX.97.4	vojta.e55 vojta				#czf
+10.XX.97.5	mirvos.e55 mirvos			#czf
+#10.XX.97.6	hondzik.e55 hondzik			#odpojil-se-20060710
+10.XX.97.10	bridge-e55.salex salex	
+10.XX.97.11	11-97.salex				#[XX.YY.90.26], wifi-plus-256-1024
+10.XX.97.12	12-97.salex				#sharing-11-97.salex
+10.XX.97.13	zdenet.e55 zdenet			#sharing-zdenet.winel.dejvice.czf
+10.XX.97.14	bridge-e55.glinkova14 glinkova14
+10.XX.97.15	pc.glinkova14				#wifi-plus-256-1408
+10.XX.97.16	moron.e55				
+10.XX.97.17	ap.salex
+10.XX.97.20	bridge-algen.e55
+10.XX.97.21	pc.algen				#wifi-normal-128-512
+10.XX.97.22	pc2.algen				#sharing-pc.algen
+10.XX.97.65	bridge-e55.columbo columbo 
+10.XX.97.66	pc.columbo				#wifi-normal-128-512
+#10.XX.97.99	wlan-gandalf.e55			#reserved-docasna-zaloha, sharing-gandalf
+10.XX.97.100	dhcp.e55				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.97.101	dhcp101.e55				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.97.102	dhcp102.e55				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.97.103	dhcp103.e55				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.98.0	hadofka-wlan				#255.255.255.0
+10.XX.98.1	ap.hadofka hadofka-ap
+10.XX.98.2	flp.hadofka flp				#wifi-normal-128-512
+10.XX.98.3	tom24.hadofka tom24			#novy-cenik-2006, odpojil-se-128-512
+10.XX.98.4	router.kajik				#wifi-normal-128-896
+10.XX.98.6	wzq.hadofka wzq				#novy-cenik-2006, odpojil-se-128-512
+10.XX.98.7	naf.hadofka
+10.XX.98.8	bridge-vost11.hadofka
+10.XX.98.9	pc1.vost11				#wifi-normal-128-512
+10.XX.98.10	radeg.hadofka radeg			#wifi-normal-128-512
+#10.XX.98.11	molekula.hadofka			#reserved-molekula-wifi-backup
+#10.XX.98.12	wlan-hadofka.gandalf			#reserved-gandalf-wifi-backup
+10.XX.98.14	kraemer.hadofka kraemer
+10.XX.98.15	urybnicku18a.hadofka			#dashboard-neplatic, neplati-faktury-128-512
+10.XX.98.16	urybnicku18b.hadofka			#sharing-urybnicku18a.hadofka
+#10.XX.98.17	zav32.hadofka				#odpojil-se-128-1280
+10.XX.98.18	t-host.hadofka kriz			#wifi-normal-128-512
+10.XX.98.19	heinloth.hadofka heinloth		#novy-cenik-2006, odpojil-se-128-512
+10.XX.98.20	komo15.hadofka				#wifi-normal-128-512
+10.XX.98.21	t-host2.hadofka				#sharing-t-host.hadofka
+10.XX.98.22	bridge-dracky.hadofka
+#10.XX.98.23	backup-xmas.hadofka 			#reserved-xmas-wifi-backup
+10.XX.98.24	dracky.hadofka				#wifi-normal-128-512
+10.XX.98.25	bridge-hadofka.komornicka18 komornicka18
+10.XX.98.26	pc.komornicka18				#wifi-normal-128-512
+10.XX.98.27	pc2.komornicka18			#sharing-pc.komornicka18
+10.XX.98.40	bridge0.petrs petrs0			#wifi-normal-128-896
+10.XX.98.41	bridge1.petrs petrs1			#sharing-bridge0.petrs
+10.XX.98.42	bridge2.petrs petrs2			#sharing-bridge0.petrs
+10.XX.98.80	hadofka-bridge.kajik kajik
+10.XX.98.81	penzion2				#wifi-normal-128-512 
+10.XX.98.100	dhcp.hadofka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.98.101	dhcp101.hadofka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.98.102	dhcp102.hadofka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.98.103	dhcp103.hadofka				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.99.0	gandalf-wlan				#255.255.255.192
+10.XX.99.1	wlan0-ap.gandalf
+10.XX.99.2	phoenix-not.gandalf phoenix-not		#sharing-gandalf
+10.XX.99.3	sea sea.gandalf				#wifi-plus-256-1024
+#10.XX.99.4	tupoun.gandalf				#reserved
+#10.XX.99.5	moron.gandalf				#reserved
+10.XX.99.30	darkbug.gandalf darkbug
+10.XX.99.31	wl-roman.romanv ap-romanv		#reserved-indoor_ap
+10.XX.99.32	pc2-roman.romanv			#sharing-pc1-roman.romanv
+10.XX.99.33	pc3-roman.romanv			#sharing-pc1-roman.romanv
+10.XX.99.34	pc4-roman.romanv			#sharing-pc1-roman.romanv
+10.XX.99.35	pc5-roman.romanv			#sharing-pc1-roman.romanv
+10.XX.99.36	pc1-roman.romanv			#wifi-normal-256-1024
+10.XX.99.37	bridge-roman.gandalf romanv2
+10.XX.99.38	bridge-honza.roman romanv1
+10.XX.99.39	honza.romanv				#sharing-kancl-1.ahn
+10.XX.99.41	nb-roman.romanv				#sharing-pc1-roman.romanv
+10.XX.99.42	orech62.gandalf				#odpojil-se-protoze-to-nefunguje-128-512
+10.XX.99.44	bridge-gogy.gandalf gogy
+10.XX.99.45	pc.gogy					#wifi-normal-128-1280
+10.XX.99.46	komp.gogy				#sharing-pc.gogy
+10.XX.99.57	dhcp.gandalf				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.99.58	dhcp101.gandalf				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.99.59	dhcp102.gandalf				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.99.60	dhcp103.gandalf				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.99.61	dhcp104.gandalf				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.99.62	dhcp105.gandalf				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.XX.99.64	gandalf-jih-wlan			#255.255.255.192
+10.XX.99.65	wlan1-ap.gandalf
+10.XX.99.66	nhv31.gandalf				#wifi-plus-256-1024
+10.XX.99.67	starostresovicka81.gandalf starostresovicka81
+10.XX.99.68	zeroflag.gandalf			#wifi-normal-128-512
+10.XX.99.69	new-sea.gandalf				#sharing-sea.gandalf
+10.XX.99.70	bridge-nhv45.gandalf
+10.XX.99.71	wrouter.nhv45				#wifi-plus-256-1024
+10.XX.99.72	koza.gandalf koza
+10.XX.99.73	tylsik.gandalf				#testuje-gandalf-20060201, wifi-normal-128-896
+
+10.XX.99.128	gandalf5-sever-wlan			#255.255.255.192
+10.XX.99.129	ap5-sever.gandalf			#sharing-gandalf
+10.XX.99.130	ath0-bastard.gandalf bastard		#[AA.BB.89.44], sharing-eth0-router.bastard
+10.XX.99.131	bridge-uberanky7.gandalf airca-uberanky7
+10.XX.99.132	bridge-cu61.gandalf airca-cu61
+10.XX.99.133	pc1-cu61.gandalf			#testuje-gandalf-20070210, jeste-nepripojeno, backbone-normal-128-1024
+
+10.XX.100.0	xmas-wlan				#255.255.255.0
+10.XX.100.1	ap.xmas
+10.XX.100.3	ondrash.xmas				#[XX.YY.90.19], wifi-normal-128-896
+10.XX.100.4	ondrash-not.xmas			#sharing-ondrash.xmas
+
+10.XX.101.0	hadofka-sever-wlan			#255.255.255.128
+10.XX.101.1	ap-sever.hadofka
+10.XX.101.24	mike-zz.hadofka mike-zz			#wifi-plus-256-256
+10.XX.101.25	susicka5.hadofka susicka5		#testuje-critter-20060220, wifi-normal-128-512
+
+10.XX.101.128	hadofka-velkejbarak-wlan		#255.255.255.128
+10.XX.101.129	ap-velkejbarak.hadofka
+10.XX.101.130	pc.kostak				#[XX.YY.90.160]dashboard-neplatic, wifi-plus-256-1024
+10.XX.101.131	bridge-hadofka.kostak kostak
+
+10.XX.102.0	molekula-wlan				#255.255.255.192
+10.XX.102.1	ap.molekula
+10.XX.102.2	molekulawifi.molekula			#sharing-molekula
+10.XX.102.3	macswell.molekula			#wifi-normal-128-512
+
+# --------------------------------------------------------------------------
+# sub-cloud Evropska - ethernety
+# --------------------------------------------------------------------------
+
+10.XX.113.0	e55-eth					#255.255.255.224
+10.XX.113.1	router.e55
+10.XX.113.2	slunicko.darkone			#wifi-normal-128-512
+10.XX.113.3	blackwidow.darkone			#sharing-slunicko.darkone
+10.XX.113.4	loser.darkone				#sharing-slunicko.darkone
+10.XX.113.5	jirka.e55				#czf
+10.XX.113.6	darkone-test1.e55			#sharing-slunicko.darkone
+10.XX.113.7	darkone-test2.e55 			#sharing-slunicko.darkone
+10.XX.113.8	stepik.e55	 			#wifi-normal-128-512
+10.XX.113.10	rampas1.e55 rampas1			#wifi-plus-256-1024
+10.XX.113.11	rampas2.e55 rampas2			#sharing-rampas1.e55
+10.XX.113.12	kocurek.e55				#novy-cenik-2006 odpojil-se-256-1024
+10.XX.113.14	jezek.e55				#novy-cenik-2006, odpojil-se-128-1280
+10.XX.113.15	jurecek.evropska58 jurecek		#novy-cenik-2006, odpojil-se-128-512
+10.XX.113.19	maresova.evropska58 maresova		#wifi-normal-128-512
+10.XX.113.20	nuclid.e55 nuclid			#sharing-ws1.squid
+10.XX.113.21	ws1.squid				#[AA.BB.89.50] 4-wifi-normal-128-1280
+10.XX.113.22	ws2.squid				#sharing-ws1.squid
+10.XX.113.23	ws3.squid				#sharing-ws1.squid
+10.XX.113.24	ws4.squid				#sharing-ws1.squid
+10.XX.113.25	ws5.squid				#sharing-ws1.squid
+
+10.XX.114.0	hadofka-eth				#255.255.255.240
+10.XX.114.1	eth2-router.hadofka
+10.XX.114.2	had.hadofka had				#sharing-hadofka
+
+10.XX.114.16	kraemer-eth				#255.255.255.240
+10.XX.114.17	ovislink.kraemer
+10.XX.114.18	pc1.kraemer				#wifi-normal-128-896
+10.XX.114.19	pc2.kraemer				#sharing-pc1.kraemer
+10.XX.114.20	pc3.kraemer				#sharing-pc1.kraemer
+10.XX.114.21	theresa.kraemer				#wifi-normal-128-512
+10.XX.114.22	pavdhesi.kraemer			#sharing-theresa.kraemer
+10.XX.114.23	ovislink2.kraemer
+10.XX.114.24	wlan-theresa.kraemer			#sharing-theresa.kraemer
+10.XX.114.25	wlan-pavdhesi.kraemer			#sharing-theresa.kraemer
+10.XX.114.26	wlan-ipaq.kraemer			#sharing-pc1.kraemer
+10.XX.114.27	wlan-notebook.kraemer			#sharing-pc1.kraemer
+10.XX.114.28	pc4.kraemer				#sharing-pc1.kraemer
+10.XX.114.29	wlan-holky.kraemer			#sharing-theresa.kraemer
+10.XX.114.30	mediacenter.kraemer			#sharing-pc1.kraemer
+
+10.XX.114.32	molekula-eth				#255.255.255.224
+10.XX.114.33	router.molekula				#sharing-molekula
+10.XX.114.34	molekula.molekula			#sharing-molekula
+10.XX.114.35	notes.molekula				#sharing-molekula
+10.XX.114.36	ip36-114.molekula			#sharing-molekula
+10.XX.114.37	ip37-114.molekula			#sharing-molekula
+10.XX.114.40	wifi.molekula				#sharing-molekula
+10.XX.114.59	cgl.molekula				#wifi-plus-256-1024
+10.XX.114.60	cgl2.molekula				#sharing-cgl.molekula
+10.XX.114.61	cgl3.molekula				#sharing-cgl.molekula
+10.XX.114.62	cgl4.molekula				#sharing-cgl.molekula
+
+10.XX.114.96	bastard-eth				#255.255.255.240
+10.XX.114.97	eth0-router.bastard			#backbone-normal-128-3072
+10.XX.114.98	pc1.bastard				#sharing-eth0-router.bastard
+10.XX.114.99	pc2.bastard				#sharing-eth0-router.bastard
+10.XX.114.100	pc3.bastard				#sharing-eth0-router.bastard
+10.XX.114.101	pc4.bastard				#sharing-eth0-router.bastard
+10.XX.114.102	telefon.bastard				#sharing-telefon.arachne
+10.XX.114.103	pc5.bastard				#sharing-eth0-router.bastard
+10.XX.114.104	pc6.bastard				#sharing-eth0-router.bastard
+10.XX.114.105	pc7.bastard				#sharing-eth0-router.bastard
+10.XX.114.106	pc8.bastard				#sharing-eth0-router.bastard
+
+10.XX.114.112	kotel-eth				#255.255.255.240
+10.XX.114.113	eth1-router.bastard			#sharing-bastard
+10.XX.114.114	pc.kotel				#wifi-normal-128-1280
+10.XX.114.115	pc1.kotel				#sharing-pc.kotel
+10.XX.114.116	pc2.kotel				#sharing-pc.kotel
+10.XX.114.117	pc3.kotel				#sharing-pc.kotel
+10.XX.114.118	pc4.kotel				#sharing-pc.kotel
+10.XX.114.119	pc5.kotel				#sharing-pc.kotel
+10.XX.114.120	pc6.kotel				#sharing-pc.kotel
+10.XX.114.121	pc7.kotel				#sharing-pc.kotel
+10.XX.114.122	pc8.kotel				#sharing-pc.kotel
+10.XX.114.123	pc9.kotel				#sharing-pc.kotel
+10.XX.114.124	pc10.kotel				#sharing-pc.kotel
+10.XX.114.125	bridge-kotel.bastard ovis-bastard	#sharing-pc.kotel
+10.XX.114.126	bridge-bastard.kotel ovis-kotel		#sharing-pc.kotel
+
+10.XX.115.0	gandalf-eth				#255.255.255.240
+10.XX.115.1	eth0-router.gandalf search		#sharing-gandalf
+10.XX.115.2	orion.gandalf orion			#sharing-gandalf
+10.XX.115.3	telefon.gandalf				#[XX.YY.90.15] sharing-telefon.arachne
+10.XX.115.4	deda.gandalf eva-gandalf		#sharing-gandalf
+10.XX.115.5	petr.gandalf petr-gandalf		#sharing-gandalf
+10.XX.115.6	teticka.gandalf hana-gandalf		#sharing-gandalf
+10.XX.115.7	oko.gandalf				#sharing-gandalf
+10.XX.115.8	marketa.gandalf				#sharing-gandalf
+10.XX.115.9	host.gandalf				#sharing-gandalf
+10.XX.115.10	host2.gandalf				#sharing-gandalf
+10.XX.115.11	host3.gandalf				#sharing-gandalf
+10.XX.115.12	host4.gandalf				#sharing-gandalf
+10.XX.115.13	host5.gandalf				#sharing-gandalf
+10.XX.115.14	deneb.gandalf deneb			#sharing-gandalf
+
+10.XX.115.16	sea-eth					#255.255.255.240
+10.XX.115.17	router.sea				
+10.XX.115.18	18-115.sea svehlova.sea			#sharing-sea
+10.XX.115.19	19-115.sea svehla.sea			#sharing-sea
+10.XX.115.20	20-115.sea kancelar2.sea		#sharing-sea
+10.XX.115.21	21-115.sea byt				#sharing-sea
+10.XX.115.22	22-115.sea kancelar22.sea		#sharing-sea
+10.XX.115.23	23-115.sea				#sharing-sea
+10.XX.115.24	24-115.sea				#sharing-sea
+10.XX.115.25	25-115.sea				#sharing-sea
+10.XX.115.26	26-115.sea				#sharing-sea
+10.XX.115.27	27-115.sea				#sharing-sea
+10.XX.115.28	28-115.sea				#sharing-sea
+10.XX.115.29	29-115.sea				#sharing-sea
+10.XX.115.30	30-115.sea				#sharing-sea
+
+10.XX.115.32	nhv31-eth				#255.255.255.240
+10.XX.115.33	router.nhv31
+10.XX.115.34	wlan.nhv31
+10.XX.115.35	pc1.nhv31				#sharing-nhv31.gandalf
+10.XX.115.36	pc2.nhv31				#sharing-nhv31.gandalf
+10.XX.115.37	pc3.nhv31				#sharing-nhv31.gandalf
+10.XX.115.38	pc4.nhv31				#sharing-nhv31.gandalf
+10.XX.115.39	pc5.nhv31				#sharing-nhv31.gandalf
+10.XX.115.40	pc6.nhv31				#sharing-nhv31.gandalf
+10.XX.115.41	pc7.nhv31				#sharing-nhv31.gandalf
+10.XX.115.42	pc1.tupoun				#sharing-nhv31.gandalf
+10.XX.115.43	pc2.tupoun				#sharing-nhv31.gandalf
+10.XX.115.44	pc3.tupoun				#sharing-nhv31.gandalf
+10.XX.115.45	pc4.tupoun				#sharing-nhv31.gandalf
+10.XX.115.46	bara.tupoun				#sharing-nhv31.gandalf
+
+#10.XX.115.32	tupoun-eth				#255.255.255.240
+#10.XX.115.33	router.tupoun
+#10.XX.115.34	ap-bar.tupoun
+#10.XX.115.35	nb-kancl.tupoun	nb-tupoun		#sharing-tupoun.gandalf
+#10.XX.115.36	pc-kancl.tupoun	pc-tupoun		#sharing-tupoun.gandalf
+#10.XX.115.37	pavel.tupoun pavel-tupoun		#sharing-tupoun.gandalf
+#10.XX.115.38	bara.tupoun bara-tupoun			#sharing-tupoun.gandalf
+#10.XX.115.39	stamgast-bar.tupoun bar-tupoun		#sharing-tupoun.gandalf
+#10.XX.115.40	host-bar.tupoun				#sharing-tupoun.gandalf
+#10.XX.115.41	host2-bar.tupoun			#sharing-tupoun.gandalf
+#10.XX.115.42	host3-bar.tupoun			#sharing-tupoun.gandalf
+#10.XX.115.43	host4-bar.tupoun			#sharing-tupoun.gandalf
+#10.XX.115.44	host5-bar.tupoun			#sharing-tupoun.gandalf
+#10.XX.115.45	host6-bar.tupoun			#sharing-tupoun.gandalf
+#10.XX.115.46	host7-bar.tupoun			#sharing-tupoun.gandalf
+
+10.XX.115.48	starostresovicka81-eth			#255.255.255.240
+10.XX.115.49	ovis.starostresovicka81
+10.XX.115.50	joo1.starostresovicka81			#odpojit-20063112
+10.XX.115.51	joo2.starostresovicka81			#reserved
+
+10.XX.115.64	darkbug-eth				#255.255.255.240
+10.XX.115.65	router.darkbug
+10.XX.115.66	jiri.darkbug				#wifi-normal-128-512
+10.XX.115.67	eva.darkbug				#sharing-jiri.darkbug
+10.XX.115.68	ip-68.darkbug				#sharing-jiri.darkbug
+10.XX.115.69	ip-69.darkbug				#sharing-jiri.darkbug
+10.XX.115.70	ip-70.darkbug				#sharing-jiri.darkbug
+10.XX.115.71	ip-71.darkbug				#sharing-jiri.darkbug
+10.XX.115.72	ip-72.darkbug				#sharing-jiri.darkbug
+10.XX.115.73	ip-73.darkbug				#sharing-jiri.darkbug
+10.XX.115.74	ip-74.darkbug				#sharing-jiri.darkbug
+10.XX.115.75	ip-75.darkbug				#sharing-jiri.darkbug
+10.XX.115.76	ip-76.darkbug				#sharing-jiri.darkbug
+10.XX.115.77	ip-77.darkbug				#sharing-jiri.darkbug
+10.XX.115.78	ip-78.darkbug				#sharing-jiri.darkbug
+
+10.XX.115.80	moron-eth				#255.255.255.240
+10.XX.115.81	router.moron
+10.XX.115.82	hp.moron				#sharing-gandalf
+10.XX.115.83	alienworxtation.moron			#sharing-gandalf
+10.XX.115.84	ip-84.moron				#sharing-gandalf
+10.XX.115.85	ip-85.moron				#sharing-gandalf
+10.XX.115.86	ip-86.moron				#sharing-gandalf
+10.XX.115.87	ip-87.moron				#sharing-gandalf
+10.XX.115.88	ip-88.moron				#sharing-gandalf
+10.XX.115.89	ip-89.moron				#sharing-gandalf
+10.XX.115.90	ip-90.moron				#sharing-gandalf
+10.XX.115.91	ip-91.moron				#sharing-gandalf
+10.XX.115.92	ip-92.moron				#sharing-gandalf
+10.XX.115.93	ip-93.moron				#sharing-gandalf
+10.XX.115.94	ip-94.moron				#sharing-gandalf
+
+10.XX.115.96	gandalf-backbone-eth			#255.255.255.240
+10.XX.115.97	eth1-router.gandalf			#backbone, sharing-gandalf
+10.XX.115.98	altair.gandalf				#backbone, sharing-gandalf
+10.XX.115.99	vega.gandalf				#backbone, sharing-gandalf
+
+10.XX.115.112	gandalf-bpr-eth				#255.255.255.240
+10.XX.115.113	orionek.gandalf orionek			#sharing-gandalf
+10.XX.115.114	tommy.gandalf tommy			#sharing-gandalf
+10.XX.115.115	sagittarius.gandalf saggitarius		#[XX.YY.90.14], sharing-gandalf
+10.XX.115.116	notak.gandalf				#sharing-gandalf
+10.XX.115.117	print.gandalf
+10.XX.115.118	devel.gandalf devel			#sharing-gandalf
+10.XX.115.119	phone.gandalf				#sharing-gandalf
+
+10.XX.115.128	orech39-eth				#255.255.255.240
+10.XX.115.129	router.orech39
+10.XX.115.130	ap.orech39
+10.XX.115.131	pc1.orech39				#sharing-orech39.gandalf
+10.XX.115.132	pc2.orech39				#sharing-orech39.gandalf
+10.XX.115.133	pc3.orech39				#sharing-orech39.gandalf
+10.XX.115.134	pc4.orech39				#sharing-orech39.gandalf
+10.XX.115.135	pc5.orech39				#sharing-orech39.gandalf
+10.XX.115.136	pc6.orech39				#sharing-orech39.gandalf
+10.XX.115.137	pc7.orech39				#sharing-orech39.gandalf
+10.XX.115.138	pc8.orech39				#sharing-orech39.gandalf
+10.XX.115.139	pc9.orech39				#sharing-orech39.gandalf
+10.XX.115.140	pc10.orech39				#sharing-orech39.gandalf
+10.XX.115.141	pc11.orech39				#sharing-orech39.gandalf
+10.XX.115.142	pc12.orech39				#sharing-orech39.gandalf
+
+10.XX.115.144	koza-eth				#255.255.255.240
+10.XX.115.145	gateway.koza
+10.XX.115.146	byt1.koza koza-bytbeznetu
+10.XX.115.147	byt2.koza koza-mayazaki			#sharing-k1.koza
+10.XX.115.148	k1.koza koza-kancelar-1			#wifi-plus-256-1024
+10.XX.115.149	k2.koza	koza-kancelar-2			#sharing-k1.koza
+10.XX.115.150	k3.koza	koza-kancelar-3			#sharing-k1.koza
+10.XX.115.151	indoorwlanbridge.koza
+10.XX.115.152	indoorwlanklientbridge.koza
+10.XX.115.153	byt3-nb.koza koza-jakecho		#sharing-k1.koza
+10.XX.115.154	byt3-pc.koza koza-cho			#sharing-k1.koza
+
+10.XX.115.160	vpn-gandalf-eth				#255.255.255.240
+10.XX.115.161	tun0.gandalf				#czf
+10.XX.115.162	vpn1.gandalf				#czf
+10.XX.115.163	vpn2.gandalf				#czf
+10.XX.115.164	vpn3.gandalf				#czf
+10.XX.115.165	vpn4.gandalf				#czf
+10.XX.115.166	vpn5.gandalf				#czf
+10.XX.115.167	vpn6.gandalf				#czf
+10.XX.115.168	vpn7.gandalf				#czf
+10.XX.115.169	vpn8.gandalf				#czf
+10.XX.115.170	vpn9.gandalf				#czf
+10.XX.115.171	vpn10.gandalf				#czf
+10.XX.115.172	vpn11.gandalf				#czf
+10.XX.115.173	vpn12.gandalf				#czf
+10.XX.115.174	vpn13.gandalf				#czf
+
+
+
+# --------------------------------------------------------------------------
+# zizkof - wifi
+# --------------------------------------------------------------------------
+
+10.XX.161.0	vaclavka-wlan				#255.255.255.128
+10.XX.161.1	ap.vaclavka vaclavka-ap
+10.XX.161.5	maxxik.vaclavka				#wifi-plus-256-1024
+10.XX.161.6	vitchi.vaclavka				#dashboard-neplatic, neplati-faktury-128-896
+10.XX.161.11	dalimilova11.vaclavka			#wifi-normal-128-512
+10.XX.161.22	bridge-vaclavka.cimburkova22 cimburkova22
+10.XX.161.23	pc.cimburkova22				#wifi-normal-128-512
+10.XX.161.33	33-161.vaclavka				#testuje-critter-20060303, wifi-normal-128-512
+10.XX.161.61	prdola-nb.vaclavka			#sharing-vaclavka
+10.XX.161.120	dhcp.vaclavka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.161.121	dhcp2.vaclavka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.161.122	dhcp3.vaclavka				#dashboard-dhcp, sharing-dhcp.arachne
+10.XX.161.123	dhcp4.vaclavka				#dashboard-dhcp, sharing-dhcp.arachne
+
+# --------------------------------------------------------------------------
+# zizkof - ethernety
+# --------------------------------------------------------------------------
+
+10.XX.177.0	vaclavka-eth				#255.255.255.240
+10.XX.177.1	gateway.vaclavka
+10.XX.177.2	prdola.vaclavka				#sharing-vaclavka
+10.XX.177.3	prdola-nb-eth.vaclavka			#sharing-vaclavka
+10.XX.177.4	krovis.vaclavka				#sharing-vaclavka
+10.XX.177.5	krovis2.vaclavka			#sharing-vaclavka
+10.XX.177.14	eth-ap.vaclavka
+
+# --------------------------------------------------------------------------
+# letna.czf - wifi
+# --------------------------------------------------------------------------
+
+10.34.129.0	basama-wlan				#255.255.255.128
+10.34.129.1	uplink.basama basama-uplink		#wifi-plus-256-1024
+10.34.129.5	socharska5.basama socharska5		#wifi-normal-128-896
+10.34.129.10	bridge-basama.ovenecka34 ovenecka34
+10.34.129.11	jezek.ovenecka34 jezek			#novy-cenik-2006, odpojil-se-128-512
+10.34.129.12	soukup.ovenecka34 soukup		#novy-cenik-2006, odpojil-se-128-896
+10.34.129.20	mlha.basama mlha			#2-wifi-normal-128-512
+10.34.129.46	veletrzni46.basama			#testuje-critter-20070303, wifi-normal-128-512
+10.34.129.120	dhcp.basama				#dashboard-dhcp, sharing-dhcp.arachne
+10.34.129.121	dhcp2.basama				#dashboard-dhcp, sharing-dhcp.arachne
+10.34.129.122	dhcp3.basama				#dashboard-dhcp, sharing-dhcp.arachne
+10.34.129.123	dhcp4.basama				#dashboard-dhcp, sharing-dhcp.arachne
+10.34.129.126	ovis.basama ap.basama basama-ap
+
+# --------------------------------------------------------------------------
+# letna.czf - ethernety
+# --------------------------------------------------------------------------
+
+10.34.145.0	basama-eth				#255.255.255.240
+10.34.145.1	router.basama
+10.34.145.2	critter.basama				#sharing-critter.arachne
+10.34.145.4	vitex.basama				#sharing-hardy.arachne
+10.34.145.9	tonicka.basama tonicka
+10.34.145.10	cajovna.basama				#1-wifi-normal-128-512
+10.34.145.11	cajowna.basama				#sharing-cajovna.basama
+10.34.145.12	cayovna.basama				#sharing-cajovna.basama
+10.34.145.13	cayowna.basama				#sharing-cajovna.basama
+10.34.145.14	compex-cajovna.basama compex.basama
+
+# --------------------------------------------------------------------------
+# CZFree.Net Brevnov/Petriny - Ethernety
+# --------------------------------------------------------------------------
+
+10.XX.51.0	ankara-eth				#255.255.255.192
+10.XX.51.1	horatio.ankara horatio
+10.XX.51.7	safr.ankara safr			#docasne-se-odpojil-128-512
+10.XX.51.8	safr2.ankara safr2			#docasne-se-odpojil-safr.ankara
+10.XX.51.9	hrebejk.ankara hrebejk			#wifi-normal-128-512
+10.XX.51.10	hrbek.ankara hrbek			#docasne-se-odpojil-128-512
+10.XX.51.11	kucera.ankara				#wifi-normal-128-512
+10.XX.51.12	duto.ankara duto			#wifi-normal-128-512
+10.XX.51.13	duto2.ankara				#sharing-duto.ankara
+10.XX.51.14	duto3.ankara				#sharing-duto.ankara
+10.XX.51.15	duto4.ankara				#[XX.YY.90.53] sharing-duto.ankara
+10.XX.51.20	sircova.ankara				#novy-cenik-2006, odpojil-se-128-512
+10.XX.51.22	pleskotova.ankara			#wifi-normal-128-512
+10.XX.51.23	plaskotova2.ankara			#sharing-pleskotova.ankara
+10.XX.51.25	brabenec.ankara				#wifi-normal-128-512
+10.XX.51.30	havran.ankara havran			#wifi-plus-256-1024
+10.XX.51.31	havran1.ankara				#sharing-havran.ankara
+10.XX.51.32	havran2.ankara				#sharing-havran.ankara
+10.XX.51.33	havran3.ankara				#sharing-havran.ankara
+10.XX.51.34	havran4.ankara				#sharing-havran.ankara
+10.XX.51.35	havran5.ankara				#sharing-havran.ankara
+10.XX.51.36	havran6.ankara				#sharing-havran.ankara
+10.XX.51.37	havran7.ankara				#sharing-havran.ankara
+10.XX.51.38	tft.ankara tft				#sharing-havran.ankara
+10.XX.51.39	tft2.ankara				#sharing-havran.ankara
+10.XX.51.51	tekumseh.ankara tekumseh		#sharing-ankara
+10.XX.51.52	mulo.ankara mulo			#sharing-ankara
+10.XX.51.53	zack.ankara zack			#sharing-ankara
+10.XX.51.54	vrane4.ankara				#sharing-ankara
+10.XX.51.55	jonas.ankara				#sharing-ankara
+10.XX.51.56	vrane6.ankara				#sharing-ankara
+10.XX.51.57	vrane7.ankara				#sharing-ankara
+10.XX.51.58	vrane8.ankara				#sharing-ankara
+10.XX.51.59	vrane9.ankara				#sharing-ankara
+
+#10.XX.51.64	dalsi-volna-sit-u-JiMa			#255.255.255.240
+#10.XX.51.80	dalsi-volna-sit-u-JiMa			#255.255.255.240
+
+10.XX.51.96	alej-eth				#255.255.255.240
+10.XX.51.97	router.alej			
+10.XX.51.99	kapoun.alej kapoun			#novy-cenik-2006, odpojil-se-128-1280
+10.XX.51.100	woody.alej woody			#sharing-alej
+10.XX.51.101	radko.alej radko			#sharing-valheru.alej
+10.XX.51.102	rambousek.alej rambousek		#sharing-valheru.alej
+10.XX.51.103	hazuka.alej hazuka			#wifi-normal-128-512
+10.XX.51.104	smudla.alej smudla			#sharing-valheru.alej
+10.XX.51.105	iddqd.alej iddqd			#sharing-valheru.alej
+10.XX.51.106	navratil.alej				#wifi-normal-128-512
+10.XX.51.107	navratil2.alej				#sharing-navratil.alej
+
+10.XX.145.0	aquarius-eth				#255.255.255.224
+10.XX.145.1	marconi.aquarius			#sharing-poliklinika
+10.XX.145.2	marvin.aquarius				#sharing-poliklinika
+10.XX.145.3	afroman.aquarius			#sharing-aquarius
+10.XX.145.4	mobile.aquarius				#sharing-poliklinika
+10.XX.145.5	laserjet.aquarius			#sharing-aquarius
+10.XX.145.6	honza.aquarius				#sharing-aquarius
+10.XX.145.7	honza-ntb.aquarius			#sharing-aquarius
+10.XX.145.8	misa.aquarius				#sharing-aquarius
+10.XX.145.9	karel.aquarius				#sharing-aquarius
+10.XX.145.10	malepivo.aquarius			#sharing-poliklinika
+10.XX.145.11	powermac.aquarius			#sharing-aquarius
+10.XX.145.12	dhcp1.aquarius				#sharing-aquarius
+10.XX.145.13	dhcp2.aquarius				#sharing-aquarius
+10.XX.145.14	dhcp3.aquarius				#sharing-aquarius
+10.XX.145.15	lanparty1.aquarius			#sharing-aquarius
+10.XX.145.16	lanparty2.aquarius			#sharing-aquarius
+10.XX.145.17	lanparty3.aquarius			#sharing-aquarius
+10.XX.145.18	lanparty4.aquarius			#sharing-aquarius
+10.XX.145.19	lanparty5.aquarius			#sharing-aquarius
+10.XX.145.27	telefon1.aquarius			#sharing-telefon.arachne
+10.XX.145.28	telefon2.aquarius			#sharing-telefon.arachne
+
+# --------------------------------------------------------------------------
+# pozor - tady konci Brevnov - DNS v ostatnich cloudech nejsou generovana
+# odsud - pokud jste z cloudu 10.18/16, tak kontaktujte krupaj@mobilnews.cz
+# --------------------------------------------------------------------------
+
+# --------------------------------------------------------------------------
+# CZFree.Net Dejvice - Wi-Fi site
+# --------------------------------------------------------------------------
+
+10.YY.1.0	winel-wlan				#255.255.255.128
+10.YY.1.1	wlan1.if.winel.dejvice.czf
+10.YY.1.3	covex.winel.dejvice.czf			#[AA.BB.89.16] sharing-winel.dejvice.czf
+10.YY.1.6	e55.winel.dejvice.czf
+10.YY.1.98	gwartass.winel.dejvice.czf		#dashboard-neplatic, neplati-faktury-128-1280
+10.YY.1.104	stronghold.winel.dejvice.czf		#wifi-normal-128-1280
+10.YY.1.105	typosh.winel.dejvice.czf		#wifi-normal-128-896
+10.YY.1.107	typosh2.winel.dejvice.czf		#sharing-typosh.winel.dejvice.czf
+10.YY.1.114	wlan0.if.ahoj.dejvice.czf		#sharing-ahoj.dejvice.czf
+10.YY.1.115	jas.winel.dejvice.czf			#sharing-jas.dejvice.czf
+10.YY.1.121	zdenet.winel.dejvice.czf		#wifi-normal-128-512
+10.YY.1.175	kejr.winel.dejvice.czf			#wifi-normal-128-512
+10.YY.1.176	kejr2.winel.dejvice.czf			#sharing-kejr.winel.dejvice.czf
+10.YY.1.177	kejr3.winel.dejvice.czf			#sharing-kejr.winel.dejvice.czf
+
+10.YY.1.192	winel-sektor-wlan			#255.255.255.192
+10.YY.1.193	wlan2.if.winel.dejvice.czf
+10.YY.1.200	covex.winel.dejvice.czf			#sharing-winel.dejvice.czf
+10.YY.1.202	palecek.winel.dejvice.czf		#wifi-normal-128-896
+10.YY.1.203	freegol.winel.dejvice.czf		#wifi-normal-128-512
+10.YY.1.204	wlan-winel.maty.dejvice.czf
+10.YY.1.205	vydros.winel.dejvice.czf		#wifi-normal-128-512
+10.YY.1.206	miksa.winel.dejvice.czf			#sharing-miksa.dejvice.czf
+10.YY.1.210	fatboy.winel.dejvice.czf		#wifi-normal-128-1280
+10.YY.1.211	fatboy2.winel.dejvice.czf		#sharing-fatboy.winel.dejvice.czf
+
+10.YY.64.28	winel-hobbit-wlan			#255.255.255.252
+10.YY.64.29	wlan0.if.hobbit.dejvice.czf		#sharing-hobbit.dejvice.czf
+10.YY.64.30	wlan0.if.winel2.dejvice.czf		#sharing-winel.dejvice.czf
+
+10.YY.5.0	klecanky-wlan
+10.YY.5.3	zoulovi-asus.klecanky.dejvice.czf	#wifi-normal-128-512
+10.YY.5.2	beran.klecanky.dejvice.czf		#reserved-nino, novy-cenik-2006, reserved-128-512
+10.YY.5.5	cheficek.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.8	vroute.klecanky.dejvice.czf		#novy-cenik-2006, odpojil-se-128-512
+10.YY.5.11	terasa.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.12	ip12.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.13	ip13.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.14	ip14.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.20	ivo.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.21	kurhajec.klecanky.dejvice.czf		#sharing-ivo.klecanky.dejvice.czf
+10.YY.5.23	ku.klecanky.dejvice.czf			#wifi-normal-128-512
+10.YY.5.24	macha.klecanky.dejvice.czf		#testuje-nino-20060912, wifi-normal-128-512
+10.YY.5.25	du.klecanky.dejvice.czf			#wifi-normal-128-512
+10.YY.5.27	pi.klecanky.dejvice.czf			#wifi-normal-128-512
+10.YY.5.28	fan.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.29	hor.klecanky.dejvice.czf		#novy-cenik-2006, odpojil-se-128-512
+10.YY.5.68	eddy2.klecanky.dejvice.czf		#neplati-faktury
+10.YY.5.69	luksa2.klecanky.dejvice.czf		#sharing-luksa.klecanky.dejvice.czf
+10.YY.5.70	luksa.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.98	start2.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.99	real2.klecanky.dejvice.czf		#sharing-start2.klecanky.dejvice.czf
+10.YY.5.100	archi.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.103	zem.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.104	sav.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.105	mana.klecanky.dejvice.czf		#wifi-normal-128-512
+10.YY.5.106	test.klecanky.dejvice.czf		#reserved-pro-testovani-nino, wifi-normal-128-512
+10.YY.5.130	brigitt.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.131	nino.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.132	sasa.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+10.YY.5.133	honza.klecanky.dejvice.czf		#sharing-klecanky.dejvice.czf
+
+10.YY.7.0	hobbit-wlan				#255.255.255.128
+10.YY.7.1	wlan1.if.hobbit.dejvice.czf
+10.YY.7.20	mirek.hobbit.dejvice.czf		#sharing-mirek.dejvice.czf
+10.YY.7.22	athlon.hobbit.dejvice.czf		#wifi-normal-128-896
+10.YY.7.25	elara.hobbit.dejvice.czf		#sharing-athlon.hobbit.dejvice.czf
+10.YY.7.27	wlan0.if.emilly.hobbit.dejvice.czf	#sharing-emilly.dejvice.czf
+10.YY.7.38	drb-pda.hobbit.dejvice.czf		#sharing-drb.hobbit.dejvice.czf
+10.YY.7.40	baba.hobbit.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.7.66	amanda.hobbit.dejvice.czf		#sharing-hobbit.dejvice.czf
+10.YY.7.67	isabel.hobbit.dejvice.czf		#sharing-hobbit.dejvice.czf
+
+10.YY.7.252	baba-hobbit				#255.255.255.252
+10.YY.7.253	vlan10-h.hobbit.dejvice.czf		#sharing-paja.maty.dejvice.czf
+10.YY.7.254	vlan10-b.hobbit.dejvice.czf		#sharing-paja.maty.dejvice.czf
+
+10.YY.8.0	sonic-wlan
+10.YY.8.35	pelda1.sonic.dejvice.czf		#wifi-normal-128-512
+10.YY.8.36	pelda2.sonic.dejvice.czf		#sharing-pelda1.sonic.dejvice.czf
+10.YY.8.38	drb-pda.sonic.dejvice.czf		#sharing-drb.hobbit.dejvice.czf
+10.YY.8.44	bryndak.sonic.dejvice.czf		#novy-cenik-2006, odpojil-se-128-512
+10.YY.8.48	hw-client.jkm.sonic.dejvice.czf		#wifi-normal-128-512
+10.YY.8.49	jkm.sonic.dejvice.czf			#sharing-hw-client.jkm.sonic.dejvice.czf
+
+10.YY.9.0	phoenix-wlan				#255.255.255.128
+10.YY.9.1	wlan1.if.winel.dejvice.czf
+10.YY.9.2	kabelka.phoenix.dejvice.czf		#wifi-plus-256-1024
+#10.YY.9.4	cyprus.phoenix.dejvice.czf		#odpojil-se
+10.YY.9.5	hwd.phoenix.dejvice.czf			#[AA.BB.89.17] sharing-router.hwb
+10.YY.9.6	stronghold.phoenix.dejvice.czf		#sharing-stronghold.winel.dejvice.czf
+10.YY.9.8	ocko.phoenix.dejvice.czf		#testuje-phil-20070214, wifi-normal-128-1280
+10.YY.9.9	pyramida.phoenix.dejvice.czf		#sharing-pohorelec
+10.YY.9.11	hadrak.phoenix.dejvice.czf		#wifi-normal-128-512
+10.YY.9.12	ck2home.phoenix.dejvice.czf		#sharing-ck2.phoenix.dejvice.czf
+10.YY.9.13	ck2.phoenix.dejvice.czf			#wifi-normal-128-512
+10.YY.9.14	essme.phoenix.dejvice.czf		#wifi-normal-256-1024
+10.YY.9.16	fokus.phoenix.dejvice.czf		#wifi-normal-128-896
+10.YY.9.20	bridge-phoenix.nowothy.dejvice.czf
+10.YY.9.21	nowothy.dejvice.czf			#odpojil-se
+10.YY.9.100	dhcp1.phoenix				#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.9.101	dhcp2.phoenix				#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.9.102	dhcp3.phoenix				#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.9.103	dhcp4.phoenix				#dashboard-dhcp, sharing-dhcp.arachne
+
+10.YY.10.0	ahoj-wlan				#255.255.255.128
+10.YY.10.1	wlan1.if.ahoj.dejvice.czf
+10.YY.10.12	quex.ahoj.dejvice.czf			#[XX.YY.90.13] wifi-plus-256-640
+10.YY.10.13	shakalls.ahoj.dejvice.czf		#[XX.YY.90.147] dashboard-neplatic, neplati-faktury-128-896
+10.YY.10.14	trosc.ahoj.dejvice.czf			#dashboard-neevidovany
+10.YY.10.32	ruka3.ahoj.dejvice.czf			#odpojit-01032007, wifi-normal-256-1024
+10.YY.10.194	janus.ahoj.dejvice.czf
+
+10.YY.11.0	emilly-wlan
+10.YY.11.1	wlan1.if.emilly.dejvice.czf
+10.YY.11.11	nino.emilly.dejvice.czf			#[AA.BB.89.27] sharing-klecanky.dejvice.czf
+10.YY.11.20	pn-ovis.emilly.dejvice.czf		#sharing-pn-wks.emilly.dejvice.czf
+10.YY.11.21	pn-wks.emilly.dejvice.czf		#wifi-plus-256-1024
+10.YY.11.23	pn-ntb2.emilly.dejvice.czf		#sharing-pn-wks.emilly.dejvice.czf
+10.YY.11.22	pn-ntb1.emilly.dejvice.czf		#sharing-pn-wks.emilly.dejvice.czf
+10.YY.11.24	pn-ntb3.emilly.dejvice.czf		#sharing-pn-wks.emilly.dejvice.czf
+
+10.YY.12.72	hw-client.jkm.hobbit.dejvice.czf	#sharing-hw-client.jkm.sonic.dejvice.czf
+10.YY.12.73	jkm.hobbit.dejvice.czf			#sharing-hw-client.jkm.sonic.dejvice.czf
+
+10.YY.12.251	aja.dejvice.czf				#[XX.YY.90.46], sharing-mirek.dejvice.czf
+
+10.YY.13.0	jas-wlan				#255.255.255.128
+10.YY.13.1	eth1.if.jas.dejvice.czf
+10.YY.13.17	chara.jas.dejvice.czf			#dashboard-neevidovany
+
+10.YY.13.64	JAS.CZFree.Net-wlan			#255.255.255.192
+10.YY.13.65	gateway.jas.dejvice.czf
+10.YY.13.70	bridge-jas.studentska5.dejvice.czf	
+10.YY.13.71	71-13.studentska5.dejvice.czf		#wifi-normal-128-896
+10.YY.13.72	72-13.studentska5.dejvice.czf		#sharing-71-13.studentska5.dejvice.czf
+
+10.YY.15.0	maty-wlan				#255.255.255.240
+10.YY.15.1	ap.maty.dejvice.czf
+10.YY.15.6	paja.maty.dejvice.czf			#backbone-plus-512-4096
+10.YY.15.7	baba-maty.maty.dejvice.czf		#sharing-paja.maty.dejvice.czf
+10.YY.15.8	home.maty.dejvice.czf			#sharing-maty.dejvice.czf
+10.YY.15.54	kytilinka.maty.dejvice.czf		#dashboard-dhcp, sharing-dhcp.arachne
+
+10.YY.15.64	maty-paja-wlan.dejvice.czf		#255.255.255.252
+10.YY.15.65	maty-paja.maty.dejvice.czf
+10.YY.15.66	paja-maty.maty.dejvice.czf		#sharing-paja.maty.dejvice.czf
+
+10.YY.16.144	baba-wlan				#255.255.255.240
+10.YY.16.145	baba.maty.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.146	doma1.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.147	doma2.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.148	doma3.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.149	doma4.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.150	doma5.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.152	kajtl_ovis.baba.dejvice.czf		#sharing-paja.maty.dejvice.czf
+10.YY.16.153	kajtl.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+
+# --------------------------------------------------------------------------
+# CZFree.Net Dejvice - ethernety
+# --------------------------------------------------------------------------
+
+10.YY.10.128	ahoj-eth				#255.255.255.128
+10.YY.10.129	eth0.if.ahoj.dejvice.czf		#sharing-ahoj.dejvice.czf
+10.YY.10.130	velkej.ahoj.dejvice.czf			#sharing-ahoj.dejvice.czf
+
+10.YY.13.128	jas-eth					#255.255.255.192
+10.YY.13.129	eth0.if.jas.dejvice.czf
+10.YY.13.130	130-13.dejvice.czf critter.dejvice.czf  #[XX.YY.90.28], sharing-critter.arachne
+10.YY.13.131	131-13.dejvice.czf zubar.dejvice.czf	#sharing-critter.arachne
+10.YY.13.132	132-13.dejvice.czf niky.dejvice.czf	#sharing-critter.arachne
+10.YY.13.133	133-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.134	134-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.135	135-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.136	136-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.137	137-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.138	138-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.139	139-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.140	140-13.dejvice.czf			#sharing-critter.arachne
+10.YY.13.141	pc.jas.dejvice.czf			#sharing-jas.dejvice.czf
+
+10.YY.14.128	husinec-eth				#255.255.255.128
+10.YY.14.129	eth0.if.husinec.dejvice.czf
+10.YY.14.130	beranovi.husinec.dejvice.czf		#wifi-normal-128-512
+
+10.YY.15.32	maty-eth				#255.255.255.224
+10.YY.15.33	router.maty.dejvice.czf			#sharing-maty.dejvice.czf
+10.YY.15.36	matyterr2.maty.dejvice.czf		#sharing-maty.dejvice.czf
+10.YY.15.37	akp.maty.dejvice.czf			#sharing-maty.dejvice.czf
+10.YY.15.38	bridge-wlan-dvur.maty.dejvice.czf
+10.YY.15.41	holmik.maty.dejvice.czf			#novy-cenik-2006, odpojil-se-128-512
+10.YY.15.42	jason.maty.dejvice.czf			#sharing-maty.dejvice.czf
+10.YY.15.40	gurungua.maty.dejvice.czf		#czf
+10.YY.15.51	gurungua-ovis.maty.dejvice.czf		#czf
+10.YY.15.57	zkusebni57.maty.dejvice.czf		#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.15.58	zkusebni58.maty.dejvice.czf		#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.15.59	zkusebni59.maty.dejvice.czf		#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.15.60	dhcp60.maty.dejvice.czf			#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.15.61	dhcp61.maty.dejvice.czf			#dashboard-dhcp, sharing-dhcp.arachne
+
+10.YY.16.0	paja-eth				#255.255.255.224
+10.YY.16.1	paja.dejvice.czf
+10.YY.16.2	ntb1.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.3	ntb2.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.4	ntb3.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.5	ntb4.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.6	ntb5.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.7	doma1.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.8	doma2.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.9	doma3.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.10	dhcp1.paja.dejvice.czf			#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.16.11	dhcp2.paja.dejvice.czf			#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.16.12	lotysska1.paja.dejvice.czf		#sharing-lotysska.paja.dejvice.czf
+10.YY.16.13	lotysska2.paja.dejvice.czf		#sharing-lotysska.paja.dejvice.czf
+10.YY.16.14	lotysska.paja.dejvice.czf		#[AA.BB.89.48] 3-wifi-normal-128-512
+10.YY.16.15	architekt1.paja.dejvice.czf		#[XX.YY.90.17] wifi-plus-256-1024
+10.YY.16.16	architekt2.paja.dejvice.czf		#sharing-architekt1.paja.dejvice.czf
+10.YY.16.17	architekt3.paja.dejvice.czf        	#sharing-architekt1.paja.dejvice.czf
+10.YY.16.18	architekt4.paja.dejvice.czf        	#sharing-architekt1.paja.dejvice.czf
+10.YY.16.19     architekt5.paja.dejvice.czf		#sharing-architekt1.paja.dejvice.czf
+10.YY.16.20     architekt6.paja.dejvice.czf		#sharing-architekt1.paja.dejvice.czf
+10.YY.16.21     architekt7.paja.dejvice.czf		#sharing-architekt1.paja.dejvice.czf
+10.YY.16.35	pc1.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.36	pc2.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.37	pc3.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.38	pc4.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.39	pc5.paja.dejvice.czf			#[AA.BB.89.9] sharing-paja.maty.dejvice.czf
+10.YY.16.40	pc6.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.41	pc7.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.42	pc8.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.43	pc9.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.44	pc10.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.45	pc11.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.46	pc12.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.47	pc13.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.48	pc14.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.49	pc15.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.50	pc16.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.51	pc17.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.52	pc18.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.53	pc19.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.54	pc20.paja.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.55	uzemepisnehoustavu12.paja.dejvice.czf	#wifi-normal-128-512
+
+10.YY.16.128	baba-eth				#255.255.255.240
+10.YY.16.129	eth0.baba.maty.dejvice.czf		#sharing-paja.maty.dejvice.czf
+10.YY.16.130	pc1.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.131	pc2.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.132	pc3.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.133	pc4.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+10.YY.16.134	pc5.baba.dejvice.czf			#sharing-paja.maty.dejvice.czf
+
+10.YY.18.0	miksa-eth				#255.255.255.128
+10.YY.18.20	laca.miksa.winel.dejvice.czf		#wifi-plus-256-1024
+10.YY.18.25	plivniks.miksa.winel.dejvice.czf	#[AA.BB.89.15] wifi-normal-128-896
+
+10.YY.18.128	miksa-eth2-eth				#255.255.255.248
+10.YY.18.129	eth2.if.miksa.dejvice.czf
+10.YY.18.133	paja.miksa.dejvice.czf			#sharing-paja.maty.dejvice.czf
+
+10.YY.20.0	gwartass-eth				#255.255.255.240
+10.YY.20.1	router.gwartass.dejvice.czf
+10.YY.20.2	pc1.gwartass.dejvice.czf		#sharing-gwartass.winel.dejvice.czf
+10.YY.20.3	pc2.gwartass.dejvice.czf		#sharing-gwartass.winel.dejvice.czf
+
+10.YY.64.4	winel-eth				#255.255.255.252
+10.YY.64.5	eth1.if.winel.dejvice.czf
+10.YY.64.6	eth0.if.winel2.dejvice.czf		#sharing-winel.dejvice.czf
+
+10.YY.64.36	phoenix-uplink-wlan			#255.255.255.252
+10.YY.64.37	wlan0.if.phoenix.dejvice.czf		#sharing-phoenix.dejvice.czf
+10.YY.64.38	wlan1.if.winel2.dejvice.czf		#sharing-winel.dejvice.czf
+
+10.YY.65.16	covex-eth				#255.255.255.240
+10.YY.65.17	router.covex.winel.dejvice.czf
+10.YY.65.22	fireball.covex.winel.dejvice.czf	#sharing-winel.dejvice.czf
+
+10.YY.65.64	winel-jk-eth				#255.255.255.224
+10.YY.65.66	jk2.winel-jk.dejvice.czf		#backbone-plus-256-2048
+10.YY.65.70	miriam.winel-jk.dejvice.czf		#backbone-normal-128-1024
+10.YY.65.71	synac.winel-jk.dejvice.czf		#backbone-plus-256-1024
+10.YY.65.79	falar.winel-jk.dejvice.czf		#backbone-normal-128-1024
+10.YY.65.80	marcel1.winel-jk.dejvice.czf		#backbone-plus-256-1024
+10.YY.65.81	marcel2.winel-jk.dejvice.czf		#sharing-marcel1.winel-jk.dejvice.czf
+10.YY.65.82	zdenek.winel-jk.dejvice.czf		#backbone-normal-128-1024
+10.YY.65.83	maiya.winel-jk.dejvice.czf		#backbone-normal-128-1024
+10.YY.65.84	maciatko.winel-jk.dejvice.czf		#backbone-plus-256-1024
+
+10.YY.65.32	janus-eth				#255.255.255.224
+10.YY.65.34	notes.janus.dejvice.czf			#sharing-janus.ahoj.dejvice.czf
+10.YY.65.36	andy.janus.dejvice.czf			#9-neplatic, dashboard-neplatic
+10.YY.65.38	tomas.janus.dejvice.czf			#sharing-janus.ahoj.dejvice.czf
+
+10.YY.65.249	vlan2.if.winel.dejvice.czf		#sharing-winel
+10.YY.65.250	eth0.if.winel2.dejvice.czf		#sharing-winel
+10.YY.65.251	eth0.if.winel-jk.dejvice.czf		#sharing-winel
+
+10.YY.69.8	klecanky2-eth				#255.255.255.248
+10.YY.69.10	hospudka.klecanky.dejvice.czf		#sharing-zoulovi-asus.klecanky.dejvice.czf
+10.YY.69.11	veselovska.klecanky.dejvice.czf		#sharing-zoulovi-asus.klecanky.dejvice.czf
+10.YY.69.12	zoul.klecanky.dejvice.czf		#sharing-zoulovi-asus.klecanky.dejvice.czf
+10.YY.69.13	z.klecanky.dejvice.czf			#sharing-zoulovi-asus.klecanky.dejvice.czf
+
+10.YY.69.16	eddy-eth				#255.255.255.248
+10.YY.69.18	eddy.klecanky.dejvice.czf		#sharing-eddy2.klecanky.dejvice.czf
+
+10.YY.73.0	phoenix-eth				#255.255.255.240
+10.YY.73.1	router.phoenix.dejvice.czf		#sharing-phoenix.dejvice.czf
+10.YY.73.2	phil.phoenix.dejvice.czf		#[XX.YY.90.122] sharing-phoenix.dejvice.czf
+10.YY.73.3	vanilla.phoenix.dejvice.czf		#sharing.phoenix.dejvice.czf
+10.YY.73.4	mata-hari.phoenix.dejvice.czf		#wifi-normal-128-512
+10.YY.73.5	mata-hari2.phoenix.dejvice.czf		#sharing-mata-hari.phoenix.dejvice.czf
+
+10.YY.73.32	kabelka-eth				#255.255.255.240
+10.YY.73.33	router.kabelka.dejvice.czf
+10.YY.73.34	rutka.kabelka.dejvice.czf		#sharing-kabelka.phoenix.dejvice.czf
+10.YY.73.35	kika.kabelka.dejvice.czf		#sharing-kabelka.phoenix.dejvice.czf
+10.YY.73.36	jura.kabelka.dejvice.czf		#sharing-kabelka.phoenix.dejvice.czf
+10.YY.73.37	marek.kabelka.dejvice.czf		#sharing-kabelka.phoenix.dejvice.czf
+10.YY.73.38	honza.kabelka.dejvice.czf		#sharing-kabelka.phoenix.dejvice.czf
+10.YY.73.39	pc6.kabelka.dejvice.czf			#sharing-kabelka.phoenix.dejvice.czf
+10.YY.73.40	pc7.kabelka.dejvice.czf			#sharing-kabelka.phoenix.dejvice.czf
+
+#10.YY.73.64	cyprus-eth				#255.255.255.240 vola sit - phoenix
+
+10.YY.74.64	echy-eth				#255.255.255.224
+10.YY.74.66	rodney.echy.dejvice.czf			#sharing-echy.dejvice.czf
+10.YY.74.67	fender.echy.dejvice.czf			#sharing-echy.dejvice.czf
+10.YY.74.68	piper.echy.dejvice.czf			#sharing-echy.dejvice.czf
+10.YY.74.69	cappy.echy.dejvice.czf			#sharing-echy.dejvice.czf
+
+10.YY.79.33	ip1.kanal.dejvice.czf			#sharing-lotysska.paja.dejvice.czf
+10.YY.79.34	ip2.kanal.dejvice.czf			#sharing-lotysska.paja.dejvice.czf
+10.YY.79.35	ip3.kanal.dejvice.czf			#sharing-lotysska.paja.dejvice.czf
+10.YY.79.36	ip4.kanal.dejvice.czf			#sharing-lotysska.paja.dejvice.czf
+10.YY.79.37	ip5.kanal.dejvice.czf			#sharing-lotysska.paja.dejvice.czf
+10.YY.79.38	ip6.kanal.dejvice.czf			#sharing-lotysska.paja.dejvice.czf
+
+10.YY.80.0	blognoviny-eth				#255.255.255.240
+10.YY.80.2	faidros.blognoviny.dejvice.czf 		#sharing-simon.arachne
+10.YY.80.3	kocicka.blognoviny.dejvice.czf	 	#sharing-simon.arachne
+10.YY.80.4	grafika.blognoviny.dejvice.czf		#sharing-simon.arachne
+10.YY.80.5	mario.blognoviny.dejvice.czf 		#sharing-simon.arachne
+10.YY.80.6	mazlicek.blognoviny.dejvice.czf		#sharing-simon.arachne
+10.YY.80.7	hafan.blognoviny.dejvice.czf		#sharing-simon.arachne
+10.YY.80.11	anonym1.blognoviny.dejvice.czf 		#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.80.12	anonym2.blognoviny.dejvice.czf 		#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.80.13	anonym3.blognoviny.dejvice.czf 		#dashboard-dhcp, sharing-dhcp.arachne
+
+10.YY.80.16	stromovka-eth				#255.255.255.240
+10.YY.80.17	hwap.stromovka.dejvice.czf
+10.YY.80.18	maty.stromovka.dejvice.czf		#sharing-maty.dejvice.czf
+10.YY.80.19	maty2.stromovka.dejvice.czf		#sharing-maty.dejvice.czf
+10.YY.80.20	ap.stromovka.dejvice.czf
+10.YY.80.21	blognoviny.stromovka.dejvice.czf
+10.YY.80.25	dhcp1.stromovka.dejvice.czf		#dashboard-dhcp, sharing-dhcp.arachne
+10.YY.80.26	dhcp2.stromovka.dejvice.czf		#dashboard-dhcp, sharing-dhcp.arachne
+
+# --------------------------------------------------------------------------
+# Pomocne lokalni adresy
+# --------------------------------------------------------------------------
+
+192.168.100.252	ovislink				#originalni nastaveni ovislinku

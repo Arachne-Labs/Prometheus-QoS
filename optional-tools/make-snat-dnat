@@ -1,0 +1,121 @@
+#!/bin/bash
+
+iptables="/sbin/iptables"
+ifconfig="/sbin/ifconfig"
+
+#pimp.conf should be regularly updated!
+pimp="/rw/etc/pimp.conf"
+script="/rw/etc/network/snat-dnat"
+
+echo "#!/bin/bash" > $script
+echo $iptables -t nat -F >> $script
+echo $iptables -t nat -X >> $script
+echo "echo -n \"Setting firewall rules \"" >> $script
+
+# ===============================================================
+#  Symetricky SNAT-DNAT, zarazeny do indexovanych iptables
+# ===============================================================
+
+echo -n "Generating new pimp index rules "
+
+for czfip in `grep -v ^# $pimp|cut -f 1 -d " "`
+do
+ pubip=`grep "$czfip " $pimp|cut -f 2 -d " "`
+ czffirstindex=priv_`ipcalc -n $czfip/20|grep Network|cut -f 4 -d \ |tr [./] _`
+ czfsecondindex=priv_`ipcalc -n $czfip/23|grep Network|cut -f 4 -d \ |tr [./] _`
+ czfthirdindex=priv_`ipcalc -n $czfip/26|grep Network|cut -f 4 -d \ |tr [./] _`
+ pubfirstindex=pub_`ipcalc -n $pubip/27|grep Network|cut -f 4 -d \ |tr [./] _`
+ pubsecondindex=pub_`ipcalc -n $pubip/29|grep Network|cut -f 4 -d \ |tr [./] _`
+
+
+ if ! grep $czffirstindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $czffirstindex >> $script
+  echo $iptables -t nat -F $czffirstindex >> $script
+  echo $iptables -t nat -A POSTROUTING -s `ipcalc -n $czfip/20|grep Network|cut -f 4 -d \ ` -o eth1 -j $czffirstindex >> $script
+ fi
+
+ if ! grep $czfsecondindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $czfsecondindex >> $script
+  echo $iptables -t nat -F $czfsecondindex >> $script
+  echo $iptables -t nat -A $czffirstindex -s `ipcalc -n $czfip/23|grep Network|cut -f 4 -d \ ` -o eth1 -j $czfsecondindex >> $script
+ fi
+
+ if ! grep $czfthirdindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $czfthirdindex >> $script
+  echo $iptables -t nat -F $czfthirdindex >> $script
+  echo $iptables -t nat -A $czfsecondindex -s `ipcalc -n $czfip/26|grep Network|cut -f 4 -d \ ` -o eth1 -j $czfthirdindex >> $script
+ fi
+
+ if ! grep $pubfirstindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $pubfirstindex >> $script
+  echo $iptables -t nat -F $pubfirstindex >> $script
+  echo $iptables -t nat -A PREROUTING -i eth1 -d `ipcalc -n $pubip/27|grep Network|cut -f 4 -d \ ` -j $pubfirstindex >> $script
+ fi
+
+ if ! grep $pubsecondindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $pubsecondindex >> $script
+  echo $iptables -t nat -F $pubsecondindex >> $script
+  echo $iptables -t nat -A $pubfirstindex -i eth1 -d `ipcalc -n $pubip/29|grep Network|cut -f 4 -d \ ` -j $pubsecondindex >> $script
+ fi
+
+ echo $iptables -t nat -A $pubsecondindex -i eth1 -d $pubip/32 -j DNAT --to-destination $czfip >> $script
+ echo $iptables -t nat -A $pubsecondindex -i eth1 -d $pubip/32 -j ACCEPT >> $script
+
+ echo $iptables -t nat -A $czfthirdindex -s $czfip/32 -o eth1 -j SNAT --to-source $pubip >> $script
+ echo $iptables -t nat -A $czfthirdindex -s $czfip/32 -o eth1 -j ACCEPT >> $script
+
+ echo -n .
+ echo "echo -n ." >>$script
+done
+echo " done."
+
+# ===============================================================
+#  Pravidla pro dashboard 
+# ===============================================================
+
+echo -n "Generating dashboard index rules "
+
+for czfip in `grep ^10[.] /etc/hosts|grep dashboard-|cut -f 1`
+do
+ czffirstindex=dash_`ipcalc -n $czfip/20|grep Network|cut -f 4 -d \ |tr [./] _`
+ czfsecondindex=dash_`ipcalc -n $czfip/23|grep Network|cut -f 4 -d \ |tr [./] _`
+ czfthirdindex=dash_`ipcalc -n $czfip/26|grep Network|cut -f 4 -d \ |tr [./] _`
+
+ if ! grep $czffirstindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $czffirstindex >> $script
+  echo $iptables -t nat -F $czffirstindex >> $script
+  echo $iptables -t nat -A PREROUTING -s `ipcalc -n $czfip/20|grep Network|cut -f 4 -d \ ` -i eth0 -j $czffirstindex >> $script
+ fi
+
+ if ! grep $czfsecondindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $czfsecondindex >> $script
+  echo $iptables -t nat -F $czfsecondindex >> $script
+  echo $iptables -t nat -A $czffirstindex -s `ipcalc -n $czfip/23|grep Network|cut -f 4 -d \ ` -i eth0 -j $czfsecondindex >> $script
+ fi
+
+ if ! grep $czfthirdindex $script > /dev/null
+ then
+  echo $iptables -t nat -N $czfthirdindex >> $script
+  echo $iptables -t nat -F $czfthirdindex >> $script
+  echo $iptables -t nat -A $czfsecondindex -s `ipcalc -n $czfip/26|grep Network|cut -f 4 -d \ ` -i eth0 -j $czfthirdindex >> $script
+ fi
+
+ echo $iptables -t nat -A $czfthirdindex -s $czfip -d ! 10.0.0.0/8 -p tcp --dport 80 -j REDIRECT --to 8080 >> $script
+ echo $iptables -t nat -A $czfthirdindex -s $czfip -d ! 10.0.0.0/8 -p tcp --dport 3128 -j REDIRECT --to 8080  >> $script
+ echo $iptables -t nat -A $czfthirdindex -s $czfip -d ! 10.0.0.0/8 -p tcp --dport 8080 -j ACCEPT >> $script
+ echo $iptables -t nat -A $czfthirdindex -s $czfip -d ! 10.0.0.0/8 -j DROP  >> $script
+
+ echo -n .
+ echo "echo -n ." >>$script
+
+done
+echo " done."
+
+chmod a+x $script

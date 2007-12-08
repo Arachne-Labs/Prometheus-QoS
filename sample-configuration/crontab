@@ -1,0 +1,33 @@
+# /etc/crontab: system-wide crontab
+# Unlike any other crontab you don't have to run the `crontab'
+# command to install the new version when you edit this file.
+# This file also has a username field, that none of the other crontabs do.
+
+SHELL=/bin/sh
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# m h dom mon dow user	command
+17 *	* * *	root    run-parts --report /etc/cron.hourly
+25 6	* * *	root	test -x /usr/sbin/anacron || run-parts --report /etc/cron.daily
+47 6	* * 7	root	test -x /usr/sbin/anacron || run-parts --report /etc/cron.weekly
+52 6	1 * *	root	test -x /usr/sbin/anacron || run-parts --report /etc/cron.monthly
+#
+
+0 7 * * *  root nice /root/qos/prometheus -p
+0 8 * * *  root nice /root/qos/prometheus -p
+0 9 * * *  root nice /root/qos/prometheus -p
+0 10 * * *  root nice /root/qos/prometheus -p
+0 11 * * *  root nice /root/qos/prometheus -p
+0 12 * * *  root nice /root/qos/prometheus -p
+0 13 * * *  root nice /root/qos/prometheus -p
+0 14 * * *  root nice /root/qos/prometheus -p
+0 15 * * *  root nice /root/qos/prometheus -p
+0 16 * * *  root nice /root/qos/prometheus -p
+0 18 * * *  root nice /root/qos/prometheus -p
+0 19 * * *  root nice /root/qos/prometheus -p
+0 20 * * *  root nice /root/qos/prometheus -p
+0 21 * * *  root nice /root/qos/prometheus -p
+0 22 * * *  root nice /root/qos/prometheus -p
+0 0 * * *  root nice /root/qos/prometheus -p
+0 1 * * *  root nice /root/qos/prometheus -p
+0 2 * * *  root screen -L -d -m /root/qos/prometheus

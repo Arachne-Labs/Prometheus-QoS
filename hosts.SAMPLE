@@ -1,0 +1,26 @@
+# use TABs to separate IP address, hostname, and speed definition!
+# this file is just dummy example not related to prometheus.conf.SAMPLE
+# see sample-configuration/hosts to learn more about what Prometheus QoS can handle
+
+# syntax: "via-prometheus-MIN-MAX", where MIN and MAX are values in kbps
+#         "sharing-HOSTNAME" is useful to aggregate more IPs in single traffic class
+
+# note, that keywords parsed by Prometheus QoS look like ordinary comments to tools 
+# used to process bsd-style /etc/hosts file...
+
+192.168.0.0	mynetwork	#(just internal info - network name)
+192.168.0.1	myrouter	#(just internal info - internal interface of my router)
+192.168.0.2	mypc		#via-prometheus-512-1024
+192.168.0.3	mynotebook	#sharing-mypc
+192.168.0.9	thatrouter	#sharing-mypc
+
+192.168.1.0	thatnetwork	#(just internal info - the other network name)
+192.168.1.1	someroutername	#(the other eth on the other router)
+192.168.1.2	thatpc1		#via-prometheus-256-1024
+192.168.1.3	thatpc2		#sharing-thatpc1
+192.168.1.4	thatpc3		#via-prometheus-128-256
+192.168.1.5	thatpc4		#adsl-prometheus-64-512
+
+# etc., etc. whatever you want
+# this configuration was never really tested, unlike brevnov-hosts.SAMPLE !!
+# (but it should work too, of course...)

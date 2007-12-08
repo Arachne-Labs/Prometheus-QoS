@@ -1,0 +1,114 @@
+============================================================================
+
+Prometheus QoS - steal fire from your ISP !
+"fair-per-IP" quality of service utility
+requires Linux kernel with HTB qdisc enabled
+GNU+ Copyright(G)2007, Michael Polak (xChaos)
+Credits: Credits: CZFree.Net, Netdave, aquarius
+...and Martin Devera (.cz) for his HTB qdisc (of course)
+...and Jakub Walczak (.pl) for providing feedback and patches
+...and Ing. Jiri Engelthaler (.cz) for bugfixes and Asus WL500 port
+...and Dial Telecom (slightly expensive ISP) for chance to test it
+
+Feedback: xchaos(at)arachne.cz
+Homepage: http://gpl.arachne.cz
+
+============================================================================
+
+QoS (or Quality-of-service) is IPv4 traffic shaper replacement for Internet
+Service Providers (ISP). Dump your vintage hard-wired routers/shapers
+(C|sco, etc.) in favour of powerful open source and free solution !
+
+Prometheus QoS generates multiple nested HTB tc classes with various rate 
+and ceil values, and implements optional daily traffic quotas and data
+transfer statistics (as HTML). It is compatible with NAT, both asymetrical
+and symetrical, yet still provides good two-way shaping and prioritizing,
+both upload and download. Prometheus QoS allows both "hard shaping" 
+(reducing HTB ceil value for aggressive downloaders) and "soft shaping" 
+(keeping HTB ceil, but reducing HTB prio, probably optimal solution for 
+normal users).
+
+Prometheus iGW was written in C<<1, which means it compiles simply with 
+GNU C Compiler, and doesn't require any external liberaries (except libc)
+and huge interpreter packages (like Perl or Java) to run. However, it 
+depends on HTB algorithm hardcoded in Linux kernel. It is currently being 
+tested in real-world enviroment to provide QoS services on 30 Mbps internet
+gateway and proxy being used by 2000+ PCs connected to gateway using
+CZFree.Net broadband community network.
+
+Advantages over more straightforward traffic control scripts include
+HTB fine tuning features (rate and ceil magic), data transfer statistics,
+optional data transfer quotas, full NAT (both symetric and one way)
+compatibility and optinal sharing of bandwith by IPs in completely 
+different subnets.
+
+Performance and scaling - current release: 
+
+we run Prometheus QoS on Celeron 2.8 Ghz serving around 600 individual
+traffic classes (fine tuning is using five user-defined prometheus.conf 
+keyword) and another 2000 IPs sharing bandwith with certain other IPs 
+("sharing-" keyword). Prometheus QoS is especially strong tool if you want 
+IP's from different subnets to share the same traffic class.
+
+With 30 Mbps (each way) total capacity of line, Cisco Catalyst 2950 on 
+ISP side and up to cca 6000 packets per seconds, we were running into some 
+problems with overall system load. We moved QoS from Athlon 1700 XP to 
+Celeron 2.8 Ghz, and kept all SNAT related stuff (see optinal-tools directory)
+on Athlon 1.7 Ghz, which alowed for peak throughput up to 10000 pps.
+
+Performance fine tuning - history:
+
+With kernel version 2.4.20 and release 0.2 we started to experience problems
+at cca 1500 packets/sec. However, with new iptables indexing feature
+implemented in 0.3 release, system load seems to be approximately 
+10 times lower. Same HW was later shaping 2000 packets/sec without problems,
+and it looked like comparable relatively low-end system should be able to do
+traffic shaping for at least 10000 packets/sec (well, if HotSaNIC was turned
+off, of course <g>). With 0.6 release and dynamicaly calculated iptables
+indexing scheme we made it up to 6000 packets/sec, and then we ran into some
+performance-related problems, which may be related to the fact we are doing
+SNAT of 1000+ individual IP addresses on the same machine which is doing 
+also the QoS: something on the way seems to be limited to 34 Mbps HD
+(half-duplex, sum of upload and download) no matter what we try. Our ISP 
+claims the fault is not on his side, so our next step will be to separate
+traffic shaping and massive SNAT (IP masquerading) and assign separate
+PC-based router to do each task.
+
+Maximum performance observed with prometheus 0.6 and hashtable optimization
+of tables with individual SNAT targets was up to 9000 packets/sec at cca 40
+Mbps half-duplex (more then 20 Mbps fyull-duplex). However, this required
+massive optimization, including 
+echo -n 65000 > /proc/sys/net/ipv4/ip_conntrack_max 
+and
+echo -n 21600 > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established
+and disabling of most userspace applications (like eg. hotsanic). At the
+same time, router machine and system was accumulating wide set of various
+performance related problems, which required us to reboot it at least
+mohtly.
+
+Note: Some time ago it seemed that maximum index of tc classes was restricted
+to 10000 - but I haven't checked this again for quite a while.
+Another note: All the echo stuff in previous paragraph can be also achieved by
+adding following lines to /etc/sysctl.conf which is much cleaner way to do it:
+sys.net.ipv4.ip_conntrack_max=65000
+sys.net.ipv4.netfilter.ip_conntrack_tcp_timeout_established=21600
+
+Future plans include also setting of individual daily limits on maximum
+pps (packets per second) rates allocated to individual IP addresses (this
+may be needed partly because of problems mentioned above).
+
+============================================================================
+
+Prometheus QoS is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License as 
+published by the Free Software Foundation; either version 2.1 of 
+the License, or (at your option) any later version.
+
+Prometheus QoS is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License 
+along with Prometheus QoS source code; if not, write to 
+Michael Polak, Svojsikova 7, 169 00 Praha 6 Czech Republic

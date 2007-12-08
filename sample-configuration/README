@@ -1,0 +1,47 @@
+How we use Prometheus QoS in Brevnov: 
+
+1) /etc/hosts
+
+1500+ IP addresses are asigned either guaranted speed classes 64, 128, 256 
+and 512 kbps, with various HTB ceil rates, using "via-prometheus-" keyword.
+Some of IP addresses are set to share connection speed with internet 
+gateway using "sharing-" keyword.
+
+2) /etc/prometheus.conf
+
+There are daily traffic quotas defined using "magic-relative-limit" value
+se to 8. This translates into 48h quota 1 GB for 64 kbps lines,
+2 GB for 128 kbps lines, etc., with unused credit from day before yesterday
+stored in /var/run/prometheus.credit. Soft quotas (fair use policy) are 
+applied (resulting in lower HTB priority) even before hard quotas are reached
+(magic-relative-prio set to 6, which is less then magic-relative-limit set
+to 8).
+ 
+Daily limits are applied by running prometheus every day at 3:00 AM. Between
+3:00 AM and 6:00 AM, there is QoS free period, enabled by "qos-free-delay"
+value set to 10800. However, yesterday's data transfer statistics are kept
+in memory while prometheus QoS is iddle in this sleep mode. 
+
+Undefined IP addresses share 32 kbps guaranted and 64 kbps maximum speed, 
+set using "free-rate" and "free-ceil" keyword.
+
+There is QoS-free zone defined using "qos-free-zone" too be 10.0.0.0/8. 
+This allows for example easy management of gateway from inside this range,
+or remote management of entire network after ssh to gatway and then another
+ssh to this zone.
+
+We run HTTP proxy at port 3128 of LAN interface of internet gateway. This
+proxy is inside "qos-free-zone". Because of "qos-proxy-enable", 
+"qos-proxy-ip" (which is actually IP/number of bits of netmask) and 
+"qos-proxy-port" settings, this port is excluded from QoS-free zone.
+
+3) NAT
+
+Both symetrical and asymetrical NAT is defined by another script file, in
+iptables nat table (-t nat). Prometheus QoS uses only iptables mangle 
+tables (-t mangle), see FAQ.
+
+4) /etc/crontab and related files
+
+Every hour, we run prometheus with -p switch to generate preview. On system
+boot, we run prometheus with -n switch to skip QoS free period.

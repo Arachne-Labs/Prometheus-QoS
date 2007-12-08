@@ -1,0 +1,24 @@
+#!/bin/bash
+
+echo -n "Checking for HTB support (2.6.x Linux kernel series only) ..."
+HTB=`cat /proc/config.gz |gunzip|grep CONFIG_NET_SCH_HTB`
+if [ "$HTB" = "CONFIG_NET_SCH_HTB=y" ] || [ "$HTB" = "CONFIG_NET_SCH_HTB=m" ]
+then
+ echo " ok."
+else
+ echo " failed!"
+ echo "** Missing /proc/config.gz, missing gunzip, or missing HTB support in kernel.. **"
+ echo "** You are likely to get RTNETLINK error messages when running Prometheus QoS. **"
+fi
+
+echo -n "Checking for SFQ support (2.6.x Linux kernel series only) ..."
+SFQ=`cat /proc/config.gz |gunzip|grep CONFIG_NET_SCH_SFQ`
+if [ "$SFQ" = "CONFIG_NET_SCH_SFQ=y" ] || [ "$SFQ" = "CONFIG_NET_SCH_SFQ=m" ]
+then
+ echo " ok."
+else
+ echo " failed!"
+ echo "** Missing /proc/config.gz, missing gunzip, or missing SFQ support in kernel.. **"
+ echo "** You are likely to get RTNETLINK error messages when running Prometheus QoS. **"
+fi
+
