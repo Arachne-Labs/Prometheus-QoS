@@ -8,6 +8,7 @@
 /* ============================================================= */
 
 /* Modified: xChaos, 20070502
+             ludva, 20071227
 
    Prometheus QoS is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as 
@@ -24,6 +25,7 @@
    Michael Polak, Svojsikova 7, 169 00 Praha 6 Czech Republic */
 
 #define STRLEN 256
+#define FIRSTGROUPID 1024
 #define MAX_GUARANTED_KBPS 2048
 #undef DEBUG
 
@@ -51,11 +53,19 @@ void help(void)
 
 /* === Configuraration file values defaults - stored in global variables ==== */
 
+int filter_type=1;                      /*1 mark, 2 classify*/
+char *mark="MARK";
+char *mark_iptables="MARK --set-mark ";
 int dry_run=0;                         /* preview - use puts() instead of system() */
 char *config="/etc/prometheus.conf";   /* main configuration file */
 char *hosts="/etc/hosts";              /* line bandwidth definition file */
 char *tc="/sbin/tc";                   /* requires tc with HTB support */
-char *iptables="/sbin/iptables";       /* requires iptables utility */
+char *iptables="/usr/sbin/iptables";       /* requires iptables utility */
+char *iptablessave="/usr/sbin/iptables-save"; /* new */
+char *iptablesrestore="/usr/sbin/iptables-restore";  /* new */
+char *iptablesfile="/var/spool/prometheus.iptables";  /* new; file for iptables-restore*/
+char *iptablespreamble="*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
+FILE *iptables_file=NULL;
 char *html="/var/www/traffic.html";    /* hall of fame filename */
 char *preview="/var/www/preview.html"; /* hall of fame preview */
 char *cmdlog="/var/log/prometheus";    /* command log filename */
@@ -76,14 +86,17 @@ int qos_proxy=1;	         /* include proxy port to QoS */
 int include_upload=1;	         /* upload+download=total traffic */
 char *proxy_ip="192.168.1.1/32"; /* our IP with proxy port */
 int proxy_port=3128;	  /* proxy port number */
-int line=1024;            /* WAN/ISP download in kbps */
-int up=1024;              /* WAN/ISP upload in kbps */
+long long int line=1024;            /* WAN/ISP download in kbps */
+long long int up=1024;              /* WAN/ISP upload in kbps */
 int free_min=32;          /* minimum guaranted bandwidth for all undefined hosts */
 int free_max=64;          /* maximum allowed bandwidth for all undefined hosts */
 int qos_free_delay=0;	  /* seconds to sleep before applying new QoS rules */
 int digital_divide=2;     /* controls digital divide weirdness ratio, 1...3 */ 
 int max_nesting=3;	  /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
+int htb_r2q=1;      
 int burst=8;		  /* HTB burst (in kbits) */
+int burst_main=64;
+int burst_group=32;
 int magic_priorities=8;	  /* number of priority levels (soft shaping) */
 int magic_treshold=8;     /* reduce ceil by X*magic_treshhold kbps (hard shaping) */
 int keywordcount=0;
@@ -120,6 +133,7 @@ struct IP
  int mark;
  int prio;
  int fixedprio;
+ int group;
  unsigned long long direct;
  unsigned long long proxy;
  unsigned long long upload;
@@ -136,6 +150,7 @@ struct Group
  int min;
  int count;
  int desired;
+ int id;
  list(Group);
 } *groups=NULL, *group;
 
@@ -166,6 +181,7 @@ struct Keyword
  int default_prio;	    /* default HTB priority for this keyword */
  char *html_color;
  int ip_count;
+ char *leaf_discipline;
  
  list(Keyword);
 } *keyword,*defaultkeyword=NULL,*keywords=NULL;
@@ -269,6 +285,8 @@ void reject_config_and_exit(char *filename)
 
 void get_config(char *config_filename)
 {
+ char *cnf="mark";
+ 
  printf("Configured keywords: ");
  parse(config_filename)
  {
@@ -294,6 +312,7 @@ void get_config(char *config_filename)
    keyword->default_prio=1;
    keyword->html_color="000000";
    keyword->ip_count=0;
+   keyword->leaf_discipline="";
 
    push(keyword,keywords);
    if(!defaultkeyword) defaultkeyword=keyword;
@@ -323,6 +342,7 @@ void get_config(char *config_filename)
     ioption("htb-ceil-divide",keyword->divide_max);
     ioption("htb-ceil-bonus-divide",keyword->htb_ceil_bonus_divide);
 */
+    option("leaf-discipline",keyword->leaf_discipline);
     option("html-color",keyword->html_color);
     _=tmptr;
     
@@ -336,13 +356,16 @@ void get_config(char *config_filename)
 
   option("tc",tc);
   option("iptables",iptables);
+  option("iptables-save",iptablessave); /* new */
+  option("iptables-restore",iptablesrestore); /* new */
+  option("iptables-file",iptablesfile); /* new */
   option("hosts",hosts);
   option("lan-interface",lan);
   option("wan-interface",wan);
   option("lan-medium",lan_medium);
   option("wan-medium",wan_medium);
-  ioption("wan-download",line);
-  ioption("wan-upload",up);
+  lloption("wan-download",line);
+  lloption("wan-upload",up);
   ioption("hall-of-fame-enable",hall_of_fame);
   option("hall-of-fame-title",title);
   option("hall-of-fame-filename",html);
@@ -361,10 +384,16 @@ void get_config(char *config_filename)
   ioption("free-rate",free_min);
   ioption("free-ceil",free_max);
   ioption("htb-burst",burst);
+  ioption("htb-burst-main",burst_main);
+  ioption("htb-burst-group",burst_group);
   ioption("htb-nesting-limit",max_nesting);
+  ioption("htb-r2q",htb_r2q);
   ioption("magic-include-upload",include_upload);
   ioption("magic-priorities",magic_priorities);
   ioption("magic-treshold",magic_treshold);
+  
+  option("filter-type", cnf);
+  
 /* not yet implemented:
   ioption("magic-fixed-packets",fixed_packets);
   ioption("magic-relative-packets",packet_limit);
@@ -377,6 +406,24 @@ void get_config(char *config_filename)
  }
  done;
  printf("\n");
+ 
+ /*leaf discipline for keywords*/
+ every(keyword,keywords)
+ {
+    if (!strcmpi(keyword->leaf_discipline, "")){
+        keyword->leaf_discipline = qos_leaf;
+    }
+ }
+
+ if (strcmpi(cnf, "mark")){
+    filter_type = 2;
+    mark = "CLASSIFY";
+    mark_iptables = "CLASSIFY --set-class 1:";
+ }else{
+    filter_type = 1;
+    mark = "MARK";
+    mark_iptables = "MARK --set-mark ";
+ }
 
  /* are supplied values meaningful ?*/
  if(line<=0 || up<=0)
@@ -440,7 +487,8 @@ void get_traffic_statistics(void)
             sscanf(ptr,"%Lu",&traffic); traffic+=(1<<19); traffic>>=20;
            break;
    case 3: if(strncmp(ptr,"post_",5) && strncmp(ptr,"forw_",5) || commonflag)
-            accept=eq(ptr,"MARK");
+            accept=eq(ptr,mark);
+            /*if (filter_type==1) accept=eq(ptr,"MARK"); else accept=eq(ptr,"CLASSIFY");*/
            break;
    case 8: if(downloadflag)
            { 
@@ -504,6 +552,33 @@ void safe_run(char *cmd)
  if(log_file) fprintf(log_file,"%s\n",cmd);
 }
 
+void save_line(char *line)
+{
+ fprintf(iptables_file,"%s\n",line);
+}
+
+void run_restore(void)
+{
+ char *restor, *str;
+ string(restor,STRLEN);
+ 
+ save_line("COMMIT");
+ fclose(iptables_file);
+ if(dry_run) {
+    parse(iptablesfile)
+    {
+        str=_;
+        printf("%s\n", str);
+    }done;
+ }else{
+    //sprintf(restor,"cat %s",iptablesfile); else 
+    sprintf(restor,"%s <%s",iptablesrestore, iptablesfile);
+    system(restor);
+ };
+ 
+ free(restor);
+}
+
 /* == This function strips extra characters after IP address and stores it = */
 
 void parse_ip(char *str)
@@ -563,6 +638,7 @@ program
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
 Version %s - Copyright (C)2005-2007 Michael Polak (xChaos)\n\
+iptables-restore & burst tunning & classify modification 0.7d by Ludva\n\
 Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
 
  /*----- Boring... we have to check command line options first: ----*/
@@ -605,6 +681,7 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
  /*-----------------------------------------------------------------*/
  printf("Parsing class defintion file %s ...\n", hosts);
  /*-----------------------------------------------------------------*/
+ int groupidx = FIRSTGROUPID;
  parse(hosts)
  {
   str=_;
@@ -674,17 +751,20 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
     find(group,groups,group->min==ip->min) 
     { 
      group->count++;      
-     group->desired+=ip->min;   
+     group->desired+=ip->min;
+     ip->group = group->id;   
     }
     else
     {
      create(group,Group);
      group->min=ip->min;
+     group->id = groupidx++;
+     ip->group = group->id;
 
      if(group->min<8) group->min=8;
      /* Warning - this is maybe because of primitive tc namespace, can be fixed */
      /* it is because class IDs are derived from min. bandwidth. - xCh */
-     if(group->min>MAX_GUARANTED_KBPS) group->min=MAX_GUARANTED_KBPS;
+     //if(group->min>MAX_GUARANTED_KBPS) group->min=MAX_GUARANTED_KBPS;
      
      group->count=1;
      group->desired=ip->min;   
@@ -743,75 +823,55 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
   /*-----------------------------------------------------------------*/
   puts("Initializing iptables and tc classes ...");
   /*-----------------------------------------------------------------*/
-
+  
+  iptables_file=fopen(iptablesfile,"w");
+  if (iptables_file == NULL) {
+    puts("Cannot open iptablesfile!");
+    exit(-1);
+  }
+  
   log_file=fopen(cmdlog,"w");
-
-  sprintf(str,"%s -t mangle -F INPUT",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -F OUTPUT",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -F PREROUTING",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -F POSTROUTING",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -F FORWARD",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -Z INPUT",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -Z OUTPUT",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -Z PREROUTING",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -Z POSTROUTING",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -Z FORWARD",iptables);
-  safe_run(str);
-
-  sprintf(str,"%s -t mangle -X",iptables);
-  safe_run(str);
-
+  if (log_file == NULL) {
+    puts("Cannot open logfile!");
+    exit(-1);
+  }
+  
+  save_line(iptablespreamble);
+  run_restore();
+  
   sprintf(str,"%s qdisc del dev %s root 2>/dev/null",tc,lan);
   safe_run(str);
 
   sprintf(str,"%s qdisc del dev %s root 2>/dev/null",tc,wan);
   safe_run(str);
+  
+  iptables_file=fopen(iptablesfile,"w");
+  save_line(iptablespreamble);
 
   if(qos_free_zone && *qos_free_zone!='0')
   {
    char *chain;
    
-   sprintf(str,"%s -t mangle -A FORWARD -d %s -o %s -j ACCEPT",iptables, qos_free_zone, wan);
-   safe_run(str);
+   sprintf(str,"-A FORWARD -d %s -o %s -j ACCEPT", qos_free_zone, wan);
+   save_line(str);
    
    if(qos_proxy)
    {
-    sprintf(str,"%s -t mangle -N post_noproxy 2>/dev/null",iptables);
-    safe_run(str);
-    sprintf(str,"%s -t mangle -F post_noproxy",iptables);
-    safe_run(str);
-    sprintf(str,"%s -t mangle -A POSTROUTING -p ! tcp -o %s -j post_noproxy",iptables, lan);
-    safe_run(str);   
-    sprintf(str,"%s -t mangle -A POSTROUTING -s ! %s -o %s -j post_noproxy",iptables, proxy_ip, lan);
-    safe_run(str);   
-    sprintf(str,"%s -t mangle -A POSTROUTING -s %s -p tcp --sport ! %d -o %s -j post_noproxy",iptables, proxy_ip, proxy_port, lan);
-    safe_run(str);   
+    save_line(":post_noproxy - [0:0]");
+    sprintf(str,"-A POSTROUTING -p ! tcp -o %s -j post_noproxy", lan);
+    save_line(str);   
+    sprintf(str,"-A POSTROUTING -s ! %s -o %s -j post_noproxy", proxy_ip, lan);
+    save_line(str);   
+    sprintf(str,"-A POSTROUTING -s %s -p tcp --sport ! %d -o %s -j post_noproxy", proxy_ip, proxy_port, lan);
+    save_line(str);   
 
     chain="post_noproxy";    
    }
    else
     chain="POSTROUTING";
     
-   sprintf(str,"%s -t mangle -A %s -s %s -o %s -j ACCEPT",iptables, chain, qos_free_zone, lan);
-   safe_run(str);
+   sprintf(str,"-A %s -s %s -o %s -j ACCEPT", chain, qos_free_zone, lan);
+   save_line(str);
   }
   
   if(ip_count>idxtable_treshold1 && !just_flush)
@@ -822,14 +882,8 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
    printf("Detected %d addresses - indexing iptables rules to improve performance...\n",ip_count);
    /*-----------------------------------------------------------------*/
 
-   sprintf(str,"%s -t mangle -N post_common 2>/dev/null",iptables);
-   safe_run(str);
-   sprintf(str,"%s -t mangle -F post_common",iptables);
-   safe_run(str);
-   sprintf(str,"%s -t mangle -N forw_common 2>/dev/null",iptables);
-   safe_run(str);
-   sprintf(str,"%s -t mangle -F forw_common",iptables);
-   safe_run(str);
+   save_line(":post_common - [0:0]");
+   save_line(":forw_common - [0:0]");
 
    search(ip,ips,ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0"))
    {
@@ -884,17 +938,11 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
     subnet=subnet_id(idx->addr,idx->bitmask);
     printf("%d: %s/%d\n",++i,subnet,idx->bitmask);
        
-    sprintf(str,"%s -t mangle -N post_%s 2>/dev/null",iptables, idx->id);
-    safe_run(str);
+    sprintf(str,":post_%s - [0:0]", idx->id);
+    save_line(str);
 
-    sprintf(str,"%s -t mangle -F post_%s",iptables, idx->id);
-    safe_run(str);
-
-    sprintf(str,"%s -t mangle -N forw_%s 2>/dev/null",iptables, idx->id);
-    safe_run(str);
-
-    sprintf(str,"%s -t mangle -F forw_%s",iptables, idx->id);
-    safe_run(str);
+    sprintf(str,":forw_%s - [0:0]", idx->id);
+    save_line(str);
 
     if(idx->parent)
     {
@@ -904,11 +952,11 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
     else
      buf="POSTROUTING";
 
-    sprintf(str,"%s -t mangle -A %s -d %s/%d -o %s -j post_%s",iptables, buf, subnet, idx->bitmask, lan, idx->id);
-    safe_run(str);
+    sprintf(str,"-A %s -d %s/%d -o %s -j post_%s", buf, subnet, idx->bitmask, lan, idx->id);
+    save_line(str);
 
-    sprintf(str,"%s -t mangle -A %s -d %s/%d -o %s -j post_common",iptables, buf, subnet, idx->bitmask, lan);
-    safe_run(str);
+    sprintf(str,"-A %s -d %s/%d -o %s -j post_common", buf, subnet, idx->bitmask, lan);
+    save_line(str);
 
     if(idx->parent)
     {
@@ -918,25 +966,27 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
     else
      buf="FORWARD";
 
-    sprintf(str,"%s -t mangle -A %s -s %s/%d -o %s -j forw_%s",iptables, buf, subnet, idx->bitmask, wan, idx->id);
-    safe_run(str);
+    sprintf(str,"-A %s -s %s/%d -o %s -j forw_%s", buf, subnet, idx->bitmask, wan, idx->id);
+    save_line(str);
 
-    sprintf(str,"%s -t mangle -A %s -s %s/%d -o %s -j forw_common",iptables, buf, subnet, idx->bitmask, wan);
-    safe_run(str);
+    sprintf(str,"-A %s -s %s/%d -o %s -j forw_common", buf, subnet, idx->bitmask, wan);
+    save_line(str);
    }
    printf("Total indexed iptables chains created: %d\n", i);
 
-   sprintf(str,"%s -t mangle -A FORWARD -o %s -j forw_common",iptables, wan);
-   safe_run(str);
+   sprintf(str,"-A FORWARD -o %s -j forw_common", wan);
+   save_line(str);
    
-   sprintf(str,"%s -t mangle -A POSTROUTING -o %s -j post_common",iptables, lan);
-   safe_run(str);
+   sprintf(str,"-A POSTROUTING -o %s -j post_common", lan);
+   save_line(str);
   }
  
  }
 
  if(just_flush)
  {
+  fclose(iptables_file);
+  if (log_file) fclose(log_file);
   puts("Just flushed iptables and tc classes - now exiting ...");
   exit(0);
  }
@@ -949,22 +999,22 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
    sleep(qos_free_delay);
   }
 
-  sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q 1 default 2",tc,lan);
+  sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q %d default 1",tc,lan,htb_r2q);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio 0",tc,lan,lan_medium,lan_medium,burst);
+  sprintf(str,"%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio 0",tc,lan,lan_medium,lan_medium,burst_main);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1:2 classid 1:1 htb rate %dkbit ceil %dkbit burst %dk prio 0",tc,lan,line,line,burst);
+  sprintf(str,"%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio 0",tc,lan,line,line,burst_main);
   safe_run(str);
 
-  sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q 1 default 2",tc,wan);
+  sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q %d default 1",tc,wan,htb_r2q);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio 0",tc,wan,wan_medium,wan_medium,burst);
+  sprintf(str,"%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio 0",tc,wan,wan_medium,wan_medium,burst_main);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1:2 classid 1:1 htb rate %dkbit ceil %dkbit burst %dk prio 0",tc,wan,up,up,burst);
+  sprintf(str,"%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio 0",tc,wan,up,up,burst_main);
   safe_run(str);
  }
 
@@ -977,8 +1027,8 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
  /*-----------------------------------------------------------------*/
  /* sub-scope - local variables */  
  {
-  long rate=line;
-  long max=line;
+  long long int rate=line;
+  long long int max=line;
   int group_count=0;
   FILE *credit_file=NULL;
   
@@ -988,22 +1038,23 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
   {
    if(!just_preview)
    {
+    
     //download
-    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio 1", 
-                 tc, lan, parent, group->min, rate, max, burst);
+    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio 1 #down desired %d", 
+                 tc, lan, parent, group->id, rate, max, burst_group, group->desired);
     safe_run(str);
-   
+    
     //upload
-    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %ldkbit ceil %ldkbit burst %dk prio 1", 
-                 tc, wan, parent, group->min, (long)(rate*up/line), (long)(max*up/line), burst);
+    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio 1 #up desired %d", 
+                 tc, wan, parent, group->id, rate*up/line, max*up/line, burst_group, group->desired);
     safe_run(str);
    }
    
-   if(group_count++<max_nesting) parent=group->min;
+   if(group_count++<max_nesting) parent=group->id;
    
    rate-=digital_divide*group->min;
    if(rate<group->min)rate=group->min;
-
+    
    /*shaping of aggresive downloaders, with credit file support */
    if(use_credit)
    {
@@ -1265,56 +1316,66 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
 
   /* -------------------------------------------------------- mark download */
   
-  sprintf(str,"%s -t mangle -A %s -d %s/32 -o %s -j MARK --set-mark %d",iptables,chain_postrouting,ip->addr,lan,ip->mark);
+  sprintf(str,"-A %s -d %s/32 -o %s -j %s%d",chain_postrouting,ip->addr,lan,mark_iptables,ip->mark);
+  /*sprintf(str,"-A %s -d %s/32 -o %s -j MARK --set-mark %d",chain_postrouting,ip->addr,lan,ip->mark);*/
   /* -m limit --limit 1/s */  
-  safe_run(str);
+  save_line(str);
 
   if(qos_proxy)
   {
-   sprintf(str,"%s -t mangle -A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j MARK --set-mark %d",iptables,chain_postrouting,proxy_ip,proxy_port,ip->addr,lan,ip->mark);
-   safe_run(str);
+   sprintf(str,"-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j %s%d",chain_postrouting,proxy_ip,proxy_port,ip->addr,lan,mark_iptables,ip->mark);
+   /*sprintf(str,"-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j MARK --set-mark %d",chain_postrouting,proxy_ip,proxy_port,ip->addr,lan,ip->mark);*/
+   save_line(str);
   }
 
-  sprintf(str,"%s -t mangle -A %s -d %s/32 -o %s -j ACCEPT",iptables,chain_postrouting,ip->addr,lan);
-  safe_run(str);
+  sprintf(str,"-A %s -d %s/32 -o %s -j ACCEPT",chain_postrouting,ip->addr,lan);
+  save_line(str);
 
   /* -------------------------------------------------------- mark upload */
-  
-  sprintf(str,"%s -t mangle -A %s -s %s/32 -o %s -j MARK --set-mark %d",iptables,chain_forward,ip->addr,wan,ip->mark);
-  safe_run(str);
+  sprintf(str,"-A %s -s %s/32 -o %s -j %s%d",chain_forward,ip->addr,wan,mark_iptables,ip->mark);
+  /*  sprintf(str,"-A %s -s %s/32 -o %s -j MARK --set-mark %d",chain_forward,ip->addr,wan,ip->mark);*/
+  save_line(str);
 
-  sprintf(str,"%s -t mangle -A %s -s %s/32 -o %s -j ACCEPT",iptables,chain_forward,ip->addr,wan);
-  safe_run(str);
+  sprintf(str,"-A %s -s %s/32 -o %s -j ACCEPT",chain_forward,ip->addr,wan);
+  save_line(str);
 
   if(ip->min)
   {
    /* -------------------------------------------------------- download class */
    printf("(down: %dk-%dk ", ip->min, ip->max); 
 
-   sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", tc, lan, ip->min, ip->mark,ip->min,ip->max, burst, ip->prio);
+   sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
    safe_run(str);
 
-   sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, lan, ip->mark, ip->mark, qos_leaf);
-   safe_run(str);
-
-   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, lan, ip->mark, ip->mark);
-   safe_run(str);
+   if (strcmpi(ip->keyword->leaf_discipline, "none")){
+    sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+    safe_run(str);
+   }
+   
+   if (filter_type == 1){
+    sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, lan, ip->mark, ip->mark);
+    safe_run(str);
+   }
 
    /* -------------------------------------------------------- upload class */
    printf("up: %dk-%dk)\n", (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), 
                             (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed));
 
    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, wan, ip->min, ip->mark,
+                tc, wan, ip->group, ip->mark,
                 (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed),
                 (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), burst, ip->prio);
    safe_run(str);
-
-   sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s",tc, wan, ip->mark, ip->mark, qos_leaf);
-   safe_run(str);
-
-   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",tc, wan, ip->mark, ip->mark);
-   safe_run(str);
+   
+   if (strcmpi(ip->keyword->leaf_discipline, "none")){
+    sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s",tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+    safe_run(str);
+   }
+   
+   if (filter_type == 1){
+    sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",tc, wan, ip->mark, ip->mark);
+    safe_run(str);
+   }
   }
   else
    printf("(sharing %s)\n", ip->sharing);
@@ -1337,21 +1398,21 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
 
  if(qos_proxy)
  {
-  sprintf(str,"%s -t mangle -A %s -s %s -p tcp --sport %d -o %s -j MARK --set-mark 3",iptables,chain_postrouting,proxy_ip,proxy_port,lan);
-  safe_run(str);
-  sprintf(str,"%s -t mangle -A %s -s %s -p tcp --sport %d -o %s -j ACCEPT",iptables,chain_postrouting,proxy_ip,proxy_port,lan);
-  safe_run(str);
+  sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j MARK --set-mark 3",chain_postrouting,proxy_ip,proxy_port,lan);
+  save_line(str);
+  sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j ACCEPT",chain_postrouting,proxy_ip,proxy_port,lan);
+  save_line(str);
  }
- sprintf(str,"%s -t mangle -A %s -o %s -j MARK --set-mark 3",iptables,chain_postrouting,lan);
- safe_run(str);
- sprintf(str,"%s -t mangle -A %s -o %s -j ACCEPT",iptables,chain_postrouting,lan);
- safe_run(str);
+ sprintf(str,"-A %s -o %s -j MARK --set-mark 3",chain_postrouting,lan);
+ save_line(str);
+ sprintf(str,"-A %s -o %s -j ACCEPT",chain_postrouting,lan);
+ save_line(str);
 
  /* --------------------------------------------------------  mark upload */
- sprintf(str,"%s -t mangle -A %s -o %s -j MARK --set-mark 3",iptables,chain_forward,wan);
- safe_run(str);
- sprintf(str,"%s -t mangle -A %s -o %s -j ACCEPT",iptables,chain_forward,wan);
- safe_run(str);
+ sprintf(str,"-A %s -o %s -j MARK --set-mark 3",chain_forward,wan);
+ save_line(str);
+ sprintf(str,"-A %s -o %s -j ACCEPT",chain_forward,wan);
+ save_line(str);
 
  printf("Total IP count: %d\n", i);
 
@@ -1363,20 +1424,24 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
  safe_run(str);
 
  /* tc SFQ */
- sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,lan,qos_leaf);
- safe_run(str);
-
- sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,wan,qos_leaf);
- safe_run(str);
-
+ if (strcmpi(qos_leaf, "none")){
+  sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,lan,qos_leaf);
+  safe_run(str);
+ 
+  sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,wan,qos_leaf);
+  safe_run(str);
+ }
+ 
  /* tc handle 1 fw flowid */
  sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,lan);
  safe_run(str);
 
  sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,wan);
  safe_run(str);
-
- if(log_file) fclose(log_file);
+ 
+ run_restore();
+ 
+ if (log_file) fclose(log_file);
  return 0;
 
  /* that's all folks, thank you for reading it all the way up to this point ;-) */

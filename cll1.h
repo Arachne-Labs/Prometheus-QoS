@@ -114,6 +114,7 @@
 #define option(STR,SETVAR) if(_){char *_K,*_V,*_O,*_Q; duplicate(_,_Q); _O=_Q; tr(_O,'\t',' '); prefix(_K,_O,' '); if(eq(STR,_K)) {skipspaces(_O); prefix(_V,_O,'#'); cutspaces(_V); SETVAR=_V; _=NULL;} else free(_Q);}
 #define ioption(STR,SETVAR) if(_){char *_K,*_V,*_O,*_Q; duplicate(_,_Q); _O=_Q; tr(_O,'\t',' '); prefix(_K,_O,' '); if(eq(STR,_K)) {skipspaces(_O); prefix(_V,_O,'#'); cutspaces(_V); SETVAR=atoi(_V); _=NULL;} free(_Q);}
 #define loption(STR,SETVAR) if(_){char *_K,*_V,*_O,*_Q; duplicate(_,_Q); _O=_Q; tr(_O,'\t',' '); prefix(_K,_O,' '); if(eq(STR,_K)) {skipspaces(_O); prefix(_V,_O,'#');  cutspaces(_V); SETVAR=atol(_V); _=NULL;} free(_Q);}
+#define lloption(STR,SETVAR) if(_){char *_K,*_V,*_O,*_Q; duplicate(_,_Q); _O=_Q; tr(_O,'\t',' '); prefix(_K,_O,' '); if(eq(STR,_K)) {skipspaces(_O); prefix(_V,_O,'#');  cutspaces(_V); SETVAR=atoll(_V); _=NULL;} free(_Q);}
 
 /* Dynamic list advanced I/O, updated 2003-05-30 by xCh. */
 
