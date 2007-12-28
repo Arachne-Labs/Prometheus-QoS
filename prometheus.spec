@@ -1,6 +1,6 @@
 Summary: Traffic shaper replacement for Internet Service Providers (ISP).
 Name: prometheus
-Version: 0.7.1
+Version: 0.7.7
 Release: 1
 License: GPL
 Vendor: Arachne Labs http://www.arachne.cz
@@ -47,6 +47,9 @@ rm -rf %{buildroot}
 %{_sbindir}/prometheus
 
 %changelog
+* Fri Dec 28 2007 Tomas Lastovicka <aquarius@lamer.cz> 0.7.7-1
+- update to latest upstream upstream 0.7.7
+
 * Mon Dec 03 2007 Tomas Lastovicka <aquarius@lamer.cz> 0.7.1-1
 - Upgraded to newest version, first *real* build :).
 
