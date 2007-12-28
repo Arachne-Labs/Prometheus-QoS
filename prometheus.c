@@ -31,7 +31,7 @@
 
 #include "cll1.h"
 
-const char *version="0.8.0";
+const char *version="0.7.7"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 
