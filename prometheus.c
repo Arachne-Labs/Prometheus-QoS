@@ -109,10 +109,10 @@ FILE *log_file=NULL;
 
 char *kwd="via-prometheus";           /* /etc/hosts comment, eg. #qos-64-128 */
 
-const idxtable_treshold1=24;         /* this is no longer configurable */
-const idxtable_treshold2=12;         /* this is no longer configurable */
-const idxtable_bitmask1=3;           /* this is no longer configurable */
-const idxtable_bitmask2=3;           /* this is no longer configurable */
+const int idxtable_treshold1=24;         /* this is no longer configurable */
+const int idxtable_treshold2=12;         /* this is no longer configurable */
+const int idxtable_bitmask1=3;           /* this is no longer configurable */
+const int idxtable_bitmask2=3;           /* this is no longer configurable */
 
 
 /* not yet implemented:
@@ -877,7 +877,7 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
   if(ip_count>idxtable_treshold1 && !just_flush)
   {
    int idxcount=0, bitmask=32-idxtable_bitmask1; /* default net mask: 255.255.255.240 */
-   char *subnet, *ptr, *buf;
+   char *subnet, *buf;
    /*-----------------------------------------------------------------*/
    printf("Detected %d addresses - indexing iptables rules to improve performance...\n",ip_count);
    /*-----------------------------------------------------------------*/
@@ -1150,7 +1150,7 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
 #ifdef DEBUG
    printf("Total groups: %d Total bandwidth requested: %d k\nAGGREGATION: 1/%d\n",count,i,i/line);
 #endif
-   fprintf(f,"<tr><th colspan=\"2\" align=\"left\">Line %d k</td>",line);
+   fprintf(f,"<tr><th colspan=\"2\" align=\"left\">Line %Ld k</td>",line);
    fprintf(f,"<th align=\"right\">%d</td><th align=\"right\">%d k</td>",total,i);
 
    every(keyword,keywords)
@@ -1259,15 +1259,15 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
    fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"4\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
    fputs("<tr><td colspan=\"2\">Active Classes</td><td colspan=\"2\">Data transfers</td></tr>\n",f);
    find (sum,sums,sum->l>=total/4)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%d %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    find (sum,sums,sum->i==10)
-    fprintf(f,"<tr><td>Top 10</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%d %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<tr><td>Top 10</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    find (sum,sums,sum->l>=total/2)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%d %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    find (sum,sums,sum->i>=(active_classes+3)/4)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%d %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    find (sum,sums,sum->i>=(active_classes+1)/2)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%d %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    fprintf(f,"<tr><th align=\"left\">All %d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total);
    fputs("</table>\n",f);
   }

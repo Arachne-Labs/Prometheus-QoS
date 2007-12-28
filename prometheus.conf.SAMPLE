@@ -11,7 +11,12 @@
 #Path to external utilities required to run iGW Prometheus:
 #--------------------------------------------------------------------------
 tc			/sbin/tc
-iptables		/sbin/iptables
+iptables		/usr/sbin/iptables
+iptables-restore	/usr/sbin/iptables-restore
+#==========================================================================
+#Filename of iptables mangle table for iptables-restore
+#-------------------------------------------------------------------------- 
+iptables-file		/var/spool/prometheus.iptables
 #==========================================================================
 #Filename of /etc/hosts - style IP address configuration file
 #--------------------------------------------------------------------------
@@ -68,8 +73,13 @@ adsl-prometheus-asymetry-treshold	0
 #HTB fine tuning part I - common settings
 #--------------------------------------------------------------------------
 htb-nesting-limit	3	#0..4: HTB seems to have built-in limit
-htb-burst		32	#kbit
-htb-leaf-discipline	sfq perturb 5
+htb-burst		8	#kbit (ip level classes)
+htb-burst-group	32	#kbit (group level classes)
+htb-burst-main	64	#kbit (medium&line level classes - 1:1, 1:2)
+htb-leaf-discipline	sfq perturb 5       #maybe "none"
+htb-r2q		1
+#type filtering traffic: mark&filter or classify (without tc filter)
+filter-type		classify #or mark
 #==========================================================================
 #magic-include-upload - is data counter sum of upload and download ?
 #magic-priorities - prioty levels are used by magic-relative-prio
@@ -108,7 +118,16 @@ via-prometheus-htb-rate-bonus		0	#kbps
 via-prometheus-htb-ceil-malus		0	#kbps
 adsl-prometheus-htb-default-prio	1	
 adsl-prometheus-htb-rate-bonus		16
-adsl-prometheus-htb-ceil-malus		0	
+adsl-prometheus-htb-ceil-malus		0
+#==========================================================================
+#HTB fine tuning part III - keyword dependent settings
+#--------------------------------------------------------------------------
+#These settings are keyword-derived ! (see "keyword" section)
+# optionally! if not defined, using global leaf-discipline
+# value "none" skip qdisc creation for this keyword
+#--------------------------------------------------------------------------
+#via-prometheus-leaf-leaf-discipline	esfq
+#adsl-prometheus-leaf-discipline		none
 #==========================================================================
 #Credit file settings - stores unused credit from previous runs
 #--------------------------------------------------------------------------
