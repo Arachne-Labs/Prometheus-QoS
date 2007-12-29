@@ -486,7 +486,7 @@ void get_traffic_statistics(void)
            else
             sscanf(ptr,"%Lu",&traffic); traffic+=(1<<19); traffic>>=20;
            break;
-   case 3: if(strncmp(ptr,"post_",5) && strncmp(ptr,"forw_",5) || commonflag)
+   case 3: if((strncmp(ptr,"post_",5) && strncmp(ptr,"forw_",5)) || commonflag)
             accept=eq(ptr,mark);
             /*if (filter_type==1) accept=eq(ptr,"MARK"); else accept=eq(ptr,"CLASSIFY");*/
            break;
