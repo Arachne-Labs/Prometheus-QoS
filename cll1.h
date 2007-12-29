@@ -76,7 +76,7 @@
 #define duplicate(A,B) if(A) { string(B,strlen(A)+1); strcpy(B,A); }
 #define concatenate(A,B,C) if (A && B) { string(C,strlen(A)+strlen(B)+1); strcpy(C,A); strcat(C,B); }
 #define suffix(A,B,C) (((A=strrchr(B,C))&&!(*(A++)=0))||(A=B))
-#define prefix(A,B,C) ((A=B)&&((B=strchr(B,C))&&!(*(B++)=0)||(B=A)))
+#define prefix(A,B,C) ((A=B)&&(((B=strchr(B,C))&&!(*(B++)=0))||(B=A)))
 #define gotoalpha(CHAR) if(CHAR)while(*CHAR && !isalpha(*CHAR))CHAR++
 #define goto_alpha(CHAR) if(CHAR)while(*CHAR && !isalpha(*CHAR) && *CHAR!='_')CHAR++
 #define gotoalnum(CHAR) if(CHAR)while(*CHAR && !isalnum(*CHAR))CHAR++
