@@ -1,4 +1,4 @@
-version 0.7 2006-01-29
+version 0.7 2007-01-29
 
 - There were good reasons to rename iptables hashing to iptables indexing.
   Hashing is different algorithm, which offers constant complexity 
