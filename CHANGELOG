@@ -1,3 +1,9 @@
+version 0.7.7 2007-01-??
+
+- testing version, 0.8 will be stable release
+- faster startup times using iptables-restore (credit: Martin "Ludva" Svoboda)
+- compiles and runs correctly on both 32bit and 64bit platforms
+
 version 0.7 2007-01-29
 
 - There were good reasons to rename iptables hashing to iptables indexing.
