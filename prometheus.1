@@ -1,0 +1,52 @@
+.TH prometheus 1 "January 3, 2008"
+.LO 1
+.SH NAME
+prometheus \- Traffic shaper replacement for Internet Service Providers
+.SH SYNOPSIS
+.ll +8
+.B prometheus
+.RB [ " \-dfnpv9 " ]
+.RB [ " \-c\ filename " ]
+.RB [ " \-h\ filename " ]
+.SH DESCRIPTION
+Prometheus QoS generates multiple nested HTB tc classes with various
+rate and ceil values, and implements optional daily traffic quotas and
+data transfer statistics (as HTML). It is compatible with NAT, both
+asymetrical and symetrical, yet still provides good two-way shaping
+and prioritizing, both upload and download.
+.SH OPTIONS
+.TP
+.B \-?, --help
+this help screen
+.TP
+.B \-c filename
+force alternative /etc/prometheus.conf filename
+.TP
+.B \-d
+dry run (preview tc and iptables commands on stdout)
+.TP
+.B \-h filename
+force alternative /etc/hosts filename (overrides hosts keyword)
+.TP
+.B \-f
+just flush iptables and tc classes and exit (stop shaping)
+.TP
+.B \-n
+no delay (overrides qos-free-delay keyword)
+.TP
+.B \-p
+just generate preview of data transfer statistics and exit
+.TP
+.B \-v, --version 
+show version number of this utility and exit
+.TP
+.B \-9
+emergency iptables flush (do not read data transfer statistics)
+.SH KNOWN BUGS
+Prometheus is slow. This will be changed as soon as the new
+iptables-save/load mechanism makes it into stable release.
+Future implementation may call netfilter directly via libiptables.
+.SH SEE ALSO
+iptables(8), tc(8), prometheus.conf(5)
+.SH AVAILABILITY
+Prometheus is available at https://dev.arachne.cz/svn/prometheus/downloads
