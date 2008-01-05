@@ -1,14 +1,14 @@
 Summary: Traffic shaper replacement for Internet Service Providers (ISP).
 Name: prometheus
 Version: 0.7.7
-Release: 1
+Release: 2
 License: GPL
 Vendor: Arachne Labs http://www.arachne.cz
 Packager: Tomas Lastovicka <aquarius@lamer.cz>
 Group: Applications/System
 Source0: http://gpl.arachne.cz/download/%name-%version.tar.gz
 URL: http://gpl.arachne.cz
-Requires: iptables, iproute
+Requires: iptables, iproute, screen
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -36,6 +36,9 @@ make %{_smp_mflags}
 %install
 rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_sbindir}
+mkdir -p %{buildroot}%{_mandir}/man1
+mkdir -p %{buildroot}%{_mandir}/man5
+mkdir -p %{buildroot}%{_sysconfdir}/cron.d/
 
 %makeinstall
 
@@ -45,8 +48,15 @@ rm -rf %{buildroot}
 %files
 %defattr(-,root,root)
 %{_sbindir}/prometheus
+%{_mandir}/man1/prometheus.1*
+%{_mandir}/man5/prometheus.conf.5*
+%{_sysconfdir}/cron.d/prometheus
 
 %changelog
+* Sat Jan 5 2008 Tomas Lastovicka <aquarius@lamer.cz> 0.7.7-2
+- added manual pages
+- added crontab file
+
 * Fri Dec 28 2007 Tomas Lastovicka <aquarius@lamer.cz> 0.7.7-1
 - update to latest upstream upstream 0.7.7
 
