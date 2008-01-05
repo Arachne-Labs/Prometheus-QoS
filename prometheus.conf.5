@@ -1,0 +1,155 @@
+.TH prometheus.conf 5 "January 4, 2008"
+.LO 5
+.SH NAME
+prometheus.conf \- configuration file for prometheus
+.SH SYNOPSIS
+.ll +8
+.B prometheus.conf
+.SH DESCRIPTION
+There are daily traffic quotas defined using "magic-relative-limit" value
+se to 8. This translates into 48h quota 1 GB for 64 kbps lines,
+2 GB for 128 kbps lines, etc., with unused credit from day before yesterday
+stored in /var/run/prometheus.credit. Soft quotas (fair use policy) are 
+applied (resulting in lower HTB priority) even before hard quotas are reached
+(magic-relative-prio set to 6, which is less then magic-relative-limit set
+to 8).
+ 
+Daily limits are applied by running prometheus every day at 3:00 AM. Between
+3:00 AM and 6:00 AM, there is QoS free period, enabled by "qos-free-delay"
+value set to 10800. However, yesterday's data transfer statistics are kept
+in memory while prometheus QoS is iddle in this sleep mode. 
+
+Undefined IP addresses share 32 kbps guaranted and 64 kbps maximum speed, 
+set using "free-rate" and "free-ceil" keyword.
+
+There is QoS-free zone defined using "qos-free-zone" too be 10.0.0.0/8. 
+This allows for example easy management of gateway from inside this range,
+or remote management of entire network after ssh to gatway and then another
+ssh to this zone.
+
+We run HTTP proxy at port 3128 of LAN interface of internet gateway. This
+proxy is inside "qos-free-zone". Because of "qos-proxy-enable", 
+"qos-proxy-ip" (which is actually IP/number of bits of netmask) and 
+"qos-proxy-port" settings, this port is excluded from QoS-free zone.
+.SH OPTIONS
+.B tc
+.TP
+.B iptables
+.TP
+.B iptables-restore
+.TP
+.B iptables-file
+.TP
+.B hosts
+.TP
+.B keyword
+.TP
+.B lan-interface
+.TP
+.B wan-interface
+.TP
+.B lan-medium
+.TP
+.B wan-medium
+.TP
+.B wan-download
+.TP
+.B wan-upload
+.TP
+.B qos-free-zone
+.TP
+.B qos-free-delay
+.TP
+.B qos-proxy-enable
+.TP
+.B qos-proxy-ip
+.TP
+.B qos-proxy-port
+.TP
+.B free-rate
+.TP
+.B free-ceil
+.TP
+.B digital-divide-weirdness-ratio
+.TP
+.B via-prometheus-asymetry-ratio
+.TP
+.B via-prometheus-asymetry-treshold
+.TP
+.B adsl-prometheus-asymetry-ratio
+.TP
+.B adsl-prometheus-asymetry-treshold
+.TP
+.B htb-nesting-limit
+.TP
+.B htb-burst
+.TP
+.B htb-burst-group
+.TP
+.B htb-burst-main
+.TP
+.B htb-leaf-discipline
+.TP
+.B htb-r2q
+.TP
+.B filter-type
+.TP
+.B magic-include-upload
+.TP
+.B magic-priorities
+.TP
+.B magic-treshold
+.TP
+.B via-prometheus-magic-relative-limit
+.TP
+.B via-prometheus-magic-relative-prio
+.TP
+.B via-prometheus-magic-fixed-limit
+.TP
+.B via-prometheus-magic-fixed-prio
+.TP
+.B adsl-prometheus-magic-relative-limit
+.TP
+.B adsl-prometheus-magic-relative-prio
+.TP
+.B adsl-prometheus-magic-fixed-limit
+.TP
+.B adsl-prometheus-magic-fixed-prio
+.TP
+.B via-prometheus-htb-default-prio
+.TP
+.B via-prometheus-htb-rate-bonus
+.TP
+.B via-prometheus-htb-ceil-malus
+.TP
+.B adsl-prometheus-htb-default-prio
+.TP
+.B adsl-prometheus-htb-rate-bonus
+.TP
+.B adsl-prometheus-htb-ceil-malus
+.TP
+.B credit-filename
+.TP
+.B credit-enable
+.TP
+.B log-filename
+.TP
+.B log-traffic-directory
+.TP
+.B log-traffic-url-path
+.TP
+.B hall-of-fame-enable
+.TP
+.B hall-of-fame-filename
+.TP
+.B hall-of-fame-preview
+.TP
+.B hall-of-fame-title
+.TP
+.B via-prometheus-html-color
+.TP
+.B adsl-prometheus-html-color
+.SH SEE ALSO
+iptables(8), tc(8), prometheus(1)
+.SH AVAILABILITY
+Prometheus is available at https://dev.arachne.cz/svn/prometheus/downloads
