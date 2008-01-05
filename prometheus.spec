@@ -50,7 +50,7 @@ rm -rf %{buildroot}
 %{_sbindir}/prometheus
 %{_mandir}/man1/prometheus.1*
 %{_mandir}/man5/prometheus.conf.5*
-%{_sysconfdir}/cron.d/prometheus
+%config(noreplace) %{_sysconfdir}/cron.d/prometheus
 
 %changelog
 * Sat Jan 5 2008 Tomas Lastovicka <aquarius@lamer.cz> 0.7.7-2
