@@ -1,5 +1,5 @@
 # Prometheus Cron file now made with 5% more love
 # (thanks to Danny for suggestion)
 
-0 0,1,7-23 * * *  root nice /root/qos/prometheus -p
-0 2 * * *  root screen -L -d -m /root/qos/prometheus
+0 0,1,7-23 * * *  root nice /root/qos/prometheus -p 1>/dev/null
+0 2 * * *  root /root/qos/prometheus 1>/dev/null
