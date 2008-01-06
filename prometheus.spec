@@ -1,12 +1,13 @@
 Summary: Traffic shaper replacement for Internet Service Providers (ISP).
 Name: prometheus
 Version: 0.7.7
-Release: 3
+Release: 4
 License: GPL
 Vendor: Arachne Labs http://www.arachne.cz
 Packager: Tomas Lastovicka <aquarius@lamer.cz>
 Group: Applications/System
 Source0: http://gpl.arachne.cz/download/%name-%version.tar.gz
+Patch0: prometheus-conf-rh.patch
 URL: http://gpl.arachne.cz
 Requires: iptables, iproute
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
@@ -29,6 +30,7 @@ of CZFree.Net broadband community network.
 
 %prep
 %setup -q
+%patch0 -p0
 
 %build
 make %{_smp_mflags}
@@ -38,7 +40,8 @@ rm -rf %{buildroot}
 mkdir -p %{buildroot}%{_sbindir}
 mkdir -p %{buildroot}%{_mandir}/man1
 mkdir -p %{buildroot}%{_mandir}/man5
-mkdir -p %{buildroot}%{_sysconfdir}/cron.d/
+mkdir -p %{buildroot}%{_sysconfdir}/cron.d
+mkdir -p %{buildroot}%{_sysconfdir}/prometheus
 
 %makeinstall
 
@@ -51,8 +54,14 @@ rm -rf %{buildroot}
 %{_mandir}/man1/prometheus.1*
 %{_mandir}/man5/prometheus.conf.5*
 %config(noreplace) %{_sysconfdir}/cron.d/prometheus
+%config(noreplace) %{_sysconfdir}/prometheus/prometheus.conf
+%config(noreplace) %{_sysconfdir}/prometheus/hosts
 
 %changelog
+* Sun Jan 6 2008 Tomas Lastovicka <aquarius@lamer.cz> 0.7.7-4
+- added sample configuration files
+- added patch which reflects different locations of some files in redhat-like distros
+
 * Sat Jan 5 2008 Tomas Lastovicka <aquarius@lamer.cz> 0.7.7-3
 - removed screen from dependencies
 - cleaned up cron file
