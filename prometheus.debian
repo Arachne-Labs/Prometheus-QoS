@@ -2,6 +2,7 @@
 
 MAINTAINER='Michael Polak <x@n.cz>'
 DEB_PCK_NAME=prometheus
+ARCHITECTURE=i386
 DEBIAN_BASE=$DEB_PCK_NAME.tmp
 
 # Adresare
@@ -81,6 +82,7 @@ VERSION=`grep "const char \*version" prometheus.c|cut -f 2 -d \"`
 sed     -e "s/__VERSION__/$VERSION/" \
 	-e "s/__PACKAGE__/$DEB_PCK_NAME/" \
 	-e "s/__MAINTAINER__/$MAINTAINER/" \
+	-e "s/__ARCHITECTURE__/$ARCHITECTURE/" \
 	$DEB_PCK_NAME.control > $DEBIAN_BASE/DEBIAN/control
 
 # Vytvori a prejmenuje balicek
