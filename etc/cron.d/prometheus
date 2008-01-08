@@ -2,4 +2,4 @@
 # (thanks to Danny for suggestion)
 
 0 0,1,7-23 * * *  root nice /usr/sbin/prometheus -p 1>/dev/null
-0 2 * * *  root /root/sbin/prometheus 1>/dev/null
+0 2 * * *  root /usr/sbin/prometheus 1>/dev/null
