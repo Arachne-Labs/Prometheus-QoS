@@ -9,6 +9,9 @@ sysconfdir=/etc/
 main: prometheus
 	$(CC) -o prometheus prometheus.c
 
+deb: main
+	./prometheus.debian
+	
 install: main
 	install -d $(sbindir)
 	install -d $(mandir)/man1

@@ -1,0 +1,3 @@
+/etc/prometheus/prometheus.conf
+/etc/prometheus/hosts
+/etc/cron.d/prometheus
