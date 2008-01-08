@@ -1,0 +1,23 @@
+#!/bin/sh
+EXEFILE=/usr/sbin/prometheus
+
+case "$1" in
+    start)
+        $EXEFILE -n
+        ;;
+    stop)
+        $EXEFILE -f
+        ;;
+    kill)
+        $EXEFILE -9
+        ;;
+    restart|force-reload)
+        $0 stop
+        sleep 1
+        $0 start
+        ;;
+    *)
+        echo "Usage: $0 {start|stop|restart|force-reload|kill}" >&2
+        exit 1
+        ;;
+esac
