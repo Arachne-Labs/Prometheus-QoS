@@ -1,13 +1,13 @@
-How we use Prometheus QoS in Brevnov: 
+How do we use Prometheus QoS in Brevnov: 
 
-1) /etc/hosts
+1) /etc/prometheus/hosts
 
 1500+ IP addresses are asigned either guaranted speed classes 64, 128, 256 
 and 512 kbps, with various HTB ceil rates, using "via-prometheus-" keyword.
 Some of IP addresses are set to share connection speed with internet 
 gateway using "sharing-" keyword.
 
-2) /etc/prometheus.conf
+2) /etc/prometheus/prometheus.conf
 
 There are daily traffic quotas defined using "magic-relative-limit" value
 se to 8. This translates into 48h quota 1 GB for 64 kbps lines,
@@ -41,7 +41,7 @@ Both symetrical and asymetrical NAT is defined by another script file, in
 iptables nat table (-t nat). Prometheus QoS uses only iptables mangle 
 tables (-t mangle), see FAQ.
 
-4) /etc/crontab and related files
+4) /etc/cron.d/prometheus and related files
 
 Every hour, we run prometheus with -p switch to generate preview. On system
 boot, we run prometheus with -n switch to skip QoS free period.

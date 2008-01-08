@@ -14,9 +14,6 @@ mkdir -p $DEBIAN_BASE/usr/share
 mkdir -p $DEBIAN_BASE/usr/share/man
 mkdir -p $DEBIAN_BASE/usr/share/man/man1
 mkdir -p $DEBIAN_BASE/usr/share/man/man5
-mkdir -p $DEBIAN_BASE/etc
-mkdir -p $DEBIAN_BASE/etc/cron.d
-mkdir -p $DEBIAN_BASE/etc/prometheus
 
 mkdir -p $DEBIAN_BASE/DEBIAN
 chmod 0755 $DEBIAN_BASE/DEBIAN
@@ -25,13 +22,19 @@ if ! [ -x prometheus ]; then
 	make main
 fi
 
-# Data
+# Copy
 cp prometheus		$DEBIAN_BASE/usr/sbin
 cp prometheus.1		$DEBIAN_BASE/usr/share/man/man1
 cp prometheus.conf.5	$DEBIAN_BASE/usr/share/man/man5
-cp sample-configuration/prometheus.cron	$DEBIAN_BASE/etc/cron.d/prometheus
-cp sample-configuration/prometheus.conf	$DEBIAN_BASE/etc/prometheus
-cp sample-configuration/hosts		$DEBIAN_BASE/etc/prometheus
+cp -R etc		$DEBIAN_BASE/etc
+
+# .svn cleanup
+rm -rf $DEBIAN_BASE/etc/.svn
+rm -rf $DEBIAN_BASE/etc/*/.svn
+
+# Chmod a+x scripts
+chmod 755 $DEBIAN_BASE/etc/cron.d/prometheus
+chmod 755 $DEBIAN_BASE/etc/init.d/prometheus
 
 # Strip debug info from binary
 strip $DEBIAN_BASE/usr/sbin/prometheus
@@ -64,11 +67,11 @@ if [ -f  $DEB_PCK_NAME'.postrm' ]; then
 	cp -R $DEB_PCK_NAME.postrm    $DEBIAN_BASE/DEBIAN/postrm
 fi
 
-# Asi zbytecne
-#for f in `find $DEBIAN_BASE -path ".svn*"`
-#do
-#    rm -R $f 2>/dev/null
-#done;
+# Cleanup
+for f in `find $DEBIAN_BASE/etc -path ".svn*"`
+do
+    rm -R $f 2>/dev/null
+done;
 
 # Momentalne se nepouziva
 #SIZEDU=`du -sk "$DEBIAN_BASE" | awk '{ print $1}'`
