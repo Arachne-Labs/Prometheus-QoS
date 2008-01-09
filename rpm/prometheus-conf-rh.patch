@@ -1,0 +1,36 @@
+--- prometheus.c	2008-01-06 11:54:28.000000000 +0100
++++ prometheus-rh.c	2008-01-06 11:54:09.000000000 +0100
+@@ -57,17 +57,17 @@
+ char *mark="MARK";
+ char *mark_iptables="MARK --set-mark ";
+ int dry_run=0;                         /* preview - use puts() instead of system() */
+-char *config="/etc/prometheus.conf";   /* main configuration file */
+-char *hosts="/etc/hosts";              /* line bandwidth definition file */
++char *config="/etc/prometheus/prometheus.conf";   /* main configuration file */
++char *hosts="/etc/prometheus/hosts";              /* line bandwidth definition file */
+ char *tc="/sbin/tc";                   /* requires tc with HTB support */
+-char *iptables="/usr/sbin/iptables";       /* requires iptables utility */
+-char *iptablessave="/usr/sbin/iptables-save"; /* new */
+-char *iptablesrestore="/usr/sbin/iptables-restore";  /* new */
++char *iptables="/sbin/iptables";       /* requires iptables utility */
++char *iptablessave="/sbin/iptables-save"; /* new */
++char *iptablesrestore="/sbin/iptables-restore";  /* new */
+ char *iptablesfile="/var/spool/prometheus.iptables";  /* new; file for iptables-restore*/
+ char *iptablespreamble="*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
+ FILE *iptables_file=NULL;
+-char *html="/var/www/traffic.html";    /* hall of fame filename */
+-char *preview="/var/www/preview.html"; /* hall of fame preview */
++char *html="/var/www/html/traffic.html";    /* hall of fame filename */
++char *preview="/var/www/html/preview.html"; /* hall of fame preview */
+ char *cmdlog="/var/log/prometheus";    /* command log filename */
+ char *credit="/var/run/prometheus.credit";  /* credit log file */
+ int enable_credit=1;                   /* enable credit file */
+@@ -93,7 +93,7 @@
+ int qos_free_delay=0;	  /* seconds to sleep before applying new QoS rules */
+ int digital_divide=2;     /* controls digital divide weirdness ratio, 1...3 */ 
+ int max_nesting=3;	  /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
+-int htb_r2q=1;      
++int htb_r2q=1;
+ int burst=8;		  /* HTB burst (in kbits) */
+ int burst_main=64;
+ int burst_group=32;
