@@ -1,0 +1,8 @@
+usr/sbin
+usr/share/man/man1
+usr/share/man/man5
+etc/default
+etc/init.d
+etc/cron.d
+etc/prometheus
+usr/share/doc/prometheus

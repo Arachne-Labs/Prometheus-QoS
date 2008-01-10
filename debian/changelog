@@ -1,0 +1,12 @@
+prometheus (0.7.7-2) stable; urgency=low
+
+  * Otestovani instalace a oprava chyb - prvni bastl ;-)
+
+ -- gandalf <gandalf@arachne.cz>  Thu,  10 Jan 2008 02:18:33 +0100
+
+prometheus (0.7.7-1) stable; urgency=low
+
+  * First debian package
+
+ -- gandalf <gandalf@arachne.cz>  Sat,  5 Jan 2008 15:45:42 +0100
+

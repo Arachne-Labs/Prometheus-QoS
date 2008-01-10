@@ -1,0 +1,24 @@
+--- prometheus.c	2008-01-09 12:38:16.000000000 +0100
++++ prometheus.c.deb	2008-01-09 15:51:48.098924554 +0100
+@@ -60,9 +60,9 @@
+ char *config="/etc/prometheus/prometheus.conf";   /* main configuration file */
+ char *hosts="/etc/prometheus/hosts";              /* line bandwidth definition file */
+ char *tc="/sbin/tc";                   /* requires tc with HTB support */
+-char *iptables="/usr/sbin/iptables";       /* requires iptables utility */
+-char *iptablessave="/usr/sbin/iptables-save"; /* new */
+-char *iptablesrestore="/usr/sbin/iptables-restore";  /* new */
++char *iptables="/sbin/iptables";       /* requires iptables utility */
++char *iptablessave="/sbin/iptables-save"; /* new */
++char *iptablesrestore="/sbin/iptables-restore";  /* new */
+ char *iptablesfile="/var/spool/prometheus.iptables";  /* new; file for iptables-restore*/
+ char *iptablespreamble="*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
+ FILE *iptables_file=NULL;
+@@ -72,7 +72,7 @@
+ char *credit="/var/run/prometheus.credit";  /* credit log file */
+ int enable_credit=1;                   /* enable credit file */
+ int use_credit=0;                      /* use credit file (if enabled)*/
+-char *log_dir="/var/www/html/logs/";   /* log directory pathname */
++char *log_dir="/var/www/logs/";   /* log directory pathname */
+ char *log_url="logs/";                 /* log directory URL prefix */
+ char *title="Hall of Fame - Greatest Suckers"; /* hall of fame title */
+ int hall_of_fame=1;		               /* enable hall of fame */

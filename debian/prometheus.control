@@ -1,0 +1,14 @@
+Source: __PACKAGE__
+Section: utils
+Priority: standard
+Maintainer: __MAINTAINER__
+Build-Depends: debhelper (>= 5)
+Standards-Version: __VERSION__
+Version: __VERSION__
+
+Package: __PACKAGE__
+Architecture: __ARCHITECTURE__
+Depends: iptables, iproute
+Recommends: iptables, iproute
+Description: Prometheus QoS (traffic shaper replacement for ISPs)
+

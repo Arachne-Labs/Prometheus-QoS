@@ -1,94 +1,17 @@
 #!/bin/bash
 
-MAINTAINER='Michael Polak <x@n.cz>'
-DEB_PCK_NAME=prometheus
-ARCHITECTURE=i386
-DEBIAN_BASE=$DEB_PCK_NAME.tmp
+arch=`dpkg-architecture -qDEB_HOST_ARCH`
+version=`grep VERSION Makefile | gawk -F= '{ print $2 }'`
+package=`grep PACKAGE Makefile | gawk -F= '{ print $2 }'`
+maintainer='gandalf <gandalf@arachne.cz>'
 
-# Adresare
-rm -r $DEBIAN_BASE 2>/dev/null
-mkdir -p $DEBIAN_BASE
-mkdir -p $DEBIAN_BASE/usr
-mkdir -p $DEBIAN_BASE/usr/sbin
-mkdir -p $DEBIAN_BASE/usr/share
-mkdir -p $DEBIAN_BASE/usr/share/man
-mkdir -p $DEBIAN_BASE/usr/share/man/man1
-mkdir -p $DEBIAN_BASE/usr/share/man/man5
+patch -Nl <debian/prometheus.patch
 
-mkdir -p $DEBIAN_BASE/DEBIAN
-chmod 0755 $DEBIAN_BASE/DEBIAN
+sed     -e "s/__ARCHITECTURE__/$arch/" \
+        -e "s/__VERSION__/$version/" \
+        -e "s/__PACKAGE__/$package/" \
+        -e "s/__MAINTAINER__/$maintainer/" \
+        debian/prometheus.control > debian/control
 
-if ! [ -x prometheus ]; then
-	make main
-fi
-
-# Copy
-cp prometheus		$DEBIAN_BASE/usr/sbin
-cp prometheus.1		$DEBIAN_BASE/usr/share/man/man1
-cp prometheus.conf.5	$DEBIAN_BASE/usr/share/man/man5
-cp -R etc		$DEBIAN_BASE/etc
-
-# .svn cleanup
-rm -rf $DEBIAN_BASE/etc/.svn
-rm -rf $DEBIAN_BASE/etc/*/.svn
-
-# Chmod a+x scripts
-chmod 755 $DEBIAN_BASE/etc/cron.d/prometheus
-chmod 755 $DEBIAN_BASE/etc/init.d/prometheus
-
-# Strip debug info from binary
-strip $DEBIAN_BASE/usr/sbin/prometheus
-
-# Zmeni uzivatele a skupinu
-chown -R root:root $DEBIAN_BASE
-
-# MD5 start
-find  $DEBIAN_BASE -type f -exec md5sum {} \; >> $DEBIAN_BASE/DEBIAN/_md5sum
-# odstraneni $DEBIAN_BASE z adresare
-sed -r "s:$DEBIAN_BASE::g" $DEBIAN_BASE/DEBIAN/_md5sum > $DEBIAN_BASE/DEBIAN/md5sum;
-rm $DEBIAN_BASE/DEBIAN/_md5sum
-# MD5 - end
-
-# Control file
-cp -R $DEB_PCK_NAME.control   $DEBIAN_BASE/DEBIAN/control
-if [ -f  $DEB_PCK_NAME'.postinst' ]; then
-	cp -R $DEB_PCK_NAME.postinst  $DEBIAN_BASE/DEBIAN/postinst
-fi
-if [ -f  $DEB_PCK_NAME'.preinst' ]; then
-	cp -R $DEB_PCK_NAME.preinst   $DEBIAN_BASE/DEBIAN/preinst
-fi
-if [ -f  $DEB_PCK_NAME'.conffiles' ]; then
-	cp -R $DEB_PCK_NAME.conffiles $DEBIAN_BASE/DEBIAN/conffiles
-fi
-if [ -f  $DEB_PCK_NAME'.prerm' ]; then
-	cp -R $DEB_PCK_NAME.prerm     $DEBIAN_BASE/DEBIAN/prerm
-fi
-if [ -f  $DEB_PCK_NAME'.postrm' ]; then
-	cp -R $DEB_PCK_NAME.postrm    $DEBIAN_BASE/DEBIAN/postrm
-fi
-
-# Cleanup
-for f in `find $DEBIAN_BASE/etc -path ".svn*"`
-do
-    rm -R $f 2>/dev/null
-done;
-
-# Momentalne se nepouziva
-#SIZEDU=`du -sk "$DEBIAN_BASE" | awk '{ print $1}'`
-#SIZEDIR=`find "$DEBIAN_BASE" -type d | wc | awk '{print $1}'`
-#SIZE=$[ $SIZEDU - $SIZEDIR ]
-
-# Verze
-VERSION=`grep "const char \*version" prometheus.c|cut -f 2 -d \"`
-
-# Control file
-sed     -e "s/__VERSION__/$VERSION/" \
-	-e "s/__PACKAGE__/$DEB_PCK_NAME/" \
-	-e "s/__MAINTAINER__/$MAINTAINER/" \
-	-e "s/__ARCHITECTURE__/$ARCHITECTURE/" \
-	$DEB_PCK_NAME.control > $DEBIAN_BASE/DEBIAN/control
-
-# Vytvori a prejmenuje balicek
-dpkg --build $DEBIAN_BASE
-dpkg-name -o $DEBIAN_BASE.deb
-rm -rf $DEBIAN_BASE
+dpkg-buildpackage
+				
