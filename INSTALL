@@ -1,25 +1,42 @@
-Prometheus QoS Installation Guide:
+Prometheus QoS installation - canonical
+
+1. run "./check-kernel-qos" script to check kernel modules HTB and SFQ (optional)
+2. as a root, run "make install" (you shouldn't get errors...)
+3. edit /etc/prometheus/prometheus.conf (conf/prometheus.conf or sample-configuration/)
+4. edit /etc/prometheus/hosts (conf/prometheus.hosts or sample-configuration/)
+5. edit /etc/cron.d/prometheus to update preview, shutdown and reload times
+6. run "/etc/init.d/prometheus start" to activate QoS
+7. run "/etc/init.d/prometheus stop" to shutdown QoS and generate stats
+8. run "/etc/init.d/prometheus kill" to force immediate flush of QoS rules
+9. setup /etc/init.d/prometheus to your system init (distribution dependent)
+
+Prometheus QoS installation - alternative, old way
 
 1. if can read read this, you have already unpacked the .tar.gz archive
-2. type "make prometheus" +enter (you shouldn't get errors...)
-3. create /etc/prometheus.conf (see prometheus.conf.SAMPLE or sample-configuration/*)
-4. create /etc/hosts (or /etc/qos.conf, see hosts.SAMPLE or sample-configuration/*)
-5. to activate QoS manualy from command line, just type ./prometheus
-6. to softly shutdown QoS (and generate stats), type ./prometheus -f ("flush")
-7. to force immediate flush of QoS rules, type ./prometheus -9 ("kill")
+2. run "make prometheus" (you shouldn't get errors...)
+3. create /etc/prometheus/prometheus.conf (conf/prometheus.conf or sample-configuration/)
+4. create /etc/prometheus/hosts (conf/prometheus.hosts or sample-configuration/)
+5. to activate QoS manualy from command line, just run "./prometheus"
+6. to softly shutdown QoS (and generate stats), run "./prometheus -f" ("flush")
+7. to force immediate flush of QoS rules, run "./prometheus -9" ("kill")
 
-Promethetus QoS Advanced tips:
+Promethetus QoS advanced tips:
 
-1. I prefere to launch prometheus using "screen" utitlity (not tested without it)
-2. use -p command line switch to generate instant and safe Hall of fame preview
-3. use qos-free-delay option for pause after flushing old rules/before loading new
-4. use magic-relative-limit option to fine tune your Fair Use Policy (daily quotas)
-5. note: qos-proxy-enable and qos-free-zone won't work together
-6. you can setup /etc/crontab using /sample-configuration/crontab.SAMPLE
-7. warning: doing SNAT and QoS on the same router may cause performance problems
+1. use -p command line switch to generate instant and safe Hall of fame preview
+2. use qos-free-delay option for pause after flushing old rules/before loading new
+3. take time to understand sample-configuration/ files prometheus.conf and hosts
+4. note: qos-proxy-enable and qos-free-zone won't work together
+5. warning: doing SNAT and QoS on the same router may cause performance problems
 
 General Linux routing tips for beginners:
 
 echo -n 1 > /proc/sys/net/ipv4/ip_forward
 echo -n 64000 > /proc/sys/net/ipv4/ip_conntrack_max
 echo -n 86400 > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_established
+
+Prometheus Debian packages:
+
+There are two ways to build Prometheus Debian package (*.deb)
+
+1. as a root access and debhelper package installed, run "make deb"
+2. without root access or debhelper, run "./prometheus.debian-noroot-nodebhelper"
