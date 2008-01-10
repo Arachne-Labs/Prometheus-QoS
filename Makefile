@@ -21,10 +21,11 @@ install: main
 	install -m 755 prometheus $(sbindir)
 	install -m 644 prometheus.1 $(mandir)/man1
 	install -m 644 prometheus.conf.5 $(mandir)/man5
-	install -m 755 etc/cron.d/prometheus $(sysconfdir)/cron.d
-	install -m 755 etc/init.d/prometheus $(sysconfdir)/init.d
-	install -m 600 etc/prometheus/prometheus.conf $(sysconfdir)/prometheus
-	install -m 600 etc/prometheus/hosts $(sysconfdir)/prometheus
+	install -m 755 conf/prometheus.cron $(sysconfdir)/cron.d/prometheus
+	install -m 755 conf/prometheus.init $(sysconfdir)/init.d/prometheus
+	install -m 600 conf/prometheus.conf $(sysconfdir)/prometheus
+	install -m 600 conf/prometheus.hosts $(sysconfdir)/prometheus/hosts
+	install -m 644 conf/prometheus.default $(sysconfdir)/default/prometheus
 
 clean:
 	rm -f prometheus

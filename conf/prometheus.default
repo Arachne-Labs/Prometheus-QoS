@@ -1,0 +1,2 @@
+# Run prometheus on startup 
+PROMETHEUS_ENABLE=No

@@ -1,5 +1,21 @@
 #!/bin/sh
-EXEFILE=/usr/sbin/prometheus
+EXEFILE=`which prometheus`
+DEFAULT=/etc/default/prometheus
+
+if [ -e $DEFAULT ]; then
+    . $DEFAULT
+
+    case "$PROMETHEUS_ENABLE" in
+	[Nn]*)
+	    echo "Prometheus disabled in /etc/default/prometheus !"
+	    exit 0
+	;;
+    esac
+
+else
+    echo "File /etc/default/prometheus not found !"
+    exit 0
+fi    
 
 case "$1" in
     start)
