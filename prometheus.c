@@ -20,9 +20,11 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
    General Public License for more details.
 
-   You should have received a copy of the GNU General Public License 
-   along with the Linux kernel source code; if not, write to 
-   Michael Polak, Svojsikova 7, 169 00 Praha 6 Czech Republic */
+   You should have received a copy of the GNU General Public License
+   along with Prometheus Qos; if not, write to the Free Software
+   Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA 
+   
+   GNU General Public License is located in file COPYING */
 
 #define STRLEN 256
 #define FIRSTGROUPID 1024
