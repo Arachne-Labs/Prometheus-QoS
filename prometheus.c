@@ -3,11 +3,11 @@
 /* === Prometheus QoS - you can "steal fire" from your ISP   === */
 /* === "fair-per-IP" quality of service (QoS) utility        === */
 /* === requires Linux 2.4.x or 2.6.x with HTB support        === */
-/* === Copyright(C) 2005-2007 Michael Polak (xChaos)         === */
+/* === Copyright(C) 2005-2008 Michael Polak (xChaos)         === */
 /* === Credits: CZFree.Net, Martin Devera, Netdave, Aquarius === */
 /* ============================================================= */
 
-/* Modified: xChaos, 20070502
+/* Modified: xChaos, 20080119
              ludva, 20071227
 
    Prometheus QoS is free software; you can redistribute it and/or
@@ -639,7 +639,7 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2007 Michael Polak (xChaos)\n\
+Version %s - Copyright (C)2005-2008 Michael Polak (xChaos)\n\
 iptables-restore & burst tunning & classify modification 0.7d by Ludva\n\
 Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
 
@@ -1258,22 +1258,63 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
 
   if(active_classes>10)
   {
-   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"4\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
-   fputs("<tr><td colspan=\"2\">Active Classes</td><td colspan=\"2\">Data transfers</td></tr>\n",f);
-   find (sum,sums,sum->l>=total/4)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
-   find (sum,sums,sum->i==10)
-    fprintf(f,"<tr><td>Top 10</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
-   find (sum,sums,sum->l>=total/2)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
-   find (sum,sums,sum->i>=(active_classes+3)/4)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
-   find (sum,sums,sum->i>=(active_classes+1)/2)
-    fprintf(f,"<tr><td>Top %d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
-   fprintf(f,"<tr><th align=\"left\">All %d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total);
+   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
+   fputs("<tr><td>Analytic category</td>\n",f);
+   fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
+
+   find(sum,sums,sum->l>=total/4)
+   {
+    fprintf(f,"<tr><td>Top 25%% of traffic</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+   
+   find(sum,sums,sum->i==10)
+   {
+    fprintf(f,"<tr><td>Top 10 downloaders</td>\n");
+    fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   find(sum,sums,sum->l>=total/2)
+   {
+    fprintf(f,"<tr><td>Top 50%% of traffic</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   find(sum,sums,sum->l>=4*total/5)
+   {
+    fprintf(f,"<tr><td>Top 80%% of traffic</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   find (sum,sums,sum->i>=(active_classes+1)/5)
+   {
+    fprintf(f,"<tr><td>Top 20%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   find(sum,sums,sum->i>=(active_classes+1)/4)
+   {
+    fprintf(f,"<tr><td>Top 25%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   find(sum,sums,sum->i>=(active_classes+1)/2)
+   {
+    fprintf(f,"<tr><td>Top 50%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   find(sum,sums,sum->i>=4*(active_classes+1)/5)
+   {
+    fprintf(f,"<tr><td>Top 80%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+   }
+
+   fprintf(f,"<tr><td>All users, all traffic</td>\n");
+   fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total);
    fputs("</table>\n",f);
   }
-  fprintf(f,"<small>Statistics generated by Prometheus QoS version %s<br>GPL+Copyright(C)2005 Michael Polak, <a href=\"http://www.arachne.cz/\">Arachne Labs</a></small>\n",version);
+  fprintf(f,"<small>Statistics generated by Prometheus QoS version %s<br>GPL+Copyright(C)2005-2008 Michael Polak, <a href=\"http://www.arachne.cz/\">Arachne Labs</a></small>\n",version);
   fclose(f);
  }
 
