@@ -28,12 +28,12 @@
 
 #define STRLEN 256
 #define FIRSTGROUPID 1024
-#define MAX_GUARANTED_KBPS 2048
+#define FIRSTIPCLASS 2048
 #undef DEBUG
 
 #include "cll1-0.6.h"
 
-const char *version="0.7.7-2"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.8"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 
@@ -748,7 +748,7 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
      if(ip->max<ip->min)
       ip->max=ip->min;
     }
-    ip->mark=MAX_GUARANTED_KBPS+1+class_count++;
+    ip->mark=FIRSTIPCLASS+1+class_count++;
 
     find(group,groups,group->min==ip->min) 
     { 
