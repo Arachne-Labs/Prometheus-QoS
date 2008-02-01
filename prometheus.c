@@ -1,11 +1,11 @@
-
-/* ============================================================= */
-/* === Prometheus QoS - you can "steal fire" from your ISP   === */
-/* === "fair-per-IP" quality of service (QoS) utility        === */
-/* === requires Linux 2.4.x or 2.6.x with HTB support        === */
-/* === Copyright(C) 2005-2008 Michael Polak (xChaos)         === */
-/* === Credits: CZFree.Net, Martin Devera, Netdave, Aquarius === */
-/* ============================================================= */
+/* =============================================================== */
+/* ==    Prometheus QoS - you can "steal fire" from your ISP    == */
+/* ==     "fair-per-IP" quality of service (QoS) utility        == */
+/* ==     requires Linux 2.4.x or 2.6.x with HTB support        == */
+/* ==     Copyright(C) 2005-2008 Michael Polak (xChaos)         == */
+/* ==   iptables-restore support Copyright(C) 2007-2008 ludva   == */
+/* == Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf == */
+/* =============================================================== */
 
 /* Modified: xChaos, 20080201
              ludva, 20071227
@@ -74,7 +74,7 @@ char *cmdlog="/var/log/prometheus";    /* command log filename */
 char *credit="/var/run/prometheus.credit";  /* credit log file */
 int enable_credit=1;                   /* enable credit file */
 int use_credit=0;                      /* use credit file (if enabled)*/
-char *log_dir="/var/www/logs/";   /* log directory pathname */
+char *log_dir="/var/www/logs/";        /* log directory pathname */
 char *log_url="logs/";                 /* log directory URL prefix */
 char *title="Hall of Fame - Greatest Suckers"; /* hall of fame title */
 int hall_of_fame=1;		               /* enable hall of fame */
@@ -88,8 +88,8 @@ int qos_proxy=1;	         /* include proxy port to QoS */
 int include_upload=1;	         /* upload+download=total traffic */
 char *proxy_ip="192.168.1.1/32"; /* our IP with proxy port */
 int proxy_port=3128;	  /* proxy port number */
-long long int line=1024;            /* WAN/ISP download in kbps */
-long long int up=1024;              /* WAN/ISP upload in kbps */
+long long int line=1024;  /* WAN/ISP download in kbps */
+long long int up=1024;    /* WAN/ISP upload in kbps */
 int free_min=32;          /* minimum guaranted bandwidth for all undefined hosts */
 int free_max=64;          /* maximum allowed bandwidth for all undefined hosts */
 int qos_free_delay=0;	  /* seconds to sleep before applying new QoS rules */
@@ -111,10 +111,10 @@ FILE *log_file=NULL;
 
 char *kwd="via-prometheus";           /* /etc/hosts comment, eg. #qos-64-128 */
 
-const int idxtable_treshold1=24;         /* this is no longer configurable */
-const int idxtable_treshold2=12;         /* this is no longer configurable */
-const int idxtable_bitmask1=3;           /* this is no longer configurable */
-const int idxtable_bitmask2=3;           /* this is no longer configurable */
+const int idxtable_treshold1=24;      /* this is no longer configurable */
+const int idxtable_treshold2=12;      /* this is no longer configurable */
+const int idxtable_bitmask1=3;        /* this is no longer configurable */
+const int idxtable_bitmask2=3;        /* this is no longer configurable */
 
 
 /* not yet implemented:
@@ -641,7 +641,7 @@ program
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
 Version %s - Copyright (C)2005-2008 Michael Polak (xChaos)\n\
 iptables-restore & burst tunning & classify modification 0.7d by Ludva\n\
-Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
+Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  /*----- Boring... we have to check command line options first: ----*/
    
