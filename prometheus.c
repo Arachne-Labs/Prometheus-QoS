@@ -173,7 +173,7 @@ struct Keyword
  int asymetry_ratio;        /* ratio for ADSL-like upload */
  int asymetry_fixed;        /* fixed treshold for ADSL-like upload */
  int data_limit;            /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
- int prio_limit;            /* soft shaping (qos): reduce HTB prio if max*prio_limit MB exceeded */
+ int data_prio;            /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
  long fixed_limit;          /* fixed data limit for setting lower HTB ceil */
  long fixed_prio;           /* fixed data lmit for setting lower HTB prio */
  int reserve_min;	    /* bonus for nominal HTB rate bandwidth (in kbps) */
@@ -302,7 +302,7 @@ void get_config(char *config_filename)
    keyword->asymetry_ratio=1;          /* ratio for ADSL-like upload */
    keyword->asymetry_fixed=0;          /* fixed treshold for ADSL-like upload */
    keyword->data_limit=8;              /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
-   keyword->prio_limit=4;              /* soft shaping (qos): reduce HTB prio if max*prio_limit MB exceeded */
+   keyword->data_prio=4;              /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
    keyword->fixed_limit=0;             /* fixed data limit for setting lower HTB ceil */
    keyword->fixed_prio=0;              /* fixed data limit for setting lower HTB prio */
    keyword->reserve_min=8;	       /* bonus for nominal HTB rate bandwidth (in kbps) */
@@ -334,7 +334,7 @@ void get_config(char *config_filename)
     ioption("asymetry-ratio",keyword->asymetry_ratio);
     ioption("asymetry-treshold",keyword->asymetry_fixed);
     ioption("magic-relative-limit",keyword->data_limit);
-    ioption("magic-relative-prio",keyword->prio_limit);
+    ioption("magic-relative-prio",keyword->data_prio);
     loption("magic-fixed-limit",keyword->fixed_limit);
     loption("magic-fixed-prio",keyword->fixed_prio);
     ioption("htb-default-prio",keyword->default_prio);
@@ -349,7 +349,7 @@ void get_config(char *config_filename)
     _=tmptr;
     
     if(keyword->data_limit || keyword->fixed_limit || 
-       keyword->prio_limit || keyword->fixed_prio)
+       keyword->data_prio || keyword->fixed_prio)
         use_credit=1;
         
 
@@ -1064,10 +1064,9 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
     
     search(ip, ips, ip->min==group->min && ip->max>ip->min)
     {
-     if(ip->keyword->data_limit>0 &&
+     if( ip->keyword->data_limit && !ip->fixedprio &&
          ip->traffic>ip->credit+
-         (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)) 
-        && !ip->fixedprio)
+         (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)) )
      {
       if(group_rate<ip->max) ip->max=group_rate;
       group_rate+=magic_treshold;
@@ -1076,9 +1075,9 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
      }
      else
      {
-      if(ip->traffic>ip->credit+
-          (ip->min*ip->keyword->prio_limit+(ip->keyword->fixed_prio<<20)) && 
-         !ip->fixedprio)
+      if( keyword->data_prio && !ip->fixedprio &&
+          ip->traffic>ip->credit+
+           (ip->min*ip->keyword->data_prio+(ip->keyword->fixed_prio<<20)) )
       {
        ip->prio=priority_sequence--;
        if(ip->prio<2) ip->prio=2;
@@ -1087,6 +1086,7 @@ Credits: CZFree.Net, Martin Devera, Netdave, Aquarius\n\n",version);
       if(credit_file)
       {
        unsigned long long lcredit=0;
+       
        if((ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))>ip->traffic) 
         lcredit=(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))-ip->traffic;
        fprintf(credit_file,"%s %Lu\n",ip->addr,lcredit);
