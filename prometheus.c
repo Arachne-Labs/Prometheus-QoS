@@ -7,7 +7,7 @@
 /* === Credits: CZFree.Net, Martin Devera, Netdave, Aquarius === */
 /* ============================================================= */
 
-/* Modified: xChaos, 20080119
+/* Modified: xChaos, 20080201
              ludva, 20071227
 
    Prometheus QoS is free software; you can redistribute it and/or
@@ -31,9 +31,9 @@
 #define MAX_GUARANTED_KBPS 2048
 #undef DEBUG
 
-#include "cll1.h"
+#include "cll1-0.6.h"
 
-const char *version="0.7.7-1"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.7-2"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 

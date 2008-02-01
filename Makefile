@@ -1,6 +1,6 @@
 PACKAGE=prometheus
 VERSION=0.7.7
-CFLAGS=-Wall
+CFLAGS=-std=c99
 prefix=/usr
 mandir=$(prefix)/share/man
 sbindir=$(prefix)/sbin
