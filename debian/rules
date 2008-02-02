@@ -6,7 +6,7 @@ CFLAGS = -Wall -g
 bindir = /usr/sbin
 mandir = /usr/share/man
 sysconfdir = /etc
-destdir = $(CURDIR)/deb/prometheus
+destdir = $(CURDIR)/debian/prometheus
 docdir = /usr/share/doc
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))

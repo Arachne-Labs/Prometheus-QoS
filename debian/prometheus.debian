@@ -1,9 +1,10 @@
 #!/bin/bash
 
 arch=`dpkg-architecture -qDEB_HOST_ARCH`
-version=`grep VERSION Makefile | gawk -F= '{ print $2 }'`
-package=`grep PACKAGE Makefile | gawk -F= '{ print $2 }'`
-maintainer='gandalf <gandalf@arachne.cz>'
+version=`grep VERSION= Makefile | cut -d = -f 2`
+package=`grep PACKAGE= Makefile | cut -d = -f 2`
+maintainer="gandalf <gandalf@arachne.cz>"
+control=debian/prometheus.control
 
 #patch -Nl <debian/prometheus.patch
 
@@ -11,7 +12,6 @@ sed     -e "s/__ARCHITECTURE__/$arch/" \
         -e "s/__VERSION__/$version/" \
         -e "s/__PACKAGE__/$package/" \
         -e "s/__MAINTAINER__/$maintainer/" \
-        debian/prometheus.control > debian/control
+        $control > debian/control
 
-dpkg-buildpackage
 				

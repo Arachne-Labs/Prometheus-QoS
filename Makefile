@@ -4,16 +4,13 @@ CFLAGS=-std=c99 -Wall
 prefix=/usr
 mandir=$(prefix)/share/man
 sbindir=$(prefix)/sbin
-sysconfdir=/etc/
+sysconfdir=/etc
 
 main: prometheus
 	$(CC) -o prometheus prometheus.c
 
 deb: main
-	arch=`dpkg-architecture -qDEB_HOST_ARCH`
-	maintainer="gandalf <gandalf@arachne.cz>"
-	#patch -Nl <debian/prometheus.patch
-	sed -e "s/__ARCHITECTURE__/$(arch)/" -e "s/__VERSION__/($VERSION)/" -e "s/__PACKAGE__/($PACKAGE)/" -e "s/__MAINTAINER__/$(maintainer)/" debian/prometheus.control > debian/control
+	debian/prometheus.debian
 	dpkg-buildpackage
 
 tgz: clean
@@ -21,7 +18,7 @@ tgz: clean
 	rm -rf ../$(PACKAGE)-$(VERSION)/.svn/
 	rm -rf ../$(PACKAGE)-$(VERSION)/*/.svn/
 	rm -rf ../$(PACKAGE)-$(VERSION)/*~ $(PACKAGE)-$(VERSION)/*/*~
-	tar -czf $(PACKAGE)-$(VERSION).tar.gz ../$(PACKAGE)-$(VERSION)
+	tar -czf ../$(PACKAGE)-$(VERSION).tar.gz ../$(PACKAGE)-$(VERSION)
 	rm -rf ../$(PACKAGE)-$(VERSION)
 
 install: main
