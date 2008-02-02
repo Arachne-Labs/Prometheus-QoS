@@ -19,19 +19,20 @@ int main (int argc, char **argv)
 {
  char *month,*year,*str,*name,*ptr,*ptr2;
  long traffic,traffic_month,total=0;
- int col,col2,y_ok,m_ok,accept_month,i=1;
+ int col,col2,y_ok,m_ok,accept_month,i=1,any_month=0;
  FILE *f;
  
  string(str,STRLEN);
 
  if(argc<3)
  {
-  puts("Usage: monthly-stats Mmm YYYY (Mmm=Jan-Dec, YYYY=year)");
+  puts("Usage: monthly-stats Mmm YYYY (Mmm=Jan-Dec or Year, YYYY=year)");
   exit(-1);
  }
  else
  {
   month=argv[1];
+  if(eq(month,"Year")) any_month=1;
   year=argv[2];
  }
 
@@ -53,7 +54,7 @@ int main (int argc, char **argv)
     case 3: traffic=atol(ptr);break;
     case 7: valid_columns(ptr2,ptr,' ',col2) switch(col2)
             {
-             case 2: if(eq(ptr2,month)) m_ok=1; break;
+             case 2: if(any_month || eq(ptr2,month)) m_ok=1; break;
              case 5: if(eq(ptr2,year)) y_ok=1; break;
             }
    }
@@ -84,7 +85,7 @@ int main (int argc, char **argv)
   every(ip,ips)
    if(ip->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\"> %ld MB</td><th align=\"right\"> %ld GB</td></tr>\n",i++,ip->name,ip->traffic,ip->traffic>>10);  fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th></tr>\n",i++,ip->name,ip->traffic,ip->traffic>>10);
+    fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th></tr>\n",i++,ip->name,ip->traffic,ip->traffic>>10);
     total+=ip->traffic>>10;
    }
   fprintf(f,"<tr><th colspan=\"3\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th></tr>\n",total);
