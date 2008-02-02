@@ -563,6 +563,10 @@ void run_restore(void)
 {
  char *restor, *str;
  string(restor,STRLEN);
+
+ /*-----------------------------------------------------------------*/
+ printf("Running %s <%s ...\n",iptablesrestore,iptablesfile);
+ /*-----------------------------------------------------------------*/
  
  save_line("COMMIT");
  fclose(iptables_file);
@@ -1075,7 +1079,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      }
      else
      {
-      if( keyword->data_prio && !ip->fixedprio &&
+      if( ip->keyword->data_prio && !ip->fixedprio &&
           ip->traffic>ip->credit+
            (ip->min*ip->keyword->data_prio+(ip->keyword->fixed_prio<<20)) )
       {
@@ -1459,6 +1463,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  printf("Total IP count: %d\n", i);
 
+ /*-----------------------------------------------------------------*/
+ puts("Generating free bandwith classes ...");
+ /*-----------------------------------------------------------------*/
+
  /* ---------------------------------------- tc - free bandwith shared class */
  sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,lan,parent,free_min,free_max,burst);
  safe_run(str);
@@ -1481,7 +1489,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,wan);
  safe_run(str);
- 
+
  run_restore();
  
  if (log_file) fclose(log_file);
