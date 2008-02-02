@@ -1,4 +1,11 @@
-version 0.7.7 2007-01-??
+version 0.7.8 2008-02-02 (xChaos)
+
+- improved Enterprise Research and Planning (ERP) section
+- added informational messages before running iptables-restore
+- fixed behaviour of "...-magic-relative-prio 0" + "...-fixed-fixed-prio 0"
+- "filter-type classify" prometheus.conf keyword tested in production enviroment
+
+version 0.7.7 2008-01-??
 
 - testing version, 0.8 will be stable release
 - faster startup times using iptables-restore (credit: Martin "Ludva" Svoboda)
