@@ -2,8 +2,8 @@ Prometheus QoS installation - canonical
 
 1. run "./check-kernel-qos" script to check kernel modules HTB and SFQ (optional)
 2. as a root, run "make install" (you shouldn't get errors, just some warnings)
-3. edit /etc/prometheus/prometheus.conf (conf/prometheus.conf or sample-configuration/)
-4. edit /etc/prometheus/hosts (conf/prometheus.hosts or sample-configuration/)
+3. edit /etc/prometheus/prometheus.conf (conf/prometheus.conf or examples/...)
+4. edit /etc/prometheus/hosts (conf/prometheus.hosts or examples/...)
 5. edit /etc/cron.d/prometheus to update preview, shutdown and reload times
 6. run "/etc/init.d/prometheus start" to activate QoS
 7. run "/etc/init.d/prometheus stop" to shutdown QoS and generate stats
@@ -14,8 +14,8 @@ Prometheus QoS installation - alternative, old way
 
 1. if can read read this, you have already unpacked the .tar.gz archive
 2. run "make prometheus" (you shouldn't get errors, just some warnings)
-3. create /etc/prometheus/prometheus.conf (conf/prometheus.conf or sample-configuration/)
-4. create /etc/prometheus/hosts (conf/prometheus.hosts or sample-configuration/)
+3. create /etc/prometheus/prometheus.conf (conf/prometheus.conf or examples/...)
+4. create /etc/prometheus/hosts (conf/prometheus.hosts or examples/...)
 5. to activate QoS manualy from command line, just run "./prometheus"
 6. to softly shutdown QoS (and generate stats), run "./prometheus -f" ("flush")
 7. to force immediate flush of QoS rules, run "./prometheus -9" ("kill")
@@ -23,8 +23,8 @@ Prometheus QoS installation - alternative, old way
 Promethetus QoS advanced tips:
 
 1. use -p command line switch to generate instant and safe Hall of fame preview
-2. use qos-free-delay option for pause after flushing old rules/before loading new
-3. take time to understand sample-configuration/ files prometheus.conf and hosts
+2. use qos-free-delay option for pause after flushing old rules, before loading new
+3. take some time to understand files examples/prometheus.conf and examples/hosts
 4. note: qos-proxy-enable and qos-free-zone won't work together
 5. warning: doing SNAT and QoS on the same router may cause performance problems
 
