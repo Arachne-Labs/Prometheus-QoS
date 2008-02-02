@@ -12,8 +12,8 @@ main: prometheus
 deb: main
 	arch=`dpkg-architecture -qDEB_HOST_ARCH`
 	maintainer="gandalf <gandalf@arachne.cz>"
-	#patch -Nl <deb/prometheus.patch
-	sed -e "s/__ARCHITECTURE__/$(arch)/" -e "s/__VERSION__/($VERSION)/" -e "s/__PACKAGE__/($PACKAGE)/" -e "s/__MAINTAINER__/$(maintainer)/" deb/prometheus.control > deb/control
+	#patch -Nl <debian/prometheus.patch
+	sed -e "s/__ARCHITECTURE__/$(arch)/" -e "s/__VERSION__/($VERSION)/" -e "s/__PACKAGE__/($PACKAGE)/" -e "s/__MAINTAINER__/$(maintainer)/" debian/prometheus.control > debian/control
 	dpkg-buildpackage
 
 tgz: clean

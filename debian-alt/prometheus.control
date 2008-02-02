@@ -1,6 +1,0 @@
-Package: __PACKAGE__
-Version: __VERSION__
-Architecture: __ARCHITECTURE__
-Depends: iptables, iproute
-Maintainer: __MAINTAINER__
-Description: Prometheus QoS (traffic shaper replacement for ISPs)
