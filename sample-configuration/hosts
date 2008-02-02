@@ -7,9 +7,9 @@
 # Poznamky a komentare, ktere zpracovava primo Prometheus QoS:
 #
 # wifi-normal-128-MAX      wifi pripojeni s FUP 2 GB/48h
-# wifi-plus-256-MAX        wifi pripojeni s FUP 6 GB/48h
-# backbone-normal-128-MAX  paterni pripojeni s FUP 3 GB/48h
-# backbone-plus-MIN-MAX    paterni pripojeni s mirnejsim FUP
+# wifi-plus-256-MAX        wifi pripojeni s FUP 4 GB/48h
+# backbone-normal-128-MAX  paterni pripojeni s FUP 4 GB/48h
+# backbone-plus-MIN-MAX    paterni pripojeni s FUP 4 GB/48h
 # backbone-bezfup-MIN-MAX  paterni pripojeni bez FUP, s nizsi prioritou 
 # sharing-hostname         sdileni konektivity, pozor - nelze pouzit aliasy
 

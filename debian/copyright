@@ -3,13 +3,14 @@ Sat,  5 Jan 2008 15:45:42 +0100.
 
 It was downloaded from https://dev.arachne.cz/svn/prometheus/downloads
 
-Copyright:   GNU+ Copyright(G)2007, Michael Polak (xChaos)
-Credits: CZFree.Net, Netdave, aquarius
-	   ...and Martin Devera (.cz) for his HTB qdisc (of course)
-	   ...and Jakub Walczak (.pl) for providing feedback and patches
-	   ...and Ing. Jiri Engelthaler (.cz) for bugfixes and Asus WL500 port
-	   ...and Dial Telecom (slightly expensive ISP) for chance to test it
+Copyright(C) 2005-2008 Michael Polak (xChaos) original source code
+Copyright(C) 2007-2008 Martin Svoboda (Ludva) iptables-restore, CLASSIFY
 
+Credit: CZFree.Net+Netdave (idea), Aquarius (.rpm), Gandalf (.deb)
+...and: Martin Devera (.cz) for his HTB qdisc (of course)
+...and: Jakub Walczak (.pl) for providing feedback and patches
+...and: Ing. Jiri Engelthaler (.cz) for bugfixes and Asus WL500 port
+...and: Dial Telecom (our slightly expensive ISP) for chance to test it
 
 License:
 

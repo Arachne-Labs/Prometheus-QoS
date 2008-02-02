@@ -4,6 +4,8 @@ version 0.7.8 2008-02-02 (xChaos)
 - added informational messages before running iptables-restore
 - fixed behaviour of "...-magic-relative-prio 0" + "...-fixed-fixed-prio 0"
 - "filter-type classify" prometheus.conf keyword tested in production enviroment
+- log file /var/log/prometheus renamed to /var/log/prometheuslog
+- credit file /var/run/prometheus.credit moved to  /var/lib/misc
 
 version 0.7.7 2008-01-??
 

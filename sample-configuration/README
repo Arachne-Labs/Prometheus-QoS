@@ -30,10 +30,10 @@ This allows for example easy management of gateway from inside this range,
 or remote management of entire network after ssh to gatway and then another
 ssh to this zone.
 
-We run HTTP proxy at port 3128 of LAN interface of internet gateway. This
-proxy is inside "qos-free-zone". Because of "qos-proxy-enable", 
+We used to run HTTP proxy at port 3128 of LAN interface of internet gateway. 
+This proxy was inside "qos-free-zone". With "qos-proxy-enable", 
 "qos-proxy-ip" (which is actually IP/number of bits of netmask) and 
-"qos-proxy-port" settings, this port is excluded from QoS-free zone.
+"qos-proxy-port" settings, this port was excluded from QoS-free zone.
 
 3) NAT
 

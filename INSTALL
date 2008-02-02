@@ -1,7 +1,7 @@
 Prometheus QoS installation - canonical
 
 1. run "./check-kernel-qos" script to check kernel modules HTB and SFQ (optional)
-2. as a root, run "make install" (you shouldn't get errors...)
+2. as a root, run "make install" (you shouldn't get errors, just some warnings)
 3. edit /etc/prometheus/prometheus.conf (conf/prometheus.conf or sample-configuration/)
 4. edit /etc/prometheus/hosts (conf/prometheus.hosts or sample-configuration/)
 5. edit /etc/cron.d/prometheus to update preview, shutdown and reload times
@@ -13,7 +13,7 @@ Prometheus QoS installation - canonical
 Prometheus QoS installation - alternative, old way
 
 1. if can read read this, you have already unpacked the .tar.gz archive
-2. run "make prometheus" (you shouldn't get errors...)
+2. run "make prometheus" (you shouldn't get errors, just some warnings)
 3. create /etc/prometheus/prometheus.conf (conf/prometheus.conf or sample-configuration/)
 4. create /etc/prometheus/hosts (conf/prometheus.hosts or sample-configuration/)
 5. to activate QoS manualy from command line, just run "./prometheus"
@@ -36,7 +36,5 @@ echo -n 86400 > /proc/sys/net/ipv4/netfilter/ip_conntrack_tcp_timeout_establishe
 
 Prometheus Debian packages:
 
-There are two ways to build Prometheus Debian package (*.deb)
-
-1. as a root access and debhelper package installed, run "make deb"
-2. without root access or debhelper, run "./prometheus.debian-noroot-nodebhelper"
+1. you need root access and "debhelper" package installed
+2. run "make deb" or "sudo make deb"

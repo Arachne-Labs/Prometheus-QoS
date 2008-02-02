@@ -7,7 +7,7 @@
 /* == Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf == */
 /* =============================================================== */
 
-/* Modified: xChaos, 20080201
+/* Modified: xChaos, 20080202
              ludva, 20071227
 
    Prometheus QoS is free software; you can redistribute it and/or
@@ -35,6 +35,24 @@
 
 const char *version="0.7.8"; /*0.7.9 will be last development, 0.8.0 first stable */
 
+/* ======= All path names are defined hear (for RPM patch) =======  */
+
+char *tc              = "/sbin/tc"; /* requires tc with HTB support */
+char *iptables        = "/sbin/iptables"; /* requires iptables utility */
+char *iptablessave    = "/sbin/iptables-save"; /* not yet required */
+char *iptablesrestore = "/sbin/iptables-restore";  /* requires iptables-restore */
+
+char *config          = "/etc/prometheus/prometheus.conf"; /* main configuration file */
+char *hosts           = "/etc/prometheus/hosts"; /* per-IP bandwidth definition file */
+
+char *iptablesfile    = "/var/spool/prometheus.iptables"; /* temporary file for iptables-restore*/
+char *credit          = "/var/lib/misc/prometheus.credit"; /* credit log file */
+char *html            = "/var/www/traffic.html"; /* hall of fame filename */
+char *preview         = "/var/www/preview.html"; /* hall of fame preview */
+char *cmdlog          = "/var/log/prometheuslog"; /* command log filename */
+char *log_dir         = "/var/www/logs/"; /* log directory pathname, ended with slash */
+char *log_url         = "logs/"; /* log directory relative URI prefix (partial URL) */
+
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 
 void help(void)
@@ -59,23 +77,10 @@ int filter_type=1;                      /*1 mark, 2 classify*/
 char *mark="MARK";
 char *mark_iptables="MARK --set-mark ";
 int dry_run=0;                         /* preview - use puts() instead of system() */
-char *config="/etc/prometheus/prometheus.conf";   /* main configuration file */
-char *hosts="/etc/prometheus/hosts";              /* line bandwidth definition file */
-char *tc="/sbin/tc";                   /* requires tc with HTB support */
-char *iptables="/sbin/iptables";       /* requires iptables utility */
-char *iptablessave="/sbin/iptables-save"; /* new */
-char *iptablesrestore="/sbin/iptables-restore";  /* new */
-char *iptablesfile="/var/spool/prometheus.iptables";  /* new; file for iptables-restore*/
 char *iptablespreamble="*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
 FILE *iptables_file=NULL;
-char *html="/var/www/traffic.html";    /* hall of fame filename */
-char *preview="/var/www/preview.html"; /* hall of fame preview */
-char *cmdlog="/var/log/prometheus";    /* command log filename */
-char *credit="/var/run/prometheus.credit";  /* credit log file */
 int enable_credit=1;                   /* enable credit file */
 int use_credit=0;                      /* use credit file (if enabled)*/
-char *log_dir="/var/www/logs/";        /* log directory pathname */
-char *log_url="logs/";                 /* log directory URL prefix */
 char *title="Hall of Fame - Greatest Suckers"; /* hall of fame title */
 int hall_of_fame=1;		               /* enable hall of fame */
 char *lan="eth0";                /* LAN interface */
@@ -570,17 +575,17 @@ void run_restore(void)
  
  save_line("COMMIT");
  fclose(iptables_file);
- if(dry_run) {
+ if(dry_run) 
+ {
     parse(iptablesfile)
     {
         str=_;
         printf("%s\n", str);
     }done;
- }else{
-    //sprintf(restor,"cat %s",iptablesfile); else 
-    sprintf(restor,"%s <%s",iptablesrestore, iptablesfile);
-    system(restor);
- };
+ }
+
+ sprintf(restor,"%s <%s",iptablesrestore, iptablesfile);
+ safe_run(restor);
  
  free(restor);
 }

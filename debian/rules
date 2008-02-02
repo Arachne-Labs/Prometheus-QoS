@@ -6,7 +6,7 @@ CFLAGS = -Wall -g
 bindir = /usr/sbin
 mandir = /usr/share/man
 sysconfdir = /etc
-destdir = $(CURDIR)/debian/prometheus
+destdir = $(CURDIR)/deb/prometheus
 docdir = /usr/share/doc
 
 ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
@@ -20,7 +20,7 @@ build: build-stamp
 build-stamp:
 	dh_testdir
 	$(CC) -o $(CURDIR)/prometheus $(CURDIR)/prometheus.c
-#	$(CC) -o $(CURDIR)/prometheus-monthly-stats $(CURDIR)/optional-tools/monthly-stats.c
+#	$(CC) -o $(CURDIR)/prometheus-stats $(CURDIR)/optional-tools/prometheus-stats.c
 
 	touch $@
 
@@ -40,7 +40,7 @@ install: build
 	dh_clean -k 
 	dh_installdirs
 	install -m 755 -o root -g root $(CURDIR)/prometheus $(destdir)$(bindir)
-#	install -m 755 -o root -g root $(CURDIR)prometheus-monthly-stats $(destdir)$(bindir)
+#	install -m 755 -o root -g root $(CURDIR)/prometheus-stats $(destdir)$(bindir)
 	install -m 644 -o root -g root $(CURDIR)/prometheus.1 $(destdir)$(mandir)/man1
 	install -m 644 -o root -g root $(CURDIR)/prometheus.conf.5 $(destdir)$(mandir)/man5
 	install -m 755 -o root -g root $(CURDIR)/conf/prometheus.init $(destdir)$(sysconfdir)/init.d/prometheus

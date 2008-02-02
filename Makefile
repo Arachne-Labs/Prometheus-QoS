@@ -1,5 +1,5 @@
 PACKAGE=prometheus
-VERSION=0.7.7
+VERSION=0.7.8
 CFLAGS=-std=c99 -Wall
 prefix=/usr
 mandir=$(prefix)/share/man
@@ -10,8 +10,20 @@ main: prometheus
 	$(CC) -o prometheus prometheus.c
 
 deb: main
-	./prometheus.debian
-	
+	arch=`dpkg-architecture -qDEB_HOST_ARCH`
+	maintainer="gandalf <gandalf@arachne.cz>"
+	#patch -Nl <deb/prometheus.patch
+	sed -e "s/__ARCHITECTURE__/$(arch)/" -e "s/__VERSION__/($VERSION)/" -e "s/__PACKAGE__/($PACKAGE)/" -e "s/__MAINTAINER__/$(maintainer)/" deb/prometheus.control > deb/control
+	dpkg-buildpackage
+
+tgz: clean
+	cp -r . ../$(PACKAGE)-$(VERSION)
+	rm -rf ../$(PACKAGE)-$(VERSION)/.svn/
+	rm -rf ../$(PACKAGE)-$(VERSION)/*/.svn/
+	rm -rf ../$(PACKAGE)-$(VERSION)/*~ $(PACKAGE)-$(VERSION)/*/*~
+	tar -czf $(PACKAGE)-$(VERSION).tar.gz ../$(PACKAGE)-$(VERSION)
+	rm -rf ../$(PACKAGE)-$(VERSION)
+
 install: main
 	install -d $(sbindir)
 	install -d $(mandir)/man1
@@ -29,3 +41,4 @@ install: main
 
 clean:
 	rm -f prometheus
+	rm -f optinal-tools/prometheus-stats

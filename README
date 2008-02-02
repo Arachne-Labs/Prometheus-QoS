@@ -3,16 +3,19 @@
 Prometheus QoS - steal fire from your ISP !
 "fair-per-IP" quality of service utility
 requires Linux kernel with HTB qdisc enabled
-GNU+ Copyright(G)2007, Michael Polak (xChaos)
-Credits: Credits: CZFree.Net, Netdave, aquarius
-...and Martin Devera (.cz) for his HTB qdisc (of course)
-...and Jakub Walczak (.pl) for providing feedback and patches
-...and Ing. Jiri Engelthaler (.cz) for bugfixes and Asus WL500 port
-...and Dial Telecom (slightly expensive ISP) for chance to test it
+
+Copyright(C) 2005-2008 Michael Polak (xChaos) original source code
+Copyright(C) 2007-2008 Martin Svoboda (Ludva) iptables-restore, CLASSIFY
+
+Credit: CZFree.Net+Netdave (idea), Aquarius (.rpm), Gandalf (.deb)
+...and: Martin Devera (.cz) for his HTB qdisc (of course)
+...and: Jakub Walczak (.pl) for providing feedback and patches
+...and: Ing. Jiri Engelthaler (.cz) for bugfixes and Asus WL500 port
+...and: Dial Telecom (our slightly expensive ISP) for chance to test it
 
 Feedback: xchaos(at)arachne.cz
 Homepage: http://gpl.arachne.cz
-
+SVN tree: https://dev.arachne.cz/svn/prometheus
 ============================================================================
 
 QoS (or Quality-of-service) is IPv4 traffic shaper replacement for Internet

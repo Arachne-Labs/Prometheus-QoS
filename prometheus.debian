@@ -5,7 +5,7 @@ version=`grep VERSION Makefile | gawk -F= '{ print $2 }'`
 package=`grep PACKAGE Makefile | gawk -F= '{ print $2 }'`
 maintainer='gandalf <gandalf@arachne.cz>'
 
-patch -Nl <debian/prometheus.patch
+#patch -Nl <debian/prometheus.patch
 
 sed     -e "s/__ARCHITECTURE__/$arch/" \
         -e "s/__VERSION__/$version/" \
