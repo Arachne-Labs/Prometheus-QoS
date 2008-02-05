@@ -7,7 +7,7 @@
 /* == Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf == */
 /* =============================================================== */
 
-/* Modified: xChaos, 20080202
+/* Modified: xChaos, 20080205
              ludva, 20071227
 
    Prometheus QoS is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.h"
 
-const char *version="0.7.8"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.8.1"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= All path names are defined hear (for RPM patch) =======  */
 
@@ -41,6 +41,7 @@ char *tc              = "/sbin/tc"; /* requires tc with HTB support */
 char *iptables        = "/sbin/iptables"; /* requires iptables utility */
 char *iptablessave    = "/sbin/iptables-save"; /* not yet required */
 char *iptablesrestore = "/sbin/iptables-restore";  /* requires iptables-restore */
+char *ls              = "/bin/ls"; /* this is not user configurable :-) */
 
 char *config          = "/etc/prometheus/prometheus.conf"; /* main configuration file */
 char *hosts           = "/etc/prometheus/hosts"; /* per-IP bandwidth definition file */
@@ -52,6 +53,7 @@ char *preview         = "/var/www/preview.html"; /* hall of fame preview */
 char *cmdlog          = "/var/log/prometheuslog"; /* command log filename */
 char *log_dir         = "/var/www/logs/"; /* log directory pathname, ended with slash */
 char *log_url         = "logs/"; /* log directory relative URI prefix (partial URL) */
+char *html_log_dir    = "/var/www/logs/html/";
 
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 
@@ -68,7 +70,13 @@ void help(void)
 -p            just generate preview of data transfer statistics and exit\n\
 -n            no delay (overrides qos-free-delay keyword)\n\
 -d            dry run (preview tc and iptables commands on stdout)\n\
-");
+-l Mmm YYYY   generate HTML summary of traffic logs (Mmm=Jan-Dec or Year, YYYY=year)\n\
+-m            generate HTML summary of traffic logs for yesterday's month\n\
+-y            generate HTML summary of traffic logs for yesterday's year\n");
+/* not yet implemented:
+-s            start shaping! (keep data transfer statistics - but apply shaping)\n\
+-r            just reload configuration (...and keep data transfer statistics)\n\
+*/
 }
 
 /* === Configuraration file values defaults - stored in global variables ==== */
@@ -120,12 +128,6 @@ const int idxtable_treshold1=24;      /* this is no longer configurable */
 const int idxtable_treshold2=12;      /* this is no longer configurable */
 const int idxtable_bitmask1=3;        /* this is no longer configurable */
 const int idxtable_bitmask2=3;        /* this is no longer configurable */
-
-
-/* not yet implemented:
--s            start shaping! (keep data transfer statistics - but apply shaping)\n\
--r            just reload configuration (...and keep data transfer statistics)\n\
-*/
 
 /* ==== This is C<<1 stuff - learn C<<1 first! http://cll1.arachne.cz ==== */
 
@@ -210,7 +212,7 @@ void TheIP(void)
  push(ip,ips);
 }
 
-/* ====== Iptables indexes are used to reduce complexity to log8(N) ===== */
+/* ====== iptables indexes are used to reduce complexity to log8(N) ===== */
 
 char *very_ugly_ipv4_code(char *inip,int bitmask,int format_as_chainname)
 {
@@ -355,9 +357,7 @@ void get_config(char *config_filename)
     
     if(keyword->data_limit || keyword->fixed_limit || 
        keyword->data_prio || keyword->fixed_prio)
-        use_credit=1;
-        
-
+        use_credit=1;        
    }
   }
 
@@ -381,6 +381,7 @@ void get_config(char *config_filename)
   option("credit-filename",credit);
   ioption("credit-enable",enable_credit);
   option("log-traffic-directory",log_dir);
+  option("log-traffic-html-directory",html_log_dir);
   option("log-traffic-url-path",log_url);
   option("qos-free-zone",qos_free_zone);
   ioption("qos-free-delay",qos_free_delay);
@@ -397,8 +398,7 @@ void get_config(char *config_filename)
   ioption("htb-r2q",htb_r2q);
   ioption("magic-include-upload",include_upload);
   ioption("magic-priorities",magic_priorities);
-  ioption("magic-treshold",magic_treshold);
-  
+  ioption("magic-treshold",magic_treshold);  
   option("filter-type", cnf);
   
 /* not yet implemented:
@@ -628,6 +628,119 @@ char *parse_datafile_line(char *str)
   return NULL;
 }
 
+struct IpLog
+{
+ char *name;
+ long traffic;
+ list(IpLog);
+} *iplog,*iplogs;
+
+void parse_ip_log(int argc, char **argv) 
+{
+ char *month,*year,*str,*name,*ptr,*ptr2;
+ long traffic,traffic_month,total=0;
+ int col,col2,y_ok,m_ok,accept_month,i=1,any_month=0;
+ char mstr[4],ystr[5];
+ FILE *f;
+ 
+ string(str,STRLEN);
+
+ if(argv[1][1]=='l') /* -l */
+ {
+   if(argc<4)
+   {
+    puts("Missing parameter(s)!\nUsage: prometheus -l Mmm YYYY (Mmm=Jan-Dec or Year, YYYY=year)");
+    exit(-1);
+   }
+   else
+   {
+    month=argv[2];
+    if(eq(month,"Year")) any_month=1;
+    year=argv[3];
+   }
+ }
+ else
+ { 
+   time_t t = time(NULL) - 3600*24 ; /* yesterday's timestamp*/
+   struct tm *timep = localtime(&t);                                           
+ 
+   if(argv[1][1]=='m') /* -m yestarday - month */
+   {
+    strftime(mstr, 4, "%b", timep);
+    month=mstr;
+    strftime(ystr, 5, "%Y", timep);
+    year=ystr; 
+   }
+   else /* -y yesterday - year */
+   {
+    month="Year";
+    any_month=1;
+    strftime(ystr, 5, "%Y", timep);
+    year=ystr;
+   }
+ }
+ printf("Analysing traffic for %s %s ...\n",month,year);
+
+ sprintf(str,"%s %s/*.log",ls,log_dir);
+ shell(str);
+ input(str,STRLEN)
+ {
+  ptr=strrchr(str,'\n');
+  if(ptr) *ptr='\0';
+  printf("Parsing %s ...",str);
+  accept_month=0;
+  traffic_month=0;
+  parse(str)
+  {
+   y_ok=m_ok=0;  
+   valid_columns(ptr,_,'\t',col) switch(col)
+   {
+    case 2: name=ptr;break;
+    case 3: traffic=atol(ptr);break;
+    case 7: valid_columns(ptr2,ptr,' ',col2) switch(col2)
+            {
+             case 2: if(any_month || eq(ptr2,month)) m_ok=1; break;
+             case 5: if(eq(ptr2,year)) y_ok=1; break;
+            }
+   }
+   if(y_ok && m_ok) 
+   {
+    traffic_month+=traffic;
+    accept_month=1;
+   }
+  }
+  done;
+  if(accept_month)
+  {
+   create(iplog,IpLog);
+   iplog->name=name;
+   iplog->traffic=traffic_month;
+   insert(iplog,iplogs,desc_order_by,traffic);
+   printf(" %ld MB\n",iplog->traffic);
+  }
+  else
+   puts(" no records.");
+ }
+ sprintf(str,"%s/%s-%s.html",html_log_dir,year,month);
+ printf("Writing %s ...",str);
+ f=fopen(str,"w");
+ if(f)
+ {
+  fprintf(f,"<table border><tr><th colspan=\"4\">Data transfers - %s %s</th></tr>\n ",month,year);
+  every(iplog,iplogs)
+   if(iplog->traffic)
+   {
+    fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th></tr>\n",i++,iplog->name,iplog->traffic,iplog->traffic>>10);
+    total+=iplog->traffic>>10;
+   }
+  fprintf(f,"<tr><th colspan=\"3\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th></tr>\n",total);
+  fputs("</table>\n",f);
+  fclose(f);
+  puts(" done.");
+ }
+}
+
+
 /*-----------------------------------------------------------------*/
 /* Are you looking for int main (int argc, char **argv) ? :-))     */
 /*-----------------------------------------------------------------*/
@@ -663,6 +776,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-9") { just_flush=9; }
   argument("-p") { just_preview=1; }
   argument("-n") { nodelay=1; }
+  argument("-l") { parse_ip_log(argc,argv); exit(0); }
+  argument("-m") { parse_ip_log(argc,argv); exit(0); }
+  argument("-y") { parse_ip_log(argc,argv); exit(0); }
   argument("-?") { help(); exit(0); }
   argument("--help") { help(); exit(0); }
   argument("-v") { exit(0); } 
@@ -1247,7 +1363,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    
    if(!just_preview)
    {
-    sprintf(str,"%s%s.log",log_dir,ip->name);
+    sprintf(str,"%s/%s.log",log_dir,ip->name);
     iplog=fopen(str,"a");
     if(iplog)
     {
