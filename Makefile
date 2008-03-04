@@ -11,7 +11,7 @@ main: prometheus
 
 deb: main
 	debian/prometheus.debian
-	dpkg-buildpackage
+	dpkg-buildpackage -rfakeroot
 
 tgz: clean
 	cp -r . ../$(PACKAGE)-$(VERSION)

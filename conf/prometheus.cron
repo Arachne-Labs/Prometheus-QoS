@@ -3,3 +3,7 @@
 
 0 0,1,7-23 * * *  root nice /usr/sbin/prometheus -p 1>/dev/null
 0 2 * * *  root /usr/sbin/prometheus 1>/dev/null
+
+# Statistics
+0 4 1 * *  root /usr/sbin/prometheus -m 1>/dev/null
+0 5 1 1 *  root /usr/sbin/prometheus -y 1>/dev/null

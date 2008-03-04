@@ -1,3 +1,10 @@
+prometheus (0.7.8-2) stable; urgency=low
+
+  * Modified init and crontab config files (prometheus stats)
+  * Firts mipsel package edition (for RouterBoard, etc.)
+
+ -- gandalf <gandalf@arachne.cz>  Tue,  04 Mar 2008 22:48:54 +0100
+
 prometheus (0.7.8-1) stable; urgency=low
 
   * Experimental package from version 0.7.8
