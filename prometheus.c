@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.h"
 
-const char *version="0.7.8.1"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.8.2"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= All path names are defined hear (for RPM patch) =======  */
 
@@ -852,8 +852,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     ip->min=atoi(substring);
     if(ip->min<=0)
     {
-     puts("Illegal value of minimum bandwidth: 0 kbps.");
-     reject_config_and_exit(hosts);
+     printf(" %s: Illegal value of minimum bandwidth 0 kbps, using %d kbps\n",s
+     ip->min=free_min;
     }
     if(ip->max<=ip->min)
     {
