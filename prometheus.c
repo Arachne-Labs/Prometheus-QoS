@@ -1,13 +1,13 @@
-/* =============================================================== */
-/* ==    Prometheus QoS - you can "steal fire" from your ISP    == */
-/* ==     "fair-per-IP" quality of service (QoS) utility        == */
-/* ==     requires Linux 2.4.x or 2.6.x with HTB support        == */
-/* ==     Copyright(C) 2005-2008 Michael Polak (xChaos)         == */
-/* ==   iptables-restore support Copyright(C) 2007-2008 ludva   == */
-/* == Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf == */
-/* =============================================================== */
+  /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
+ /*     Prometheus QoS - you can "steal fire" from your ISP     */
+/*      "fair-per-IP" quality of service (QoS) utility          */
+/*      requires Linux 2.4.x or 2.6.x with HTB support          */
+/*      Copyright(C) 2005-2008 Michael Polak (xChaos)           */
+/*    iptables-restore support Copyright(C) 2007-2008 ludva     */
+/*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
+/* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified: xChaos, 20080205
+/* Modified: xChaos, 20080407
              ludva, 20071227
 
    Prometheus QoS is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.h"
 
-const char *version="0.7.8.2"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.9.1"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= All path names are defined hear (for RPM patch) =======  */
 
@@ -852,7 +852,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     ip->min=atoi(substring);
     if(ip->min<=0)
     {
-     printf(" %s: Illegal value of minimum bandwidth 0 kbps, using %d kbps\n",s
+     printf(" %s: Illegal value of minimum bandwidth 0 kbps, using %d kbps\n",str,free_min);
      ip->min=free_min;
     }
     if(ip->max<=ip->min)
@@ -1367,7 +1367,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%s",time(NULL),ip->name,ip->traffic, ip->direct, ip->proxy, ip->upload,d);
+     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%s",
+                    time(NULL),ip->name,ip->traffic,ip->direct,ip->proxy,ip->upload,ip->min,d); /* d = date*/
      fclose(iplog);
     }
    }
