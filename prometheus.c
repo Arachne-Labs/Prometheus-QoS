@@ -776,9 +776,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-9") { just_flush=9; }
   argument("-p") { just_preview=1; }
   argument("-n") { nodelay=1; }
-  argument("-l") { parse_ip_log(argc,argv); exit(0); }
-  argument("-m") { parse_ip_log(argc,argv); exit(0); }
-  argument("-y") { parse_ip_log(argc,argv); exit(0); }
+  argument("-l") { just_preview=666; }
+  argument("-m") { just_preview=666; }
+  argument("-y") { just_preview=666; }
   argument("-?") { help(); exit(0); }
   argument("--help") { help(); exit(0); }
   argument("-v") { exit(0); } 
@@ -794,6 +794,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  printf("Parsing configuration file %s ...\n", config);
  /*-----------------------------------------------------------------*/
  get_config(config);
+ 
+ if(just_preview == 666)
+ {
+    parse_ip_log(argc,argv); 
+    exit(0); 
+ }
 
  if(althosts) hosts=althosts;
 
@@ -1567,18 +1573,18 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(qos_proxy)
  {
-  sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j MARK --set-mark 3",chain_postrouting,proxy_ip,proxy_port,lan);
+  sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s%d",chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables,3);
   save_line(str);
   sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j ACCEPT",chain_postrouting,proxy_ip,proxy_port,lan);
   save_line(str);
  }
- sprintf(str,"-A %s -o %s -j MARK --set-mark 3",chain_postrouting,lan);
+ sprintf(str,"-A %s -o %s -j %s%d",chain_postrouting,lan,mark_iptables,3);
  save_line(str);
  sprintf(str,"-A %s -o %s -j ACCEPT",chain_postrouting,lan);
  save_line(str);
 
  /* --------------------------------------------------------  mark upload */
- sprintf(str,"-A %s -o %s -j MARK --set-mark 3",chain_forward,wan);
+ sprintf(str,"-A %s -o %s -j %s%d",chain_forward,wan,mark_iptables,3);
  save_line(str);
  sprintf(str,"-A %s -o %s -j ACCEPT",chain_forward,wan);
  save_line(str);
