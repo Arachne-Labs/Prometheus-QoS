@@ -1373,8 +1373,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%s",
-                    time(NULL),ip->name,ip->traffic,ip->direct,ip->proxy,ip->upload,ip->min,ip->max,d); /* d = date*/
+     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%s",
+                    time(NULL),ip->name,ip->traffic,ip->direct,ip->proxy,ip->upload,ip->min,ip->max,ip->desired,d); /* d = date*/
      fclose(iplog);
     }
    }
