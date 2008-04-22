@@ -7,8 +7,8 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified: xChaos, 20080407
-             ludva, 20071227
+/* Modified: xChaos, 20080422
+             ludva, 20080415
 
    Prometheus QoS is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as 
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.h"
 
-const char *version="0.7.9.1"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.9.2"; /*0.7.9 will be last development, 0.8.0 first stable */
 
 /* ======= All path names are defined hear (for RPM patch) =======  */
 
@@ -755,7 +755,9 @@ program
  int parent=1;
  int just_flush=0;
  int nodelay=0;
- int just_preview=0;                   /* preview - generate just stats */
+ int just_preview=0;                /* preview - generate just stats */
+ int just_logs=0;                   /* just parse logs */
+ 
  char *chain_forward, *chain_postrouting;
  char *althosts=NULL;
   
@@ -776,9 +778,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-9") { just_flush=9; }
   argument("-p") { just_preview=1; }
   argument("-n") { nodelay=1; }
-  argument("-l") { just_preview=666; }
-  argument("-m") { just_preview=666; }
-  argument("-y") { just_preview=666; }
+  argument("-l") { just_logs=1; }
+  argument("-m") { just_logs=1; }
+  argument("-y") { just_logs=1; }
   argument("-?") { help(); exit(0); }
   argument("--help") { help(); exit(0); }
   argument("-v") { exit(0); } 
@@ -795,10 +797,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  get_config(config);
  
- if(just_preview == 666)
+ if(just_logs)
  {
-    parse_ip_log(argc,argv); 
-    exit(0); 
+    parse_ip_log(argc,argv);
+    exit(0);
  }
 
  if(althosts) hosts=althosts;
