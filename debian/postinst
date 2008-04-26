@@ -21,7 +21,7 @@ set -e
 case "$1" in
     configure)
 
-#    /etc/prometheus/check-kernel-qos	
+#    /etc/prometheus/check-kernel-qos	 
 
     if [ -x "/etc/init.d/prometheus" ]; then
 	update-rc.d prometheus defaults 40 >/dev/null
