@@ -8,7 +8,7 @@ Copyright(C) 2005-2008 Michael Polak (xChaos) original source code
 Copyright(C) 2007-2008 Martin Svoboda (Ludva) iptables-restore, CLASSIFY
 
 Credit: CZFree.Net+Netdave (idea), Aquarius (.rpm), Gandalf (.deb)
-...and: Martin Devera (.cz) for his HTB qdisc (of course)
+...and: Martin Devera (.cz) for his HTB qdisc (of course) 
 ...and: Jakub Walczak (.pl) for providing feedback and patches
 ...and: Ing. Jiri Engelthaler (.cz) for bugfixes and Asus WL500 port
 ...and: Dial Telecom (our slightly expensive ISP) for chance to test it
