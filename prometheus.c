@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified: xChaos, 20080422
+/* Modified: xChaos, 20080504
              ludva, 20080415
 
    Prometheus QoS is free software; you can redistribute it and/or
@@ -35,7 +35,7 @@
 
 const char *version = "0.7.9-c"; 
 
-/* Version numbers: 0.7.9 will be last development ("beta"), 0.8.0 first stable */
+/* Version numbers: 0.7.9 is development releases ("beta"), 0.8.0 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
 /* C source code development versions ("beta"): 0.7.9-a, 0.8.1-b, etc. */
 /* C source code release versions: 0.8.0, 0.8.2, 0.8.4, etc. */
@@ -85,51 +85,48 @@ void help(void)
 -r            just reload configuration (...and keep data transfer statistics)\n\
 */
 }
-
 /* === Configuraration file values defaults - stored in global variables ==== */
 
-int filter_type=1;                      /*1 mark, 2 classify*/
-char *mark="MARK";
-char *mark_iptables="MARK --set-mark ";
-int dry_run=0;                         /* preview - use puts() instead of system() */
-char *iptablespreamble="*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
-FILE *iptables_file=NULL;
-int enable_credit=1;                   /* enable credit file */
-int use_credit=0;                      /* use credit file (if enabled)*/
-char *title="Hall of Fame - Greatest Suckers"; /* hall of fame title */
-int hall_of_fame=1;		               /* enable hall of fame */
-char *lan="eth0";                /* LAN interface */
-char *lan_medium="100Mbit";      /* 10Mbit/100Mbit ethernet */
-char *wan="eth1";                /* WAN/ISP interface */
-char *wan_medium="100Mbit";	 /* 10Mbit/100Mbit ethernet */
-char *qos_leaf="sfq perturb 5";  /* leaf discipline */
-char *qos_free_zone=NULL;      	 /* QoS free zone */
-int qos_proxy=1;	         /* include proxy port to QoS */
-int include_upload=1;	         /* upload+download=total traffic */
-char *proxy_ip="192.168.1.1/32"; /* our IP with proxy port */
-int proxy_port=3128;	  /* proxy port number */
-long long int line=1024;  /* WAN/ISP download in kbps */
-long long int up=1024;    /* WAN/ISP upload in kbps */
-int free_min=32;          /* minimum guaranted bandwidth for all undefined hosts */
-int free_max=64;          /* maximum allowed bandwidth for all undefined hosts */
-int qos_free_delay=0;	  /* seconds to sleep before applying new QoS rules */
-int digital_divide=2;     /* controls digital divide weirdness ratio, 1...3 */ 
-int max_nesting=3;	  /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
-int htb_r2q=1;      
-int burst=8;		  /* HTB burst (in kbits) */
-int burst_main=64;
-int burst_group=32;
-int magic_priorities=8;	  /* number of priority levels (soft shaping) */
-int magic_treshold=8;     /* reduce ceil by X*magic_treshhold kbps (hard shaping) */
-int keywordcount=0;
-
+int        filter_type = 1; /*1 mark, 2 classify*/
+char             *mark = "MARK";
+char    *mark_iptables = "MARK --set-mark ";
+int            dry_run = 0; /* preview - use puts() instead of system() */
+char *iptablespreamble = "*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
+FILE    *iptables_file = NULL;
+int      enable_credit = 1; /* enable credit file */
+int         use_credit = 0; /* use credit file (if enabled)*/
+char            *title = "Hall of Fame - Greatest Suckers"; /* hall of fame title */
+int       hall_of_fame = 1; /* enable hall of fame */
+char              *lan = "eth0"; /* LAN interface */
+char       *lan_medium = "100Mbit"; /* 10Mbit/100Mbit ethernet */
+char              *wan = "eth1"; /* WAN/ISP interface */
+char       *wan_medium = "100Mbit"; /* 10Mbit/100Mbit ethernet */
+char         *qos_leaf = "sfq perturb 5"; /* leaf discipline */
+char    *qos_free_zone = NULL; /* QoS free zone */
+int          qos_proxy = 1; /* include proxy port to QoS */
+int     include_upload = 1; /* upload+download=total traffic */
+char         *proxy_ip = "192.168.1.1/32"; /* our IP with proxy port */
+int         proxy_port = 3128; /* proxy port number */
+long long int     line = 1024; /* WAN/ISP download in kbps */
+long long int       up = 1024; /* WAN/ISP upload in kbps */
+int           free_min = 32; /* minimum guaranted bandwidth for all undefined hosts */
+int           free_max = 64; /* maximum allowed bandwidth for all undefined hosts */
+int     qos_free_delay = 0; /* seconds to sleep before applying new QoS rules */
+int     digital_divide = 2; /* controls digital divide weirdness ratio, 1...3 */ 
+int        max_nesting = 3; /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
+int            htb_r2q = 1; 
+int              burst = 8; /* HTB burst (in kbits) */
+int         burst_main = 64;
+int        burst_group = 32;
+int   magic_priorities = 8; /* number of priority levels (soft shaping) */
+int     magic_treshold = 8; /* reduce ceil by X*magic_treshhold kbps (hard shaping) */
+int       keywordcount = 0;
 /* not yet implemented:
- int fixed_packets=0;	maximum number of pps per IP address (not class!) 
- int packet_limit=5;   maximum number of pps to htn CEIL, not rate !!! 
+int      fixed_packets = 0; maximum number of pps per IP address (not class!) 
+int       packet_limit = 5; maximum number of pps to htn CEIL, not rate !!! 
 */
-FILE *log_file=NULL;
-
-char *kwd="via-prometheus";           /* /etc/hosts comment, eg. #qos-64-128 */
+FILE         *log_file = NULL;
+char              *kwd = "via-prometheus"; /* /etc/hosts comment, eg. #qos-64-128 */
 
 const int idxtable_treshold1=24;      /* this is no longer configurable */
 const int idxtable_treshold2=12;      /* this is no longer configurable */
@@ -788,7 +785,7 @@ program
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
 Version %s - Copyright (C)2005-2008 Michael Polak (xChaos)\n\
-iptables-restore & burst tunning & classify modification 0.7d by Ludva\n\
+iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  /*----- Boring... we have to check command line options first: ----*/
