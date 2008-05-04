@@ -745,11 +745,11 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f)
  {
-  fprintf(f,"<table border><tr><th colspan=\"4\">Data transfers - %s %s</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
+  fprintf(f,"<table border><tr><th colspan=\"2\">%s %s</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
   every(iplog,iplogs)
    if(iplog->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th><th align=\"right\">%ld kbps</th></tr>\n",
+    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th><td align=\"right\">%ld kbps</th></tr>\n",
               i++, iplog->name, iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
    }
