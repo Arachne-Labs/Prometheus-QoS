@@ -552,7 +552,6 @@ void get_traffic_statistics(void)
     }  
   }
 
-
  free(cmd);
 }
  
@@ -637,17 +636,17 @@ struct IpLog
 {
  char *name;
  long traffic;
+ long guaranted;
  list(IpLog);
 } *iplog,*iplogs;
 
 void parse_ip_log(int argc, char **argv) 
 {
- char *month,*year,*str,*name,*ptr,*ptr2;
- long traffic,traffic_month,total=0;
- int col,col2,y_ok,m_ok,accept_month,i=1,any_month=0;
- char mstr[4],ystr[5];
- FILE *f;
- 
+ char *month, *year, *str, *name, *ptr, *ptr2;
+ long traffic, traffic_month, total=0, guaranted;
+ int col, col2, y_ok, m_ok, accept_month, i=1, any_month=0;
+ char mstr[4], ystr[5];
+ FILE *f; 
  string(str,STRLEN);
 
  if(argv[1][1]=='l') /* -l */
@@ -696,30 +695,36 @@ void parse_ip_log(int argc, char **argv)
   printf("Parsing %s ...",str);
   accept_month=0;
   traffic_month=0;
+  guaranted = 0;
   parse(str)
   {
    y_ok=m_ok=0;  
    valid_columns(ptr,_,'\t',col) switch(col)
    {
-    case 2: name=ptr;break;
-    case 3: traffic=atol(ptr);break;
-    /* column number   - was 7, now 9...*/
+    case 2: name = ptr;break;
+    case 3: traffic = atol(ptr);break;
+    /* column number   - was 7, now 10...*/
     case 7:
     case 8:
-    case 9: if (isalnum(*ptr)) /* alphanumeric string = date, just one*/
-            {
-              valid_columns(ptr2,ptr,' ',col2) switch(col2)
-              {
-               case 2: if(any_month || eq(ptr2,month)) m_ok=1; break;
-               case 5: if(eq(ptr2,year)) y_ok=1; break;
-              }
-            }
+    case 9:
+    case 10: if (isalnum(*ptr)) /* alphanumeric string = date, just one*/
+             {
+               valid_columns(ptr2,ptr,' ',col2) switch(col2)
+               {
+                case 2: if(any_month || eq(ptr2,month)) m_ok = 1; break;
+                case 5: if(eq(ptr2,year)) y_ok = 1; break;
+               }
+             }
+             else
+             {
+               if(col == 7) guaranted = atol(ptr);
+             }
    }
    
    if(y_ok && m_ok) 
    {
-    traffic_month+=traffic;
-    accept_month=1;
+    traffic_month += traffic;
+    accept_month = 1;
    }
   }
   done;
@@ -727,8 +732,9 @@ void parse_ip_log(int argc, char **argv)
   if(accept_month)
   {
    create(iplog,IpLog);
-   iplog->name=name;
-   iplog->traffic=traffic_month;
+   iplog->name = name;
+   iplog->guaranted = guaranted;
+   iplog->traffic = traffic_month;
    insert(iplog,iplogs,desc_order_by,traffic);
    printf(" %ld MB\n",iplog->traffic);
   }
@@ -740,14 +746,15 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f)
  {
-  fprintf(f,"<table border><tr><th colspan=\"4\">Data transfers - %s %s</th></tr>\n ",month,year);
+  fprintf(f,"<table border><tr><th colspan=\"4\">Data transfers - %s %s</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
   every(iplog,iplogs)
    if(iplog->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th></tr>\n",i++,iplog->name,iplog->traffic,iplog->traffic>>10);
+    fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th><th align=\"right\">%ld kbps</th></tr>\n",
+              i++, iplog->name, iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
    }
-  fprintf(f,"<tr><th colspan=\"3\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th></tr>\n",total);
+  fprintf(f,"<tr><th colspan=\"3\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th><th align=\"right\">%Ld kbps</th></tr>\n", total, line);
   fputs("</table>\n",f);
   fclose(f);
   puts(" done.");
