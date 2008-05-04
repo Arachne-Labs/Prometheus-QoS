@@ -33,8 +33,12 @@
 
 #include "cll1-0.6.h"
 
-const char *version="0.7.9.2"; /*0.7.9 will be last development, 0.8.0 first stable */
+const char *version="0.7.9-c"; 
 
+/* Version numbers: 0.7.9 will be last development ("beta"), 0.8.0 first stable */
+/* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
+/* C source code development versions ("beta"): 0.7.9-a, 0.8.1-b, etc. */
+/* C source code release versions: 0.8.0, 0.8.2, 0.8.4, etc. */
 
 /* ======= All path names are defined here (for RPM patch) =======  */
 
@@ -436,7 +440,7 @@ void get_config(char *config_filename)
  /* are supplied values meaningful ?*/
  if(line<=0 || up<=0)
  {
-  puts("Illegal value of wan bandwidth: 0 kbps.");
+  puts("Illegal value of LAN or WAN bandwidth: 0 kbps.");
   reject_config_and_exit(config_filename);
  }
 }
@@ -684,6 +688,7 @@ void parse_ip_log(int argc, char **argv)
 
  sprintf(str,"%s %s/*.log",ls,log_dir);
  shell(str);
+
  input(str,STRLEN)
  {
   ptr=strrchr(str,'\n');
@@ -698,12 +703,19 @@ void parse_ip_log(int argc, char **argv)
    {
     case 2: name=ptr;break;
     case 3: traffic=atol(ptr);break;
-    case 7: valid_columns(ptr2,ptr,' ',col2) switch(col2)
+    /* column number   - was 7, now 9...*/
+    case 7:
+    case 8:
+    case 9: if (isalnum(*ptr)) /* alphanumeric string = date, just one*/
             {
-             case 2: if(any_month || eq(ptr2,month)) m_ok=1; break;
-             case 5: if(eq(ptr2,year)) y_ok=1; break;
+              valid_columns(ptr2,ptr,' ',col2) switch(col2)
+              {
+               case 2: if(any_month || eq(ptr2,month)) m_ok=1; break;
+               case 5: if(eq(ptr2,year)) y_ok=1; break;
+              }
             }
    }
+   
    if(y_ok && m_ok) 
    {
     traffic_month+=traffic;
@@ -711,6 +723,7 @@ void parse_ip_log(int argc, char **argv)
    }
   }
   done;
+
   if(accept_month)
   {
    create(iplog,IpLog);

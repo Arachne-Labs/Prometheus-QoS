@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <unistd.h>
+#include <ctype.h>
 
 /* Section For Dummies part 1, updated 2004-05-07 by xCh. */
 
