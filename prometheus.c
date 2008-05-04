@@ -749,7 +749,7 @@ void parse_ip_log(int argc, char **argv)
   every(iplog,iplogs)
    if(iplog->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th>%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th><th align=\"right\">%ld kbps</th></tr>\n",
+    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th><th align=\"right\">%ld kbps</th></tr>\n",
               i++, iplog->name, iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
    }
