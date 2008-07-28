@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.h"
 
-const char *version = "0.7.9-c"; 
+const char *version = "0.7.9-d"; 
 
 /* Version numbers: 0.7.9 is development releases ("beta"), 0.8.0 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
@@ -1545,14 +1545,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
    safe_run(str);
 
-   if (strcmpi(ip->keyword->leaf_discipline, "none")){
-    sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
-    safe_run(str);
-   }
-   
-   if (filter_type == 1){
-    sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, lan, ip->mark, ip->mark);
-    safe_run(str);
+   if (strcmpi(ip->keyword->leaf_discipline, "none"))
+   {
+     sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+     safe_run(str);
+   }   
+   if (filter_type == 1)
+   {
+     sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, lan, ip->mark, ip->mark);
+     safe_run(str);
    }
 
    /* -------------------------------------------------------- upload class */
@@ -1565,14 +1566,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                 (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), burst, ip->prio);
    safe_run(str);
    
-   if (strcmpi(ip->keyword->leaf_discipline, "none")){
-    sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s",tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
-    safe_run(str);
-   }
-   
-   if (filter_type == 1){
-    sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",tc, wan, ip->mark, ip->mark);
-    safe_run(str);
+   if (strcmpi(ip->keyword->leaf_discipline, "none"))
+   {
+     sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s",tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+     safe_run(str);
+   }   
+   if (filter_type == 1)
+   {
+     sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",tc, wan, ip->mark, ip->mark);
+     safe_run(str);
    }
   }
   else
@@ -1580,72 +1582,76 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   i++;
  }
 
-
  if(idxs)
  {
-  chain_forward="forw_common";
-  chain_postrouting="post_common";
+   chain_forward = "forw_common";
+   chain_postrouting = "post_common";
  }
  else
  {
-  chain_forward="FORWARD";
-  chain_postrouting="POSTROUTING";
+   chain_forward = "FORWARD";
+   chain_postrouting = "POSTROUTING";
  }
-
- /* --------------------------------------------------------  mark download */
-
- if(qos_proxy)
+ /* -------------------------------- classify or reject free download */
  {
-  sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s%d",chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables,3);
-  save_line(str);
-  sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j ACCEPT",chain_postrouting,proxy_ip,proxy_port,lan);
-  save_line(str);
+   char *final_chain = "REJECT";
+   if(free_min) final_chain = "ACCEPT";
+   if(qos_proxy)
+   {
+     if(free_min)
+     {
+       sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s%d",chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables,3);
+       save_line(str);
+     }
+     sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s",chain_postrouting,proxy_ip,proxy_port,lan,final_chain);
+     save_line(str);
+   }
+   if(free_min)
+   {
+     sprintf(str,"-A %s -o %s -j %s%d",chain_postrouting,lan,mark_iptables,3);
+     save_line(str);
+   }
+   sprintf(str,"-A %s -o %s -j %s",chain_postrouting,lan,final_chain);
+   save_line(str);
+   /* ------------------------------- classify or reject free  upload */
+   if(free_min)
+   {
+     sprintf(str,"-A %s -o %s -j %s%d",chain_forward,wan,mark_iptables,3);
+     save_line(str);
+   }
+   sprintf(str,"-A %s -o %s -j %s",chain_forward,wan,final_chain);
+   save_line(str);
  }
- sprintf(str,"-A %s -o %s -j %s%d",chain_postrouting,lan,mark_iptables,3);
- save_line(str);
- sprintf(str,"-A %s -o %s -j ACCEPT",chain_postrouting,lan);
- save_line(str);
 
- /* --------------------------------------------------------  mark upload */
- sprintf(str,"-A %s -o %s -j %s%d",chain_forward,wan,mark_iptables,3);
- save_line(str);
- sprintf(str,"-A %s -o %s -j ACCEPT",chain_forward,wan);
- save_line(str);
+ if(free_min) /* allocate free bandwith if it is not zero... */ 
+ {
+   /*-----------------------------------------------------------------*/
+   puts("Generating free bandwith classes ...");
+   /*-----------------------------------------------------------------*/
+   sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,lan,parent,free_min,free_max,burst);
+   safe_run(str);
+   sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,wan,parent,free_min,free_max,burst);
+   safe_run(str);
+   /* tc SFQ */
+   if (strcmpi(qos_leaf, "none"))
+   {
+     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,lan,qos_leaf);
+     safe_run(str);
+   
+     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,wan,qos_leaf);
+     safe_run(str);
+   }   
+   /* tc handle 1 fw flowid */
+   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,lan);
+   safe_run(str);
 
+   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,wan);
+   safe_run(str);
+ }
  printf("Total IP count: %d\n", i);
-
- /*-----------------------------------------------------------------*/
- puts("Generating free bandwith classes ...");
- /*-----------------------------------------------------------------*/
-
- /* ---------------------------------------- tc - free bandwith shared class */
- sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,lan,parent,free_min,free_max,burst);
- safe_run(str);
-
- sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,wan,parent,free_min,free_max,burst);
- safe_run(str);
-
- /* tc SFQ */
- if (strcmpi(qos_leaf, "none")){
-  sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,lan,qos_leaf);
-  safe_run(str);
- 
-  sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,wan,qos_leaf);
-  safe_run(str);
- }
- 
- /* tc handle 1 fw flowid */
- sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,lan);
- safe_run(str);
-
- sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,wan);
- safe_run(str);
-
- run_restore();
- 
+ run_restore(); 
  if (log_file) fclose(log_file);
  return 0;
-
  /* that's all folks, thank you for reading it all the way up to this point ;-) */
  /* bad luck C<<1 is not yet finished, I promise no sprintf() next time... */
 }
