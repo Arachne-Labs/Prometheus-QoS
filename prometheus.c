@@ -7,8 +7,8 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified: xChaos, 20080504
-             ludva, 20080415
+/* Modified by: xChaos, 20080728
+                 ludva, 20080415
 
    Prometheus QoS is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as 
