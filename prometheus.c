@@ -1594,7 +1594,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
  /* -------------------------------- classify or reject free download */
  {
-   char *final_chain = "REJECT";
+   char *final_chain = "DROP"; /* REJECT would be better, but it is impossible in mangle */
    if(free_min) final_chain = "ACCEPT";
    if(qos_proxy)
    {
