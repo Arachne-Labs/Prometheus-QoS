@@ -1,5 +1,5 @@
 PACKAGE=prometheus
-VERSION=0.7.8
+VERSION=0.8.1
 CFLAGS=-std=c99 -Wall
 prefix=/usr
 mandir=$(prefix)/share/man
