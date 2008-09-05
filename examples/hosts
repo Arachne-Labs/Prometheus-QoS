@@ -557,7 +557,7 @@
 10.XX.4.21	nadkajetankou11.xchaos			#wifi-plus-256-640
 10.XX.4.65	bridge-xchaos.dave263 dave263
 10.XX.4.66	pc.dave263				#[XX.YY.90.18] wifi-normal-128-896
-10.XX.4.67	nb.dave263				#sharing-pc.dave263
+10.XX.4.67	nb.dave263				#(XX.YY.90.18) sharing-pc.dave263
 10.XX.4.68	soused.dave263				#wifi-normal-128-512
 10.XX.4.90	bridge-xchaos.cisticz-hq cisticz-hq cisticz
 10.XX.4.91	91-4.cisticz-hq				#wifi-plus-256-256
