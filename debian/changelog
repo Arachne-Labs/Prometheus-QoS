@@ -1,3 +1,9 @@
+prometheus (0.7.8-3) stable; urgency=low
+
+   * Changeset 89-91
+
+ -- gandalf <gandalf@arachne.cz>  Fri,  05 Sep 2008 13:05:54 +0200
+
 prometheus (0.7.8-2) stable; urgency=low
 
   * Modified init and crontab config files (prometheus stats)
