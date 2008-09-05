@@ -1,0 +1,9 @@
+Package: prometheus
+Version: 0.8.1
+Section: utils
+Priority: standard
+Architecture: mipsel
+Depends: iptables, iproute
+Recommends: iptables, iproute
+Maintainer: gandalf <gandalf@arachne.cz>
+Description: Prometheus QoS (traffic shaper replacement for ISPs)

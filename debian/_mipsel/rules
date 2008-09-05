@@ -1,0 +1,93 @@
+#!/usr/bin/make -f
+
+export CC = mipsel-linux-gcc
+export TARGET = mips-le-elf
+export TOOLPREFIX = mipsel-linux-
+export CROSS_COMPILE = mipsel-linux-
+CFLAGS = -Wall -g
+
+bindir = /usr/sbin
+mandir = /usr/share/man
+sysconfdir = /etc
+destdir = $(CURDIR)/debian/prometheus
+docdir = /usr/share/doc
+
+ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
+	CFLAGS += -O0
+else
+	CFLAGS += -O2
+endif
+
+build: build-stamp
+
+build-stamp:
+	dh_testdir
+	mipsel-linux-gcc -o $(CURDIR)/prometheus $(CURDIR)/prometheus.c
+#	$(CC) -o $(CURDIR)/prometheus-stats $(CURDIR)/optional-tools/prometheus-stats.c
+
+	touch $@
+
+clean: clean-dir
+
+clean-dir: 
+	dh_testdir
+	dh_testroot
+	rm -f build-stamp
+	make clean	
+	dh_clean 
+	
+
+install: build
+	dh_testdir
+	dh_testroot
+	dh_clean -k 
+	dh_installdirs
+	install -m 755 -o root -g root $(CURDIR)/prometheus $(destdir)$(bindir)
+#	install -m 755 -o root -g root $(CURDIR)/prometheus-stats $(destdir)$(bindir)
+	install -m 644 -o root -g root $(CURDIR)/prometheus.1 $(destdir)$(mandir)/man1
+	install -m 644 -o root -g root $(CURDIR)/prometheus.conf.5 $(destdir)$(mandir)/man5
+	install -m 755 -o root -g root $(CURDIR)/conf/prometheus.init $(destdir)$(sysconfdir)/init.d/prometheus
+	install -m 644 -o root -g root $(CURDIR)/conf/prometheus.default $(destdir)$(sysconfdir)/default/prometheus
+	install -m 755 -o root -g root $(CURDIR)/conf/prometheus.cron $(destdir)$(sysconfdir)/cron.d/prometheus
+	install -m 600 -o root -g root $(CURDIR)/conf/prometheus.hosts $(destdir)$(sysconfdir)/prometheus/hosts
+	install -m 600 -o root -g root $(CURDIR)/conf/prometheus.conf $(destdir)$(sysconfdir)/prometheus/prometheus.conf
+	install -m 700 -o root -g root $(CURDIR)/check-kernel-qos $(destdir)$(sysconfdir)/prometheus
+	install -m 644 -o root -g root $(CURDIR)/README $(destdir)$(docdir)/prometheus
+	install -m 644 -o root -g root $(CURDIR)/CHANGELOG $(destdir)$(docdir)/prometheus
+
+
+# Build architecture-dependent files here.
+binary-arch: build install
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs CHANGELOG
+#	dh_installdocs
+#	dh_installexamples
+#	dh_install
+#	dh_installmenu
+#	dh_installdebconf	
+#	dh_installlogrotate
+#	dh_installemacsen
+#	dh_installpam
+#	dh_installmime
+#	dh_python
+#	dh_installinit
+#	dh_installcron
+#	dh_installinfo
+#	dh_installman
+	dh_link
+#	dh_strip
+	mipsel-linux-strip $(destdir)$(bindir)/prometheus
+	dh_compress
+	dh_fixperms
+#	dh_perl
+#	dh_makeshlibs
+	dh_installdeb
+#	dh_shlibdeps
+	cp debian/control.DEBIAN debian/prometheus/DEBIAN/control
+#	dh_gencontrol\
+	dh_md5sums
+	dh_builddeb
+
+binary: binary-arch
+.PHONY: build clean binary-arch binary install

@@ -1,0 +1,14 @@
+Source: prometheus
+Section: utils
+Priority: standard
+Maintainer: gandalf <gandalf@arachne.cz>
+Build-Depends: debhelper (>= 5)
+Standards-Version: 0.8.1
+Version: 0.8.1
+
+Package: prometheus
+Architecture: mipsel
+Depends: iptables, iproute
+Recommends: iptables, iproute
+Description: Prometheus QoS (traffic shaper replacement for ISPs)
+
