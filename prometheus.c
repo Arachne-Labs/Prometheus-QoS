@@ -684,61 +684,64 @@ void parse_ip_log(int argc, char **argv)
  }
  printf("Analysing traffic for %s %s ...\n",month,year);
 
- sprintf(str,"%s %s/*.log",ls,log_dir);
+ /* sorry... next release of C<<1 header file will include for_path_files(name,path) {  } macro */
+ sprintf(str,"%s %s/",ls,log_dir);
  shell(str);
-
- input(str,STRLEN)
+ input(str,STRLEN) 
  {
-  ptr=strrchr(str,'\n');
-  if(ptr) *ptr='\0';
-  printf("Parsing %s ...",str);
-  accept_month=0;
-  traffic_month=0;
-  guaranted = 0;
-  parse(str)
-  {
-   y_ok=m_ok=0;  
-   valid_columns(ptr,_,'\t',col) switch(col)
+  if(strstr(str,".log"))
    {
-    case 2: name = ptr;break;
-    case 3: traffic = atol(ptr);break;
-    /* column number   - was 7, now 10...*/
-    case 7:
-    case 8:
-    case 9:
-    case 10: if (isalpha(*ptr)) /* character, not numeric string = date, just one*/
-             {
-               valid_columns(ptr2,ptr,' ',col2) switch(col2)
+    ptr=strrchr(str,'\n');
+    if(ptr) *ptr='\0';
+    printf("Parsing %s ...",str);
+    accept_month=0;
+    traffic_month=0;
+    guaranted = 0;
+    parse(str)
+    {
+     y_ok=m_ok=0;  
+     valid_columns(ptr,_,'\t',col) switch(col)
+     {
+      case 2: name = ptr;break;
+      case 3: traffic = atol(ptr);break;
+      /* column number   - was 7, now 10...*/
+      case 7:
+      case 8:
+      case 9:
+      case 10: if (isalpha(*ptr)) /* character, not numeric string = date, just one*/
                {
-                case 2: if(any_month || eq(ptr2,month)) m_ok = 1; break;
-                case 5: if(eq(ptr2,year)) y_ok = 1; break;
+                 valid_columns(ptr2,ptr,' ',col2) switch(col2)
+                 {
+                  case 2: if(any_month || eq(ptr2,month)) m_ok = 1; break;
+                  case 5: if(eq(ptr2,year)) y_ok = 1; break;
+                 }
                }
-             }
-             else
-             {
-               if(col == 7) guaranted = atol(ptr);
-             }
-   }
-   
-   if(y_ok && m_ok) 
-   {
-    traffic_month += traffic;
-    accept_month = 1;
-   }
-  }
-  done;
+               else
+               {
+                 if(col == 7) guaranted = atol(ptr);
+               }
+     }
+     
+     if(y_ok && m_ok) 
+     {
+      traffic_month += traffic;
+      accept_month = 1;
+     }
+    }
+    done;
 
-  if(accept_month)
-  {
-   create(iplog,IpLog);
-   iplog->name = name;
-   iplog->guaranted = guaranted;
-   iplog->traffic = traffic_month;
-   insert(iplog,iplogs,desc_order_by,traffic);
-   printf(" %ld MB\n",iplog->traffic);
-  }
-  else
-   puts(" no records.");
+    if(accept_month)
+    {
+     create(iplog,IpLog);
+     iplog->name = name;
+     iplog->guaranted = guaranted;
+     iplog->traffic = traffic_month;
+     insert(iplog,iplogs,desc_order_by,traffic);
+     printf(" %ld MB\n",iplog->traffic);
+    }
+    else
+     puts(" no records.");
+   }
  }
  sprintf(str,"%s/%s-%s.html",html_log_dir,year,month);
  printf("Writing %s ...",str);
@@ -763,7 +766,7 @@ void parse_ip_log(int argc, char **argv)
 
 
 /*-----------------------------------------------------------------*/
-/* Are you looking for int main (int argc, char **argv) ? :-))     */
+/* Are you looking for int main(int argc, char **argv) ? :-))      */
 /*-----------------------------------------------------------------*/
 
 program
