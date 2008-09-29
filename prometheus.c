@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.h"
 
-const char *version = "0.8.1-a"; 
+const char *version = "0.8.1-b"; 
 
 /* Version numbers: 0.7.9 is development releases ("beta"), 0.8.0 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
