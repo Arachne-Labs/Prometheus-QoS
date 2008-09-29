@@ -641,12 +641,13 @@ struct IpLog
 
 void parse_ip_log(int argc, char **argv) 
 {
- char *month, *year, *str, *name, *ptr, *ptr2;
+ char *month, *year, *str, *name, *ptr, *ptr2, *filename;
  long traffic, traffic_month, total=0, guaranted;
  int col, col2, y_ok, m_ok, accept_month, i=1, any_month=0;
  char mstr[4], ystr[5];
  FILE *f; 
  string(str,STRLEN);
+ string(filename,STRLEN);
 
  if(argv[1][1]=='l') /* -l */
  {
@@ -690,14 +691,15 @@ void parse_ip_log(int argc, char **argv)
  input(str,STRLEN) 
  {
   if(strstr(str,".log"))
-   {
+  {
     ptr=strrchr(str,'\n');
     if(ptr) *ptr='\0';
-    printf("Parsing %s ...",str);
+    sprintf(filename,"%s/%s",log_dir,str);
+    printf("Parsing %s ...",filename);
     accept_month=0;
     traffic_month=0;
     guaranted = 0;
-    parse(str)
+    parse(filename)
     {
      y_ok=m_ok=0;  
      valid_columns(ptr,_,'\t',col) switch(col)
@@ -741,7 +743,7 @@ void parse_ip_log(int argc, char **argv)
     }
     else
      puts(" no records.");
-   }
+  }
  }
  sprintf(str,"%s/%s-%s.html",html_log_dir,year,month);
  printf("Writing %s ...",str);
