@@ -185,7 +185,7 @@ struct Keyword
  int asymetry_ratio;        /* ratio for ADSL-like upload */
  int asymetry_fixed;        /* fixed treshold for ADSL-like upload */
  int data_limit;            /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
- int data_prio;            /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
+ int data_prio;             /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
  long fixed_limit;          /* fixed data limit for setting lower HTB ceil */
  long fixed_prio;           /* fixed data lmit for setting lower HTB prio */
  int reserve_min;	    /* bonus for nominal HTB rate bandwidth (in kbps) */
@@ -205,15 +205,23 @@ struct Keyword
 void TheIP(void)
 {
  create(ip,IP);
- ip->name="";
- ip->addr="";
- ip->sharing=NULL;
- ip->prio=highest_priority+1;
- ip->fixedprio=0;
- ip->mark=ip->min=ip->max=ip->desired=ip->credit=0;
- ip->upload=ip->proxy=ip->direct=ip->traffic=0;
- ip->pktsup=ip->pktsdown=0;
- ip->keyword=keywords;
+ ip->name        = "";
+ ip->addr        = "";
+ ip->sharing     = NULL;
+ ip->prio        = highest_priority+1;
+ ip->fixedprio   = 0;
+ ip->mark        = \
+ ip->min         = \
+ ip->max         = \
+ ip->desired     = \
+ ip->credit      = \
+ ip->upload      = \
+ ip->proxy       = \
+ ip->direct      = \
+ ip->traffic     = \
+ ip->pktsup      = \
+ ip->pktsdown    = 0;
+ ip->keyword     = keywords;
  push(ip,ips);
 }
 
