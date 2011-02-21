@@ -1,3 +1,10 @@
+version 0.8.0 2008-11-25
+
+- HTB priorities behaviour fixed (magic-priorities keyword is now obsolete)
+- prometheus now requires -r ("run") switch to start shaping, default is no action
+- C<<1 dialect upgraded to 0.6.2 (for_each() { } instead of every() { }, etc.)
+- several minor changesets at https://dev.arachne.cz/svn/prometheus/timeline
+
 version 0.8.0 2008-09-05
 
 - integrated monthly and yearly summary of traffic logs into prometheus script

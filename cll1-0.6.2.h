@@ -1,8 +1,8 @@
 
-/* C<<1 header file v0.6.1 - style sheet for ANSI C  */
+/* C<<1 header file v0.6.2 - style sheet for ANSI C  */
 /* Please pronounce as "cee-shift-left-by-one" :)  */
 
-/* Copyright (G) 2004-2007 Michael xChaos Polak, x(at)n.cz
+/* Copyright (G) 2004-2008 Michael xChaos Polak, x(at)n.cz
 
    The C<<1 header file is free software; you can redistribute it and/or
    modify it under the terms of the GNU Lesser General Public
@@ -45,15 +45,15 @@
 #define list(T) struct T *_next 
 #define create(A,T) (A=(struct T *)malloc(sizeof(struct T)),A->_next=NULL)
 #define push(A,B) { if(A && A!=B) A->_next=B; B=A; }
-#define append(A,B) { if(B) { void *N=A; A->_next=NULL; search(A,B,!A->_next) {A->_next=N; break;}} else push(A,B); }
-#define remove(A,B,C) { void **_D=NULL; search(A,B,C) { if(_D)*_D=A->_next; else B=A->_next; free(A); } else _D=(void *)&(A->_next); }
+#define append(A,B) { if(B) { void *N=A; A->_next=NULL; for_selected(A,B,!A->_next) {A->_next=N; break;}} else push(A,B); }
+#define remove(A,B,C) { void **_D=NULL; for_selected(A,B,C) { if(_D)*_D=A->_next; else B=A->_next; free(A); } else _D=(void *)&(A->_next); }
 #define drop(A,B) { for( A=B; A ; B=A, A=A->_next, free(B)); B=NULL; }
 
 /* Dynamic list iterations and sequences, updated 2003-05-29 by xCh. */
 
-#define every(A,B) for( A=B; A; A=A->_next)
-#define search(A,B,C) every(A,B) if(C)
-#define find(A,B,C) search(A,B,C) break; if(A)
+#define for_each(A,B) for( A=B; A; A=A->_next)
+#define for_selected(A,B,C) for_each(A,B) if(C)
+#define if_exists(A,B,C) for_selected(A,B,C) break; if(A)
 
 /* EXP macros for Dummysort sequences, updated 2003-05-29 by xCh. */
 
@@ -66,7 +66,7 @@
 
 /* Dummysort sequences, updated 2003-05-29 by xCh. */
 
-#define insert(A,B,EXP,K) { if(B) { void **_L=NULL, *H=B; search(B,H,EXP(B->K,A->K)) { if(_L) {*_L=A; A->_next=B; } else push(A,H); break; } else _L=(void *)&(B->_next); if(!B)*_L=A; B=H; } else push(A,B); }
+#define insert(A,B,EXP,K) { if(B) { void **_L=NULL, *H=B; for_selected(B,H,EXP(B->K,A->K)) { if(_L) {*_L=A; A->_next=B; } else push(A,H); break; } else _L=(void *)&(B->_next); if(!B)*_L=A; B=H; } else push(A,B); }
 #define sort(A,B,EXP,K) { void *_C; A=B; B=NULL; do { _C=A->_next; A->_next=NULL; insert(A,B,EXP,K); A=_C; } while(_C); }
 
 /* String macros & sequences, updated 2004-04-19 by xCh. */
@@ -122,7 +122,7 @@
 /* Dynamic list advanced I/O, updated 2003-05-30 by xCh. */
 
 #define load(A,B,F,T,K) {char *_S; parses(_S,F) { create(A,T); A->K=_S; A->_eoln=TRUE; append(A,B);} done; A->_eoln=FALSE;}
-#define save(A,B,F,K) {FILE *_F=fopen(F,"w"); if(_F) { every(A,B) {fputs(A->K,_F); if(A->_eoln) fputc('\n',_F);} fclose(_F);}}
+#define save(A,B,F,K) {FILE *_F=fopen(F,"w"); if(_F) { for_each(A,B) {fputs(A->K,_F); if(A->_eoln) fputc('\n',_F);} fclose(_F);}}
      
 /* I/O sequences, updated 2003-05-29 by xCh. */
 

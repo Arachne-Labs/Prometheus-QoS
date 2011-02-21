@@ -7,9 +7,9 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20080728
+/* Modified by: xChaos, 20110221
                  ludva, 20080415
-
+ 
    Prometheus QoS is free software; you can redistribute it and/or
    modify it under the terms of the GNU General Public License as 
    published by the Free Software Foundation; either version 2.1 of 
@@ -31,11 +31,11 @@
 #define FIRSTIPCLASS 2048
 #undef DEBUG
 
-#include "cll1-0.6.h"
+#include "cll1-0.6.2.h"
 
-const char *version = "0.8.1-b"; 
+const char *version = "0.8.3"; 
 
-/* Version numbers: 0.7.9 is development releases ("beta"), 0.8.0 will be "stable" */
+/* Version numbers: 0.8.3 is development releases ("beta"), 0.8.4 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
 /* C source code development versions ("beta"): 0.7.9-a, 0.8.1-b, etc. */
 /* C source code release versions: 0.8.0, 0.8.2, 0.8.4, etc. */
@@ -48,7 +48,7 @@ char              *tc = "/sbin/tc"; /* requires tc with HTB support */
 char        *iptables = "/sbin/iptables"; /* requires iptables utility */
 char    *iptablessave = "/sbin/iptables-save"; /* not yet required */
 char *iptablesrestore = "/sbin/iptables-restore";  /* requires iptables-restore */
-char              *ls = "/bin/ls"; /* this is not user configurable :-) */
+const char        *ls = "/bin/ls"; /* this is not user configurable :-) */
 
 char          *config = "/etc/prometheus/prometheus.conf"; /* main configuration file */
 char           *hosts = "/etc/prometheus/hosts"; /* per-IP bandwidth definition file */
@@ -69,20 +69,20 @@ void help(void)
  puts("Command line switches:\n\
 \n\
 -?, --help    this help screen\n\
--v, --version show version number of this utility and exit\n\
--c filename   force alternative /etc/prometheus.conf filename\n\
--h filename   force alternative /etc/hosts filename (overrides hosts keyword)\n\
--f            just flush iptables and tc classes and exit (stop shaping)\n\
+-v, --version show Version number of this utility and exit\n\
+-c filename   force alternative /etc/prometheus.Conf filename\n\
+-h filename   force alternative /etc/Hosts filename (overrides hosts keyword)\n\
+-f            just Flush iptables and tc classes and exit (stop shaping)\n\
 -9            emergency iptables flush (do not read data transfer statistics)\n\
--p            just generate preview of data transfer statistics and exit\n\
--n            no delay (overrides qos-free-delay keyword)\n\
--d            dry run (preview tc and iptables commands on stdout)\n\
--l Mmm YYYY   generate HTML summary of traffic logs (Mmm=Jan-Dec or Year, YYYY=year)\n\
--m            generate HTML summary of traffic logs for yesterday's month\n\
--y            generate HTML summary of traffic logs for yesterday's year\n");
+-p            just generate Preview of data transfer statistics and exit\n\
+-d            Dry run (preview tc and iptables commands on stdout)\n\
+-r            Run (reset all statistics and start shaping)\n\
+-n            run Now (start shaping without delay - overrides qos-free-delay keyword)\n\
+-l Mmm YYYY   generate HTML summary of traffic Logs (Mmm=Jan-Dec or Year, YYYY=year)\n\
+-m            generate HTML summary of traffic logs for yesterday's Month\n\
+-y            generate HTML summary of traffic logs for yesterday's Year\n");
 /* not yet implemented:
 -s            start shaping! (keep data transfer statistics - but apply shaping)\n\
--r            just reload configuration (...and keep data transfer statistics)\n\
 */
 }
 /* === Configuraration file values defaults - stored in global variables ==== */
@@ -114,11 +114,10 @@ int           free_max = 64; /* maximum allowed bandwidth for all undefined host
 int     qos_free_delay = 0; /* seconds to sleep before applying new QoS rules */
 int     digital_divide = 2; /* controls digital divide weirdness ratio, 1...3 */ 
 int        max_nesting = 3; /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
-int            htb_r2q = 1; 
+int            htb_r2q = 256; /* should work for leaf values 512 kbps to 8 Mbps */
 int              burst = 8; /* HTB burst (in kbits) */
 int         burst_main = 64;
 int        burst_group = 32;
-int   magic_priorities = 8; /* number of priority levels (soft shaping) */
 int     magic_treshold = 8; /* reduce ceil by X*magic_treshhold kbps (hard shaping) */
 int       keywordcount = 0;
 /* not yet implemented:
@@ -128,10 +127,12 @@ int       packet_limit = 5; maximum number of pps to htn CEIL, not rate !!!
 FILE         *log_file = NULL;
 char              *kwd = "via-prometheus"; /* /etc/hosts comment, eg. #qos-64-128 */
 
-const int idxtable_treshold1=24;      /* this is no longer configurable */
-const int idxtable_treshold2=12;      /* this is no longer configurable */
-const int idxtable_bitmask1=3;        /* this is no longer configurable */
-const int idxtable_bitmask2=3;        /* this is no longer configurable */
+const int highest_priority   = 0; /* highest HTB priority (HTB built-in value is 0) */
+const int lowest_priority    = 7; /* lowest HTB priority (HTB built-in value is 7) */
+const int idxtable_treshold1 = 24;      /* this is no longer configurable */
+const int idxtable_treshold2 = 12;      /* this is no longer configurable */
+const int idxtable_bitmask1  = 3;        /* this is no longer configurable */
+const int idxtable_bitmask2  = 3;        /* this is no longer configurable */
 
 /* ==== This is C<<1 stuff - learn C<<1 first! http://cll1.arachne.cz ==== */
 
@@ -207,7 +208,7 @@ void TheIP(void)
  ip->name="";
  ip->addr="";
  ip->sharing=NULL;
- ip->prio=1;
+ ip->prio=highest_priority+1;
  ip->fixedprio=0;
  ip->mark=ip->min=ip->max=ip->desired=ip->credit=0;
  ip->upload=ip->proxy=ip->direct=ip->traffic=0;
@@ -313,16 +314,15 @@ void get_config(char *config_filename)
    keyword->asymetry_ratio=1;          /* ratio for ADSL-like upload */
    keyword->asymetry_fixed=0;          /* fixed treshold for ADSL-like upload */
    keyword->data_limit=8;              /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
-   keyword->data_prio=4;              /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
+   keyword->data_prio=4;               /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
    keyword->fixed_limit=0;             /* fixed data limit for setting lower HTB ceil */
    keyword->fixed_prio=0;              /* fixed data limit for setting lower HTB prio */
    keyword->reserve_min=8;	       /* bonus for nominal HTB rate bandwidth (in kbps) */
    keyword->reserve_max=0;	       /* malus for nominal HTB ceil (in kbps) */
 /* obsolete:
    keyword->divide_max=0;	       relative malus: new_ceil=rate+(old_ceil-rate)/divide_max
-   keyword->htb_ceil_bonus_divide=0;   relative bonus: new_ceil=old_ceil+old_ceil/htb_ceil_bonus_divide
-*/
-   keyword->default_prio=1;
+   keyword->htb_ceil_bonus_divide=0;   relative bonus: new_ceil=old_ceil+old_ceil/htb_ceil_bonus_divide */
+   keyword->default_prio=highest_priority+1;
    keyword->html_color="000000";
    keyword->ip_count=0;
    keyword->leaf_discipline="";
@@ -333,36 +333,39 @@ void get_config(char *config_filename)
    
    kwd=NULL;
   }
-  else every(keyword,keywords)
+  else
   {
-   int l=strlen(keyword->key);
+    for_each(keyword,keywords)
+    {
+     int l=strlen(keyword->key);
 
 
-   if(!strncmp(keyword->key,_,l) && strlen(_)>l+2)
-   {
-    char *tmptr=_; /*  <---- l+1 ----> */
-    _+=l+1;        /*  via-prometheus-asymetry-ratio, etc. */
-    ioption("asymetry-ratio",keyword->asymetry_ratio);
-    ioption("asymetry-treshold",keyword->asymetry_fixed);
-    ioption("magic-relative-limit",keyword->data_limit);
-    ioption("magic-relative-prio",keyword->data_prio);
-    loption("magic-fixed-limit",keyword->fixed_limit);
-    loption("magic-fixed-prio",keyword->fixed_prio);
-    ioption("htb-default-prio",keyword->default_prio);
-    ioption("htb-rate-bonus",keyword->reserve_min);
-    ioption("htb-ceil-malus",keyword->reserve_max);
-/* obsolete:
-    ioption("htb-ceil-divide",keyword->divide_max);
-    ioption("htb-ceil-bonus-divide",keyword->htb_ceil_bonus_divide);
-*/
-    option("leaf-discipline",keyword->leaf_discipline);
-    option("html-color",keyword->html_color);
-    _=tmptr;
-    
-    if(keyword->data_limit || keyword->fixed_limit || 
-       keyword->data_prio || keyword->fixed_prio)
-        use_credit=1;        
-   }
+     if(!strncmp(keyword->key,_,l) && strlen(_)>l+2)
+     {
+      char *tmptr=_; /*  <---- l+1 ----> */
+      _+=l+1;        /*  via-prometheus-asymetry-ratio, etc. */
+      ioption("asymetry-ratio",keyword->asymetry_ratio);
+      ioption("asymetry-treshold",keyword->asymetry_fixed);
+      ioption("magic-relative-limit",keyword->data_limit);
+      ioption("magic-relative-prio",keyword->data_prio);
+      loption("magic-fixed-limit",keyword->fixed_limit);
+      loption("magic-fixed-prio",keyword->fixed_prio);
+      ioption("htb-default-prio",keyword->default_prio);
+      ioption("htb-rate-bonus",keyword->reserve_min);
+      ioption("htb-ceil-malus",keyword->reserve_max);
+  /* obsolete:
+      ioption("htb-ceil-divide",keyword->divide_max);
+      ioption("htb-ceil-bonus-divide",keyword->htb_ceil_bonus_divide);
+  */
+      option("leaf-discipline",keyword->leaf_discipline);
+      option("html-color",keyword->html_color);
+      _=tmptr;
+      
+      if(keyword->data_limit || keyword->fixed_limit || 
+         keyword->data_prio || keyword->fixed_prio)
+          use_credit=1;        
+     }
+    }
   }
 
   option("tc",tc);
@@ -401,7 +404,6 @@ void get_config(char *config_filename)
   ioption("htb-nesting-limit",max_nesting);
   ioption("htb-r2q",htb_r2q);
   ioption("magic-include-upload",include_upload);
-  ioption("magic-priorities",magic_priorities);
   ioption("magic-treshold",magic_treshold);  
   option("filter-type", cnf);
   
@@ -419,9 +421,10 @@ void get_config(char *config_filename)
  printf("\n");
  
  /*leaf discipline for keywords*/
- every(keyword,keywords)
+ for_each(keyword,keywords)
  {
-    if (!strcmpi(keyword->leaf_discipline, "")){
+    if (!strcmpi(keyword->leaf_discipline, ""))
+    {
         keyword->leaf_discipline = qos_leaf;
     }
  }
@@ -465,7 +468,7 @@ void get_traffic_statistics(void)
   append(line,lines);
  }
 
- every(line,lines)
+ for_each(line,lines)
  {
   int col, accept=0,proxyflag=0,valid=1,setchainname=0,commonflag=0; 
   unsigned long long traffic=0;
@@ -516,7 +519,8 @@ void get_traffic_statistics(void)
      if(proxyflag)printf("(proxy) ");
      else if(!downloadflag) printf("(upload) ");
      printf("IP %s: %Lu M (%ld pkts)\n", ipaddr, traffic, pkts);
-     find(ip,ips,eq(ip->addr,ipaddr)); 
+
+     if_exists(ip,ips,eq(ip->addr,ipaddr)); 
      else 
      {
       TheIP();
@@ -612,7 +616,11 @@ void parse_ip(char *str)
   ptr++;
  *ptr=0;
 
- find(ip,ips,eq(ip->addr,ipaddr)); else TheIP();
+ if_exists(ip,ips,eq(ip->addr,ipaddr));
+ else
+ {
+  TheIP();
+ }
  ip->addr=ipaddr;
  ip->name=ipname;
 }
@@ -636,13 +644,15 @@ struct IpLog
  char *name;
  long traffic;
  long guaranted;
+ int i;
+ long l;
  list(IpLog);
 } *iplog,*iplogs;
 
 void parse_ip_log(int argc, char **argv) 
 {
- char *month, *year, *str, *name, *ptr, *ptr2, *filename;
- long traffic, traffic_month, total=0, guaranted;
+ char *month, *year, *str, *name="(undefined)", *ptr, *ptr2, *filename;
+ long traffic=0l, traffic_month, total=0, guaranted;
  int col, col2, y_ok, m_ok, accept_month, i=1, any_month=0;
  char mstr[4], ystr[5];
  FILE *f; 
@@ -651,37 +661,37 @@ void parse_ip_log(int argc, char **argv)
 
  if(argv[1][1]=='l') /* -l */
  {
-   if(argc<4)
-   {
-    puts("Missing parameter(s)!\nUsage: prometheus -l Mmm YYYY (Mmm=Jan-Dec or Year, YYYY=year)");
-    exit(-1);
-   }
-   else
-   {
-    month=argv[2];
-    if(eq(month,"Year")) any_month=1;
-    year=argv[3];
-   }
+  if(argc<4)
+  {
+   puts("Missing parameter(s)!\nUsage: prometheus -l Mmm YYYY (Mmm=Jan-Dec or Year, YYYY=year)");
+   exit(-1);
+  }
+  else
+  {
+   month=argv[2];
+   if(eq(month,"Year")) any_month=1;
+   year=argv[3];
+  }
  }
  else
  { 
-   time_t t = time(NULL) - 3600*24 ; /* yesterday's timestamp*/
-   struct tm *timep = localtime(&t);                                           
- 
-   if(argv[1][1]=='m') /* -m yestarday - month */
-   {
-    strftime(mstr, 4, "%b", timep);
-    month=mstr;
-    strftime(ystr, 5, "%Y", timep);
-    year=ystr; 
-   }
-   else /* -y yesterday - year */
-   {
-    month="Year";
-    any_month=1;
-    strftime(ystr, 5, "%Y", timep);
-    year=ystr;
-   }
+  time_t t = time(NULL) - 3600*24 ; /* yesterday's timestamp*/
+  struct tm *timep = localtime(&t);                                           
+
+  if(argv[1][1]=='m') /* -m yestarday - month */
+  {
+   strftime(mstr, 4, "%b", timep);
+   month=mstr;
+   strftime(ystr, 5, "%Y", timep);
+   year=ystr; 
+  }
+  else /* -y yesterday - year */
+  {
+   month="Year";
+   any_month=1;
+   strftime(ystr, 5, "%Y", timep);
+   year=ystr;
+  }
  }
  printf("Analysing traffic for %s %s ...\n",month,year);
 
@@ -712,11 +722,11 @@ void parse_ip_log(int argc, char **argv)
       case 9:
       case 10: if (isalpha(*ptr)) /* character, not numeric string = date, just one*/
                {
-                 valid_columns(ptr2,ptr,' ',col2) switch(col2)
-                 {
-                  case 2: if(any_month || eq(ptr2,month)) m_ok = 1; break;
-                  case 5: if(eq(ptr2,year)) y_ok = 1; break;
-                 }
+                valid_columns(ptr2,ptr,' ',col2) switch(col2)
+                {
+                 case 2: if(any_month || eq(ptr2,month)) m_ok = 1; break;
+                 case 5: if(eq(ptr2,year)) y_ok = 1; break;
+                }
                }
                else
                {
@@ -742,7 +752,9 @@ void parse_ip_log(int argc, char **argv)
      printf(" %ld MB\n",iplog->traffic);
     }
     else
+    {
      puts(" no records.");
+    }
   }
  }
  sprintf(str,"%s/%s-%s.html",html_log_dir,year,month);
@@ -751,21 +763,85 @@ void parse_ip_log(int argc, char **argv)
  if(f)
  {
   fprintf(f,"<table border><tr><th colspan=\"2\">%s %s</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
-  every(iplog,iplogs)
+
+  for_each(iplog,iplogs)
+  {
    if(iplog->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">%ld MB</td><th align=\"right\">%ld GB</th><td align=\"right\">%ld kbps</th></tr>\n",
+    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">%ld M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
               i++, iplog->name, iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
+    iplog->i=i;
+    iplog->l=total;
    }
+  }
   fprintf(f,"<tr><th colspan=\"3\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th><th align=\"right\">%Ld kbps</th></tr>\n", total, line);
   fputs("</table>\n", f);
+
+  if(i>10)
+  {
+   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
+   fputs("<tr><td>Analytic category</td>\n",f);
+   fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
+
+   if_exists(iplog,iplogs,iplog->l>=total/4)
+   {
+    fprintf(f,"<tr><td>Top 25%% of traffic</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+   
+   if_exists(iplog,iplogs,iplog->i==10)
+   {
+    fprintf(f,"<tr><td>Top 10 downloaders</td>\n");
+    fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   if_exists(iplog,iplogs,iplog->l>=total/2)
+   {
+    fprintf(f,"<tr><td>Top 50%% of traffic</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><th align=\"right\">%d %%</th></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   if_exists(iplog,iplogs,iplog->l>=4*total/5)
+   {
+    fprintf(f,"<tr><td>Top 80%% of traffic</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><th align=\"right\">%d %%</th></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   if_exists (iplog,iplogs,iplog->i>=i/5)
+   {
+    fprintf(f,"<tr><td>Top 20%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   if_exists(iplog,iplogs,iplog->i>=i/4)
+   {
+    fprintf(f,"<tr><td>Top 25%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   if_exists(iplog,iplogs,iplog->i>=i/2)
+   {
+    fprintf(f,"<tr><td>Top 50%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   if_exists(iplog,iplogs,iplog->i>=4*i/5)
+   {
+    fprintf(f,"<tr><td>Top 80%% downloaders</td>\n");
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+   }
+
+   fprintf(f,"<tr><td>All users, all traffic</td>\n");
+   fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%ld G</th><th align=\"right\">100 %%</th></tr>\n",i-1,total);
+   fputs("</table>\n", f);
+  }
+
   fprintf(f, stats_html_signature, version);
   fclose(f);
   puts(" done.");
  }
 }
-
 
 /*-----------------------------------------------------------------*/
 /* Are you looking for int main(int argc, char **argv) ? :-))      */
@@ -779,10 +855,11 @@ program
  char *substring;
  int class_count=0,ip_count=0;
  int parent=1;
- int just_flush=0;
- int nodelay=0;
- int just_preview=0;                /* preview - generate just stats */
- int just_logs=0;                   /* just parse logs */
+ int just_flush=FALSE;
+ int nodelay=FALSE;
+ int just_preview=FALSE;                /* preview - generate just stats */
+ int just_logs=FALSE;                   /* just parse logs */
+ int run=FALSE;
  
  char *chain_forward, *chain_postrouting;
  char *althosts=NULL;
@@ -799,24 +876,27 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  {
   argument("-c") { nextargument(config); }
   argument("-h") { nextargument(althosts);}
-  argument("-d") { dry_run=1; }
-  argument("-f") { just_flush=1; }
-  argument("-9") { just_flush=9; }
-  argument("-p") { just_preview=1; }
-  argument("-n") { nodelay=1; }
-  argument("-l") { just_logs=1; }
-  argument("-m") { just_logs=1; }
-  argument("-y") { just_logs=1; }
+  argument("-d") { run=TRUE; dry_run=TRUE; }
+  argument("-f") { run=TRUE; just_flush=TRUE; }
+  argument("-9") { run=TRUE; just_flush=9; }
+  argument("-p") { run=TRUE; just_preview=TRUE; }
+  argument("-r") { run=TRUE; }
+  argument("-n") { run=TRUE; nodelay=TRUE; }
+  argument("-l") { just_logs=TRUE; }
+  argument("-m") { just_logs=TRUE; }
+  argument("-y") { just_logs=TRUE; }
   argument("-?") { help(); exit(0); }
   argument("--help") { help(); exit(0); }
   argument("-v") { exit(0); } 
   argument("--version") { exit(0); } 
  }
-
+ 
  if(dry_run)
+ {
   puts("*** THIS IS JUST DRY RUN ! ***\n");
+ }
 
- date(d); /* this is typical cll1.h macro */
+ date(d); /* this is typical cll1.h macro - prints current date */
 
  /*-----------------------------------------------------------------*/
  printf("Parsing configuration file %s ...\n", config);
@@ -825,11 +905,19 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  
  if(just_logs)
  {
-    parse_ip_log(argc,argv);
-    exit(0);
+  parse_ip_log(argc,argv);
+  exit(0);
+ }
+ else if(not run)
+ {
+  help();
+  exit(0);
  }
 
- if(althosts) hosts=althosts;
+ if(althosts)
+ {
+  hosts=althosts;
+ }
 
  if(just_flush<9)
  {
@@ -867,7 +955,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    //Do we have to create new QoS class for this IP ?
 
-   find(keyword,keywords,(substring=strstr(str,keyword->key)))
+   if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
    {
     parse_ip(str);
     ip_count++;
@@ -909,7 +997,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
     ip->mark=FIRSTIPCLASS+1+class_count++;
 
-    find(group,groups,group->min==ip->min) 
+    if_exists(group,groups,group->min==ip->min) 
     { 
      group->count++;      
      group->desired+=ip->min;
@@ -949,9 +1037,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  puts("Resolving shared connections ...");
  /*-----------------------------------------------------------------*/
- search(ip,ips,ip->sharing)
+ for_selected(ip,ips,ip->sharing)
  {
-  search(sharedip,ips,eq(sharedip->name,ip->sharing))
+  for_selected(sharedip,ips,eq(sharedip->name,ip->sharing))
   {
    sharedip->traffic+=ip->traffic;
    ip->traffic=0;
@@ -972,8 +1060,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    ptr=parse_datafile_line(_);
    if(ptr)
    {
-    find(ip,ips,eq(ip->addr,_))
+    if_exists(ip,ips,eq(ip->addr,_))
+    {
      sscanf(ptr,"%Lu",&(ip->credit));
+    }
    }
   }
   done;
@@ -1046,11 +1136,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    save_line(":post_common - [0:0]");
    save_line(":forw_common - [0:0]");
 
-   search(ip,ips,ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0"))
+   for_selected(ip,ips,ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0"))
    {
     buf=hash_id(ip->addr,bitmask);
-    find(idx,idxs,eq(idx->id,buf))
+    if_exists(idx,idxs,eq(idx->id,buf))
+    {
      idx->children++;
+    }
     else
     {
      create(idx,Index);
@@ -1069,11 +1161,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    {
     bitmask-=idxtable_bitmask2;
     idxcount=0;
-    search(idx,idxs,idx->parent==NULL)
+
+    for_selected(idx,idxs,idx->parent==NULL)
     {
      buf=hash_id(idx->addr,bitmask);
-     find(metaindex,idxs,eq(metaindex->id,buf))
-      metaindex->children++;     
+     if_exists(metaindex,idxs,eq(metaindex->id,buf))
+     {
+      metaindex->children++;
+     }
      else
      {
       create(metaindex,Index);
@@ -1094,7 +1189,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sort(idx,idxs,order_by,bitmask);
 
    i=0;
-   every(idx,idxs)
+
+   for_each(idx,idxs)
    {
     subnet=subnet_id(idx->addr,idx->bitmask);
     printf("%d: %s/%d\n",++i,subnet,idx->bitmask);
@@ -1163,24 +1259,28 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q %d default 1",tc,lan,htb_r2q);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio 0",tc,lan,lan_medium,lan_medium,burst_main);
+  sprintf(str, "%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio %d",
+               tc,lan,lan_medium,lan_medium,burst_main,highest_priority);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio 0",tc,lan,line,line,burst_main);
+  sprintf(str, "%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d",
+                tc,lan,line,line,burst_main,highest_priority);
   safe_run(str);
 
   sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q %d default 1",tc,wan,htb_r2q);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio 0",tc,wan,wan_medium,wan_medium,burst_main);
+  sprintf(str, "%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio %d",
+               tc,wan,wan_medium,wan_medium,burst_main,highest_priority);
   safe_run(str);
 
-  sprintf(str,"%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio 0",tc,wan,up,up,burst_main);
+  sprintf(str, "%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d",
+               tc,wan,up,up,burst_main,highest_priority);
   safe_run(str);
  }
 
  /*-----------------------------------------------------------------*/
- puts("Locating suckers and generating root classes ...");
+ puts("Locating heavy downloaders and generating root classes ...");
  /*-----------------------------------------------------------------*/
  sort(ip,ips,desc_order_by,traffic);
  
@@ -1195,19 +1295,18 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   
   if(!just_preview && !dry_run && enable_credit) credit_file=fopen(credit,"w");
     
-  every(group,groups)
+  for_each(group,groups)
   {
    if(!just_preview)
    {
-    
     //download
-    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio 1 #down desired %d", 
-                 tc, lan, parent, group->id, rate, max, burst_group, group->desired);
+    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d #down desired %d", 
+                 tc, lan, parent, group->id, rate, max, burst_group, highest_priority+1, group->desired);
     safe_run(str);
     
     //upload
-    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio 1 #up desired %d", 
-                 tc, wan, parent, group->id, rate*up/line, max*up/line, burst_group, group->desired);
+    sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d #up desired %d", 
+                 tc, wan, parent, group->id, rate*up/line, max*up/line, burst_group, highest_priority+1, group->desired);
     safe_run(str);
    }
    
@@ -1219,9 +1318,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    /*shaping of aggresive downloaders, with credit file support */
    if(use_credit)
    {
-    int group_rate=group->min, priority_sequence=magic_priorities+1;
+    int group_rate=group->min, priority_sequence=lowest_priority;
     
-    search(ip, ips, ip->min==group->min && ip->max>ip->min)
+    for_selected(ip, ips, ip->min==group->min && ip->max>ip->min)
     {
      if( ip->keyword->data_limit && !ip->fixedprio &&
          ip->traffic>ip->credit+
@@ -1229,8 +1328,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      {
       if(group_rate<ip->max) ip->max=group_rate;
       group_rate+=magic_treshold;
-      ip->prio=magic_priorities+2;
-      if(ip->prio<3) ip->prio=3;
+      ip->prio=lowest_priority;
+      if(ip->prio<highest_priority+2) ip->prio=highest_priority+2;
      }
      else
      {
@@ -1239,7 +1338,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
            (ip->min*ip->keyword->data_prio+(ip->keyword->fixed_prio<<20)) )
       {
        ip->prio=priority_sequence--;
-       if(ip->prio<2) ip->prio=2;
+       if(ip->prio<highest_priority+1) ip->prio=highest_priority+1;
       }
      
       if(credit_file)
@@ -1271,7 +1370,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   f=fopen("/var/run/prometheus.previous","w");
   if(f)
   {
-   search(ip,ips,ip->traffic || ip->direct || ip->proxy ||ip->upload)
+   for_selected(ip,ips,ip->traffic || ip->direct || ip->proxy ||ip->upload)
     fprintf(f,"%s %Lu %Lu %Lu %Lu\n",ip->addr,ip->traffic,ip->direct,ip->proxy,ip->upload);
    fclose(f);
   }
@@ -1293,7 +1392,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   fputs("<table border>\n<tr><th align=\"right\">#</th><th align=\"right\">group</th><th align=\"right\">IPs</th><th align=\"right\">requested</th>\n",f);
   fprintf(f,"<th colspan=\"%d\">data limits</th>\n",keywordcount);
   fputs("</tr>\n",f);
-  every(group,groups) 
+
+  for_each(group,groups) 
   { 
 #ifdef DEBUG
    printf("%d k group: %d bandwidth requested: %d k\n",group->min,group->count,group->desired);
@@ -1301,9 +1401,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<tr><td align=\"right\">%d</td><td align=\"right\">%d k</td>",count,group->min);
    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d k</td>",group->count,group->desired);
 
-   every(keyword,keywords)
-    fprintf(f,"<td align=\"right\"><font color=\"#%s\">%d M</font></td>",keyword->html_color,group->min*keyword->data_limit); 
-   
+   for_each(keyword,keywords)
+   {
+    fprintf(f,"<td align=\"right\"><font color=\"#%s\">%d M</font></td>",keyword->html_color,group->min*keyword->data_limit);
+   }   
    i+=group->desired; 
    total+=group->count;
    count++; 
@@ -1314,9 +1415,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<tr><th colspan=\"2\" align=\"left\">Line %Ld k</td>",line);
    fprintf(f,"<th align=\"right\">%d</td><th align=\"right\">%d k</td>",total,i);
 
-   every(keyword,keywords)
-    fprintf(f,"<th align=\"right\">%d IPs</th>",keyword->ip_count); 
-
+   for_each(keyword,keywords)
+   {
+    fprintf(f,"<th align=\"right\">%d IPs</th>",keyword->ip_count);
+   }
    fprintf(f,"</tr><tr><th colspan=\"4\">Aggregation 1/%d</th>\n",(int)(0.5+i/line));
    fprintf(f,"<th colspan=\"%d\">%d traffic classes</th></tr>\n",keywordcount,total);
 
@@ -1354,7 +1456,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   <td align=\"right\">maximum</td>\
   <td>prio</td></tr>\n",f);	
 
-  every(ip,ips)
+  for_each(ip,ips)
   {
    char *f1="", *f2="";
    if(ip->max<ip->desired)
@@ -1362,7 +1464,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     f1="<font color=\"red\">";
     f2="</font>";
    }
-   else if(ip->prio>1)
+   else if(ip->prio>highest_priority+1)
    {
     f1="<font color=\"brown\">";
     f2="</font>";
@@ -1422,49 +1524,49 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fputs("<tr><td>Analytic category</td>\n",f);
    fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
 
-   find(sum,sums,sum->l>=total/4)
+   if_exists(sum,sums,sum->l>=total/4)
    {
     fprintf(f,"<tr><td>Top 25%% of traffic</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
    
-   find(sum,sums,sum->i==10)
+   if_exists(sum,sums,sum->i==10)
    {
     fprintf(f,"<tr><td>Top 10 downloaders</td>\n");
     fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   find(sum,sums,sum->l>=total/2)
+   if_exists(sum,sums,sum->l>=total/2)
    {
     fprintf(f,"<tr><td>Top 50%% of traffic</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   find(sum,sums,sum->l>=4*total/5)
+   if_exists(sum,sums,sum->l>=4*total/5)
    {
     fprintf(f,"<tr><td>Top 80%% of traffic</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   find (sum,sums,sum->i>=(active_classes+1)/5)
+   if_exists (sum,sums,sum->i>=(active_classes+1)/5)
    {
     fprintf(f,"<tr><td>Top 20%% downloaders</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   find(sum,sums,sum->i>=(active_classes+1)/4)
+   if_exists(sum,sums,sum->i>=(active_classes+1)/4)
    {
     fprintf(f,"<tr><td>Top 25%% downloaders</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   find(sum,sums,sum->i>=(active_classes+1)/2)
+   if_exists(sum,sums,sum->i>=(active_classes+1)/2)
    {
     fprintf(f,"<tr><td>Top 50%% downloaders</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   find(sum,sums,sum->i>=4*(active_classes+1)/5)
+   if_exists(sum,sums,sum->i>=4*(active_classes+1)/5)
    {
     fprintf(f,"<tr><td>Top 80%% downloaders</td>\n");
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
@@ -1490,7 +1592,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  i=0;
  printf("%-22s %-15s mark\n","name","ip");
- search(ip,ips,ip->mark>0)
+
+ for_selected(ip,ips,ip->mark>0)
  { 
   
   if(idxs)
@@ -1633,9 +1736,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    /*-----------------------------------------------------------------*/
    puts("Generating free bandwith classes ...");
    /*-----------------------------------------------------------------*/
-   sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,lan,parent,free_min,free_max,burst);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                tc,lan,parent,free_min,free_max,burst,lowest_priority);
    safe_run(str);
-   sprintf(str,"%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio 2",tc,wan,parent,free_min,free_max,burst);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                tc,wan,parent,free_min,free_max,burst,lowest_priority);
    safe_run(str);
    /* tc SFQ */
    if (strcmpi(qos_leaf, "none"))
