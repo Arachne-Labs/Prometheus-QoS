@@ -1,9 +1,11 @@
 #!/bin/bash
 cd /root/bin/
-/root/bin/updatehosts
+#you have to provider hosts file (prometheus syntax) to these scripts
+#/root/bin/updatehosts
 /root/bin/make-pimp
 /root/bin/make-iptables-restore
-/etc/network/setnet
-#echo -n "Running iptables restore ... "
-#/sbin/iptables-restore < /mnt/mtdblock0/iptables-restore.in
-#echo "done."
+#our firewall is configured before restoring iptables nat table
+#/etc/network/setnet
+echo -n "Running iptables restore ... "
+/sbin/iptables-restore < /mnt/mtdblock0/iptables-restore.in
+echo "done."
