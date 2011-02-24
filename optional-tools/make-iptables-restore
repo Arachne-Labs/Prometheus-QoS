@@ -10,6 +10,7 @@ etchosts="/mnt/mtdblock0/hosts"
 restoredata="/mnt/mtdblock0/iptables-restore.in"
 wan1="vlan770"
 wan2="vlan771"
+#just comment-out all lines mentioning wan3 on two-interface gateways
 wan3="vlan772"
 
 echo "*nat" > $restoredata
