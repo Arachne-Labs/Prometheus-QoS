@@ -32,7 +32,10 @@ force alternative /etc/hosts filename (overrides hosts keyword)
 just flush iptables and tc classes and exit (stop shaping)
 .TP
 .B \-n
-no delay (overrides qos-free-delay keyword)
+run Now (start shaping without delay - overrides qos-free-delay keyword)
+.TP
+.B \-r
+Run (reset all statistics and start shaping)
 .TP
 .B \-p
 just generate preview of data transfer statistics and exit
