@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20110221
+/* Modified by: xChaos, 20110427
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -104,6 +104,7 @@ char       *wan_medium = "100Mbit"; /* 10Mbit/100Mbit ethernet */
 char         *qos_leaf = "sfq perturb 5"; /* leaf discipline */
 char    *qos_free_zone = NULL; /* QoS free zone */
 int          qos_proxy = 1; /* include proxy port to QoS */
+int        found_lmsid = 0; /* show links to users in LMS information system */
 int     include_upload = 1; /* upload+download=total traffic */
 char         *proxy_ip = "192.168.1.1/32"; /* our IP with proxy port */
 int         proxy_port = 3128; /* proxy port number */
@@ -622,8 +623,18 @@ void run_restore(void)
 
 void parse_ip(char *str)
 {
- char *ptr=str,*ipaddr=NULL,*ipname=NULL;;
+ char *ptr,*ipaddr=NULL,*ipname=NULL,*lmsid=NULL;
+
+ ptr=strchr(str,'{');
+ if(ptr)
+ {
+  lmsid=++ptr;
+  while(*ptr && *ptr!='}')
+   ptr++;
+  *ptr=0;
+ }
  
+ ptr=str;
  while(*ptr && *ptr!=' ' && *ptr!=9)
   ptr++;
  
@@ -644,6 +655,11 @@ void parse_ip(char *str)
  }
  ip->addr=ipaddr;
  ip->name=ipname;
+ if(lmsid)
+ {
+  ip->lmsid=atoi(lmsid);
+  found_lmsid=1;
+ }
 }
 
 char *parse_datafile_line(char *str)
@@ -657,7 +673,9 @@ char *parse_datafile_line(char *str)
   return ptr;
  } 
  else 
+ {
   return NULL;
+ }
 }
 
 struct IpLog
@@ -674,7 +692,7 @@ void parse_ip_log(int argc, char **argv)
 {
  char *month, *year, *str, *name="(undefined)", *ptr, *ptr2, *filename;
  long traffic=0l, traffic_month, total=0, guaranted;
- int col, col2, y_ok, m_ok, accept_month, i=1, any_month=0;
+ int col, col2, y_ok, m_ok, accept_month, i=1, any_month=0, lmsid;
  char mstr[4], ystr[5];
  FILE *f; 
  string(str,STRLEN);
@@ -729,7 +747,8 @@ void parse_ip_log(int argc, char **argv)
     printf("Parsing %s ...",filename);
     accept_month=0;
     traffic_month=0;
-    guaranted = 0;
+    guaranted=0;
+    lmsid=0;
     parse(filename)
     {
      y_ok=m_ok=0;  
@@ -737,11 +756,12 @@ void parse_ip_log(int argc, char **argv)
      {
       case 2: name = ptr;break;
       case 3: traffic = atol(ptr);break;
-      /* column number   - was 7, now 10...*/
+      /* column number   - was 7, now 11...*/
       case 7:
       case 8:
       case 9:
-      case 10: if (isalpha(*ptr)) /* character, not numeric string = date, just one*/
+      case 10:
+      case 11: if (isalpha(*ptr)) /* character, not numeric string = date, just one*/
                {
                 valid_columns(ptr2,ptr,' ',col2) switch(col2)
                 {
@@ -752,6 +772,7 @@ void parse_ip_log(int argc, char **argv)
                else
                {
                  if(col == 7) guaranted = atol(ptr);
+                 if(col == 10) lmsid = atoi(ptr);
                }
      }
      
@@ -957,7 +978,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   str=_;
 
   if(*str<'0' || *str>'9')
+  {
+   /* any line starting with non-number is comment ...*/
    continue;
+  }
   
   //Does this IP share QoS class with some other ?
   substring=strstr(str,"sharing-");
@@ -969,7 +993,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    ip->sharing=substring;
    ip->keyword=defaultkeyword; /* settings for default keyword */
    while(*substring && *substring!='\n')
+   {
     substring++;
+   }
    *substring=0; 
   }
   else
@@ -1319,7 +1345,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   int group_count=0;
   FILE *credit_file=NULL;
   
-  if(!just_preview && !dry_run && enable_credit) credit_file=fopen(credit,"w");
+  if(!just_preview && !dry_run && enable_credit)
+  {
+   credit_file=fopen(credit,"w");
+  }
     
   for_each(group,groups)
   {
@@ -1342,7 +1371,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
    
    rate-=digital_divide*group->min;
-   if(rate<group->min)rate=group->min;
+   if(rate<group->min)
+   {
+    rate=group->min;
+   }
     
    /*shaping of aggresive downloaders, with credit file support */
    if(use_credit)
@@ -1355,10 +1387,16 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
          ip->traffic>ip->credit+
          (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)) )
      {
-      if(group_rate<ip->max) ip->max=group_rate;
+      if(group_rate<ip->max)
+      {
+       ip->max=group_rate;
+      }
       group_rate+=magic_treshold;
       ip->prio=lowest_priority;
-      if(ip->prio<highest_priority+2) ip->prio=highest_priority+2;
+      if(ip->prio<highest_priority+2)
+      {
+       ip->prio=highest_priority+2;
+      }
      }
      else
      {
@@ -1367,15 +1405,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
            (ip->min*ip->keyword->data_prio+(ip->keyword->fixed_prio<<20)) )
       {
        ip->prio=priority_sequence--;
-       if(ip->prio<highest_priority+1) ip->prio=highest_priority+1;
+       if(ip->prio<highest_priority+1)
+       {
+        ip->prio=highest_priority+1;
+       }
       }
      
       if(credit_file)
       {
        unsigned long long lcredit=0;
        
-       if((ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))>ip->traffic) 
+       if((ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))>ip->traffic)
+       {
         lcredit=(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))-ip->traffic;
+       }
        fprintf(credit_file,"%s %Lu\n",ip->addr,lcredit);
       }
      }
@@ -1383,7 +1426,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
         
    }
   }
-  if(credit_file)fclose(credit_file);
+  if(credit_file)
+  {
+   fclose(credit_file);
+  }
  }
 
  if(just_preview)
@@ -1465,25 +1511,36 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   FILE *iplog;
   struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums=NULL;
 
+  colspan=11;
   if(qos_proxy)
-   colspan=12;
-  else 
-   colspan=11;
+  {
+   colspan++;
+  }
+  if(found_lmsid)
+  {
+   colspan++;
+  }
   
   fprintf(f,"<p><table border>\n<tr><th colspan=\"%d\">%s",colspan,title);
   fprintf(f," (%s)</th></tr>\n", d);
-  fputs("<tr><td align=\"right\">#</td><td>hostname</td>\
-  <td align=\"right\">credit</td>\
-  <td align=\"right\">limit</td>\
-  <td align=\"right\">total</td>\
-  <td align=\"right\">direct</td>\n",f);
+  fputs("<tr><td align=\"right\">#</td><td>hostname</td>",f);
+  if(found_lmsid)
+  {
+   fputs("<td align=\"right\">lms</td>\n",f);
+  }
+  fputs("<td align=\"right\">credit</td>\
+<td align=\"right\">limit</td>\
+<td align=\"right\">total</td>\
+<td align=\"right\">direct</td>\n",f);
   if(qos_proxy)
+  {
    fputs("<td align=\"right\">proxy</td>\n",f);
+  }
   fputs("<td align=\"right\">upload</td>\
-  <td align=\"right\">minimum</td>\
-  <td align=\"right\">desired</td>\
-  <td align=\"right\">maximum</td>\
-  <td>prio</td></tr>\n",f);	
+<td align=\"right\">minimum</td>\
+<td align=\"right\">desired</td>\
+<td align=\"right\">maximum</td>\
+<td>prio</td></tr>\n",f);	
 
   for_each(ip,ips)
   {
@@ -1502,14 +1559,28 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 #ifdef DEBUG
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
 #endif
-   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a></td><td align=\"right\">%Lu M</td>\n",
-              ip->name, i, log_url, ip->name, ip->name, ip->credit);
-   fprintf(f,"<td align=\"right\"><font color=\"#%s\">%Lu M</font></td>",ip->keyword->html_color,ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
+   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a></td>\n", ip->name, i, log_url, ip->name, ip->name);
+   if(found_lmsid)
+   {
+    fputs("<td align=\"right\">",f);
+    if(ip->lmsid)
+    {
+     /*base URL will be configurable soon ... */
+     fprintf(f,"<a href=\"https://hermes.spoje.net/?m=customerinfo&amp;id=%d\">%04d</a>\n", ip->lmsid, ip->lmsid);
+    }
+    fputs("</td>\n",f);    
+   }
+   fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->credit);
+   fprintf(f,"<td align=\"right\"><font color=\"#%s\">%Lu M</font></td>",
+             ip->keyword->html_color, ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
    fprintf(f,"<td align=\"right\">%s%Lu M%s</td><td align=\"right\">%Lu M</td>\n", f1, ip->traffic, f2, ip->direct);
    if(qos_proxy)
+   {
     fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->proxy);
+   }
    fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->upload);
-   fprintf(f,"<td align=\"right\">%d k</td><td align=\"right\">%d k</td><td align=\"right\">%s%d k%s</td><td>%s%d%s</td></tr>\n",ip->min,ip->desired,f1,ip->max,f2,f1,ip->prio,f2);
+   fprintf(f,"<td align=\"right\">%d k</td><td align=\"right\">%d k</td><td align=\"right\">%s%d k%s</td><td>%s%d%s</td></tr>\n",
+             ip->min,ip->desired,f1,ip->max,f2,f1,ip->prio,f2);
    total+=ip->traffic;
    total_direct+=ip->direct;
    total_proxy+=ip->proxy;
@@ -1532,18 +1603,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%s",
-                    time(NULL),ip->name,ip->traffic,ip->direct,ip->proxy,ip->upload,ip->min,ip->max,ip->desired,d); /* d = date*/
+     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
+                    time(NULL),ip->name,ip->traffic,ip->direct,ip->proxy,ip->upload,ip->min,ip->max,ip->desired,ip->lmsid,d); /* d = date*/
      fclose(iplog);
     }
    }
 
   }
-  fprintf(f,"<tr><th colspan=\"4 \"align=\"left\">SUMMARY:</td>");
+  fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">SUMMARY:</td>",colspan-7);
   fprintf(f,"<th align=\"right\">%Lu M</th>\
   <th align=\"right\">%Lu M</th>\n", total, total_direct);
   if(qos_proxy)
+  {
    fprintf(f,"<th align=\"right\">%Lu M</th>\n", total_proxy);
+  }
   fprintf(f,"<th align=\"right\">%Lu M</th>", total_upload);
   fputs("<td colspan=\"4\"></td></th>\n</table>\n",f);
 
