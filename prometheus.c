@@ -148,6 +148,7 @@ struct IP
  int prio;
  int fixedprio;
  int group;
+ int lmsid;
  unsigned long long direct;
  unsigned long long proxy;
  unsigned long long upload;
@@ -209,7 +210,8 @@ void TheIP(void)
  ip->addr        = "";
  ip->sharing     = NULL;
  ip->prio        = highest_priority+1;
- ip->fixedprio   = 0;
+ ip->lmsid       = \
+ ip->fixedprio   = \
  ip->mark        = \
  ip->min         = \
  ip->max         = \
@@ -237,10 +239,14 @@ char *very_ugly_ipv4_code(char *inip,int bitmask,int format_as_chainname)
  /* debug printf("(%s,%d) -> ",ip,bitmask); */
 
  if(ip && *ip && bitmask>=0 && bitmask<=32)
+ {
   string(outip,strlen(ip)+10); /*fuck unicode? assertion: 10>strlen("_%d_%d") */
+ }
  else 
+ {
   /* should never exit here */
   return "undefined";
+ }
  outptr=outip;
  while(ip && *ip)
  {
@@ -249,9 +255,13 @@ char *very_ugly_ipv4_code(char *inip,int bitmask,int format_as_chainname)
    if(dot<(bitmask/8-1)) 
    {
     if(format_as_chainname)
+    {
      *outptr='_';
+    }
     else
+    {
      *outptr='.';
+    }
     outptr++;
     dot++;
    }
@@ -327,9 +337,6 @@ void get_config(char *config_filename)
    keyword->fixed_prio=0;              /* fixed data limit for setting lower HTB prio */
    keyword->reserve_min=8;	       /* bonus for nominal HTB rate bandwidth (in kbps) */
    keyword->reserve_max=0;	       /* malus for nominal HTB ceil (in kbps) */
-/* obsolete:
-   keyword->divide_max=0;	       relative malus: new_ceil=rate+(old_ceil-rate)/divide_max
-   keyword->htb_ceil_bonus_divide=0;   relative bonus: new_ceil=old_ceil+old_ceil/htb_ceil_bonus_divide */
    keyword->default_prio=highest_priority+1;
    keyword->html_color="000000";
    keyword->ip_count=0;
@@ -347,7 +354,6 @@ void get_config(char *config_filename)
     {
      int l=strlen(keyword->key);
 
-
      if(!strncmp(keyword->key,_,l) && strlen(_)>l+2)
      {
       char *tmptr=_; /*  <---- l+1 ----> */
@@ -361,17 +367,15 @@ void get_config(char *config_filename)
       ioption("htb-default-prio",keyword->default_prio);
       ioption("htb-rate-bonus",keyword->reserve_min);
       ioption("htb-ceil-malus",keyword->reserve_max);
-  /* obsolete:
-      ioption("htb-ceil-divide",keyword->divide_max);
-      ioption("htb-ceil-bonus-divide",keyword->htb_ceil_bonus_divide);
-  */
       option("leaf-discipline",keyword->leaf_discipline);
       option("html-color",keyword->html_color);
       _=tmptr;
       
       if(keyword->data_limit || keyword->fixed_limit || 
          keyword->data_prio || keyword->fixed_prio)
-          use_credit=1;        
+      {
+       use_credit=1;        
+      }
      }
     }
   }
@@ -437,14 +441,17 @@ void get_config(char *config_filename)
     }
  }
 
- if (strcmpi(cnf, "mark")){
-    filter_type = 2;
-    mark = "CLASSIFY";
-    mark_iptables = "CLASSIFY --set-class 1:";
- }else{
-    filter_type = 1;
-    mark = "MARK";
-    mark_iptables = "MARK --set-mark ";
+ if (strcmpi(cnf, "mark"))
+ {
+  filter_type = 2;
+  mark = "CLASSIFY";
+  mark_iptables = "CLASSIFY --set-class 1:";
+ }
+ else
+ {
+  filter_type = 1;
+  mark = "MARK";
+  mark_iptables = "MARK --set-mark ";
  }
 
  /* are supplied values meaningful ?*/
@@ -555,10 +562,16 @@ void get_traffic_statistics(void)
       ip->upload=traffic;
       ip->pktsup=pkts;
       if(include_upload)
+      {
        ip->traffic+=traffic;
+      }
       else 
+      {
        if(traffic>ip->traffic)
+       {
         ip->traffic=traffic;     
+       }
+      }
      }
     }  
   }
@@ -973,7 +986,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     substring+=strlen(keyword->key)+1;
     ptr=substring;
     while(*ptr && *ptr!='-')
+    {
      ptr++;
+    }
     if(*ptr=='-')
     {
      *ptr=0;
@@ -993,15 +1008,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     else 
     {
      ip->max-=ip->keyword->reserve_max;
-
-/*
-     if(ip->keyword->divide_max>1)
-      ip->max=ip->min+(ip->max-ip->min)/ip->keyword->divide_max;
-     if(ip->keyword->htb_ceil_bonus_divide>0)
-      ip->max+=ip->max/ip->keyword->htb_ceil_bonus_divide;
-*/
      if(ip->max<ip->min)
+     {
       ip->max=ip->min;
+     }
     }
     ip->mark=FIRSTIPCLASS+1+class_count++;
 
@@ -1055,7 +1065,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    break;
   }
   if(!sharedip)
+  {
    printf("Unresolved shared connection: %s %s sharing-%s\n",ip->addr,ip->name,ip->sharing);
+  }
  }
 
  if(enable_credit && just_flush<9)
@@ -1084,13 +1096,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   /*-----------------------------------------------------------------*/
   
   iptables_file=fopen(iptablesfile,"w");
-  if (iptables_file == NULL) {
+  if (iptables_file == NULL)
+  {
     puts("Cannot open iptablesfile!");
     exit(-1);
   }
   
   log_file=fopen(cmdlog,"w");
-  if (log_file == NULL) {
+  if (log_file == NULL) 
+  {
     puts("Cannot open logfile!");
     exit(-1);
   }
@@ -1127,7 +1141,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     chain="post_noproxy";    
    }
    else
+   {
     chain="POSTROUTING";
+   }
     
    sprintf(str,"-A %s -s %s -o %s -j ACCEPT", chain, qos_free_zone, lan);
    save_line(str);
@@ -1197,7 +1213,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sort(idx,idxs,order_by,bitmask);
 
    i=0;
-
    for_each(idx,idxs)
    {
     subnet=subnet_id(idx->addr,idx->bitmask);
@@ -1215,7 +1230,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      sprintf(buf,"post_%s",idx->parent->id);
     }
     else
+    {
      buf="POSTROUTING";
+    }
 
     sprintf(str,"-A %s -d %s/%d -o %s -j post_%s", buf, subnet, idx->bitmask, lan, idx->id);
     save_line(str);
@@ -1229,7 +1246,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      sprintf(buf,"forw_%s",idx->parent->id);
     }
     else
+    {
      buf="FORWARD";
+    }
 
     sprintf(str,"-A %s -s %s/%d -o %s -j forw_%s", buf, subnet, idx->bitmask, wan, idx->id);
     save_line(str);
@@ -1290,8 +1309,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  puts("Locating heavy downloaders and generating root classes ...");
  /*-----------------------------------------------------------------*/
- sort(ip,ips,desc_order_by,traffic);
- 
+ sort(ip,ips,desc_order_by,traffic); 
 
  /*-----------------------------------------------------------------*/
  /* sub-scope - local variables */  
@@ -1318,7 +1336,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     safe_run(str);
    }
    
-   if(group_count++<max_nesting) parent=group->id;
+   if(group_count++<max_nesting)
+   {
+    parent=group->id;
+   }
    
    rate-=digital_divide*group->min;
    if(rate<group->min)rate=group->min;
