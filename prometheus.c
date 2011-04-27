@@ -85,6 +85,7 @@ void help(void)
 -s            start shaping! (keep data transfer statistics - but apply shaping)\n\
 */
 }
+
 /* === Configuraration file values defaults - stored in global variables ==== */
 
 int        filter_type = 1; /*1 mark, 2 classify*/
@@ -135,7 +136,7 @@ const int idxtable_treshold2 = 12;      /* this is no longer configurable */
 const int idxtable_bitmask1  = 3;        /* this is no longer configurable */
 const int idxtable_bitmask2  = 3;        /* this is no longer configurable */
 
-/* ==== This is C<<1 stuff - learn C<<1 first! http://cll1.arachne.cz ==== */
+/* ==== This is C<<1 stuff - learn C<<1 first! https://dev.arachne.cz/svn/cll1h ==== */
 
 struct IP
 {
@@ -211,7 +212,7 @@ void TheIP(void)
  ip->addr        = "";
  ip->sharing     = NULL;
  ip->prio        = highest_priority+1;
- ip->lmsid       = \
+ ip->lmsid       = -1;
  ip->fixedprio   = \
  ip->mark        = \
  ip->min         = \
@@ -303,10 +304,14 @@ char *very_ugly_ipv4_code(char *inip,int bitmask,int format_as_chainname)
 }
 
 char *hash_id(char *ip,int bitmask)
-{ return very_ugly_ipv4_code(ip,bitmask,1); }
+{ 
+ return very_ugly_ipv4_code(ip,bitmask,1);
+}
 
 char *subnet_id(char *ip,int bitmask)
-{ return very_ugly_ipv4_code(ip,bitmask,0); }
+{
+ return very_ugly_ipv4_code(ip,bitmask,0);
+}
 
 /* ================= Let's parse configuration file here =================== */
 
@@ -532,8 +537,14 @@ void get_traffic_statistics(void)
   
     if(accept && traffic>0 && ipaddr)
     {
-     if(proxyflag)printf("(proxy) ");
-     else if(!downloadflag) printf("(upload) ");
+     if(proxyflag)
+     {
+      printf("(proxy) ");
+     }
+     else if(!downloadflag)
+     {
+      printf("(upload) ");
+     }
      printf("IP %s: %Lu M (%ld pkts)\n", ipaddr, traffic, pkts);
 
      if_exists(ip,ips,eq(ip->addr,ipaddr)); 
@@ -552,9 +563,13 @@ void get_traffic_statistics(void)
      if(downloadflag)
      {
       if(proxyflag)
+      {
        ip->proxy=traffic;
+      }
       else
+      {
        ip->traffic+=traffic;
+      }
       ip->direct=ip->traffic-ip->upload-ip->proxy;
       ip->pktsdown=pkts;
      }
@@ -584,8 +599,18 @@ void get_traffic_statistics(void)
 
 void safe_run(char *cmd)
 {
- if(dry_run) printf("\n=>%s\n",cmd); else system(cmd);
- if(log_file) fprintf(log_file,"%s\n",cmd);
+ if(dry_run)
+ {
+  printf("\n=>%s\n",cmd);
+ }
+ else
+ {
+  system(cmd);
+ }
+ if(log_file)
+ {
+  fprintf(log_file,"%s\n",cmd);
+ }
 }
 
 void save_line(char *line)
@@ -606,11 +631,11 @@ void run_restore(void)
  fclose(iptables_file);
  if(dry_run) 
  {
-    parse(iptablesfile)
-    {
-        str=_;
-        printf("%s\n", str);
-    }done;
+  parse(iptablesfile)
+  {
+   printf("%s\n",_);
+  }
+  done;
  }
 
  sprintf(restor,"%s <%s",iptablesrestore, iptablesfile);
@@ -630,22 +655,30 @@ void parse_ip(char *str)
  {
   lmsid=++ptr;
   while(*ptr && *ptr!='}')
+  {
    ptr++;
+  }
   *ptr=0;
  }
  
  ptr=str;
  while(*ptr && *ptr!=' ' && *ptr!=9)
+ {
   ptr++;
+ }
  
  *ptr=0;
  ipaddr=str;
  ptr++;
  while(*ptr && (*ptr==' ' || *ptr==9))
+ {
   ptr++;
+ }
  ipname=ptr; 
  while(*ptr && *ptr!=' ' && *ptr!=9)
+ {
   ptr++;
+ }
  *ptr=0;
 
  if_exists(ip,ips,eq(ip->addr,ipaddr));
@@ -684,6 +717,7 @@ struct IpLog
  long traffic;
  long guaranted;
  int i;
+ int lmsid;
  long l;
  list(IpLog);
 } *iplog,*iplogs;
@@ -748,7 +782,7 @@ void parse_ip_log(int argc, char **argv)
     accept_month=0;
     traffic_month=0;
     guaranted=0;
-    lmsid=0;
+    lmsid=-1;
     parse(filename)
     {
      y_ok=m_ok=0;  
@@ -790,6 +824,7 @@ void parse_ip_log(int argc, char **argv)
      iplog->name = name;
      iplog->guaranted = guaranted;
      iplog->traffic = traffic_month;
+     iplog->lmsid = lmsid;
      insert(iplog,iplogs,desc_order_by,traffic);
      printf(" %ld MB\n",iplog->traffic);
     }
@@ -908,7 +943,7 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2008 Michael Polak (xChaos)\n\
+Version %s - Copyright (C)2005-2011 Michael Polak (xChaos)\n\
 iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
@@ -1563,10 +1598,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    if(found_lmsid)
    {
     fputs("<td align=\"right\">",f);
-    if(ip->lmsid)
+    if(ip->lmsid > 0)
     {
      /*base URL will be configurable soon ... */
      fprintf(f,"<a href=\"https://hermes.spoje.net/?m=customerinfo&amp;id=%d\">%04d</a>\n", ip->lmsid, ip->lmsid);
+    }
+    else if(ip->lmsid == 0)
+    {
+     fputs("----",f);
     }
     fputs("</td>\n",f);    
    }
