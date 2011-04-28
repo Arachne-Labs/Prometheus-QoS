@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20110427
+/* Modified by: xChaos, 20110428
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -1123,6 +1123,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sharedip->traffic+=ip->traffic;
    ip->traffic=0;
    ip->mark=sharedip->mark; 
+   ip->lmsid=sharedip->lmsid;
    break;
   }
   if(!sharedip)
@@ -1605,7 +1606,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
     else if(ip->lmsid == 0)
     {
-     fputs("----",f);
+     fputs("------",f);
     }
     fputs("</td>\n",f);    
    }
