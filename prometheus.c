@@ -646,7 +646,7 @@ void run_restore(void)
 
 /* == This function strips extra characters after IP address and stores it = */
 
-void parse_ip(char *str)
+void parse_ip(struct IP *ip, char *str)
 {
  char *ptr,*ipaddr=NULL,*ipname=NULL,*lmsid=NULL;
 
@@ -839,20 +839,30 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f)
  {
-  fprintf(f,"<table border><tr><th colspan=\"2\">%s %s</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
+  fprintf(f,"<table border><tr><th colspan=\"2\">%s %s</th><th align=\"right\">lms</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
 
   for_each(iplog,iplogs)
   {
    if(iplog->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">%ld M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
-              i++, iplog->name, iplog->traffic, iplog->traffic>>10, iplog->guaranted);
+    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">", i++, iplog->name); 
+    if(iplog->lmsid > 0)
+    {
+     /*base URL will be configurable soon ... */
+     fprintf(f,"<a href=\"https://hermes.spoje.net/?m=customerinfo&amp;id=%d\">%04d</a>\n", iplog->lmsid, iplog->lmsid);
+    }
+    else if(iplog->lmsid == 0)
+    {
+     fputs("-------",f);
+    }    
+    fprintf(f,"<td align=\"right\">%ld M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
+              iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
     iplog->i=i;
     iplog->l=total;
    }
   }
-  fprintf(f,"<tr><th colspan=\"3\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th><th align=\"right\">%Ld kbps</th></tr>\n", total, line);
+  fprintf(f,"<tr><th colspan=\"4\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th><th align=\"right\">%Ld kbps</th></tr>\n", total, line);
   fputs("</table>\n", f);
 
   if(i>10)
@@ -1023,7 +1033,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   if(substring)
   { 
    substring+=8; //"sharing-"
-   parse_ip(str);
+   parse_ip(ip, str);
    ip_count++;
    ip->sharing=substring;
    ip->keyword=defaultkeyword; /* settings for default keyword */
@@ -1039,7 +1049,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
    {
-    parse_ip(str);
+    parse_ip(ip, str);
     ip_count++;
     ip->keyword=keyword;
     keyword->ip_count++;
@@ -1606,7 +1616,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
     else if(ip->lmsid == 0)
     {
-     fputs("------",f);
+     fputs("-------",f);
     }
     fputs("</td>\n",f);    
    }
