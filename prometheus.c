@@ -646,7 +646,7 @@ void run_restore(void)
 
 /* == This function strips extra characters after IP address and stores it = */
 
-void parse_ip(struct IP *ip, char *str)
+void parse_ip(char *str)
 {
  char *ptr,*ipaddr=NULL,*ipname=NULL,*lmsid=NULL;
 
@@ -1033,7 +1033,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   if(substring)
   { 
    substring+=8; //"sharing-"
-   parse_ip(ip, str);
+   parse_ip(str);
    ip_count++;
    ip->sharing=substring;
    ip->keyword=defaultkeyword; /* settings for default keyword */
@@ -1049,7 +1049,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
    {
-    parse_ip(ip, str);
+    parse_ip(str);
     ip_count++;
     ip->keyword=keyword;
     keyword->ip_count++;
