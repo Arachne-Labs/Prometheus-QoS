@@ -1672,6 +1672,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   if(active_classes>10)
   {
+   int top20_count=0,top20_perc1=0;
+   long long top20_perc2=0;
+   unsigned long long top20_sum=0l;
+  
    fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
    fputs("<tr><td>Analytic category</td>\n",f);
    fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
@@ -1700,10 +1704,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   if_exists (sum,sums,sum->i>=(active_classes+1)/5)
+   if_exists(sum,sums,sum->i>=(active_classes+1)/5)
    {
     fprintf(f,"<tr><td>Top 20%% downloaders</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    top20_count=sum->i;
+    top20_perc1=(100*sum->i+50)/active_classes;
+    top20_sum=sum->l;
+    top20_perc2=(100*sum->l+50)/total;
+    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",top20_count,top20_perc1,top20_sum,top20_perc2);
    }
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/4)
@@ -1727,7 +1735,21 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<tr><td>All users, all traffic</td>\n");
    fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total);
    fputs("</table>\n", f);
+
+   /*write basic ERP data to log directory*/
+   if(!just_preview)
+   {
+    sprintf(str,"%s/ERP.log",log_dir);
+    iplog=fopen(str,"a");
+    if(iplog)
+    {
+     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu\t%Ld %%\t%d\t%Lu\t%s",
+                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, active_classes, total, d); /* d = date*/
+     fclose(iplog);
+    }
+   }
   }
+
   fprintf(f, stats_html_signature, version);
   fclose(f);
  }
