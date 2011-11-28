@@ -620,7 +620,7 @@ void save_line(char *line)
 
 void run_restore(void)
 {
- char *restor, *str;
+ char *restor;
  string(restor,STRLEN);
 
  /*-----------------------------------------------------------------*/
@@ -867,7 +867,7 @@ void parse_ip_log(int argc, char **argv)
 
   if(i>10)
   {
-   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
+   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Resource Planning (ERP)</th></tr>\n",f);
    fputs("<tr><td>Analytic category</td>\n",f);
    fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
 
@@ -1658,7 +1658,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      fclose(iplog);
     }
    }
-
   }
   fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">SUMMARY:</td>",colspan-7);
   fprintf(f,"<th align=\"right\">%Lu M</th>\
@@ -1676,7 +1675,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    long long top20_perc2=0;
    unsigned long long top20_sum=0l;
   
-   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Research and Planning (ERP)</th></tr>\n",f);
+   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Resource Planning (ERP)</th></tr>\n",f);
    fputs("<tr><td>Analytic category</td>\n",f);
    fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
 
@@ -1732,18 +1731,18 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
    }
 
-   fprintf(f,"<tr><td>All users, all traffic</td>\n");
+   fprintf(f,"<tr><td><a href=\"%sERP.log\">All users, all traffic</a></td>\n", log_url);
    fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total);
    fputs("</table>\n", f);
 
-   /*write basic ERP data to log directory*/
+   /* write basic ERP data to log directory */
    if(!just_preview)
    {
     sprintf(str,"%s/ERP.log",log_dir);
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu\t%Ld %%\t%d\t%Lu\t%s",
+     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\t%d\t%Lu M\t%s",
                     time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, active_classes, total, d); /* d = date*/
      fclose(iplog);
     }
