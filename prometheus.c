@@ -947,6 +947,7 @@ program
  int just_preview=FALSE;                /* preview - generate just stats */
  int just_logs=FALSE;                   /* just parse logs */
  int run=FALSE;
+ int total=0;
  
  char *chain_forward, *chain_postrouting;
  char *althosts=NULL;
@@ -1502,7 +1503,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(f)
  {
-  int total=0;
+
   int count=1;
   i=0;
 
@@ -1551,7 +1552,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  i=1;
  if(f)
  {
-  unsigned long long total=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
+  unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
   int active_classes=0;
   int colspan;
   FILE *iplog;
@@ -1631,7 +1632,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->upload);
    fprintf(f,"<td align=\"right\">%d k</td><td align=\"right\">%d k</td><td align=\"right\">%s%d k%s</td><td>%s%d%s</td></tr>\n",
              ip->min,ip->desired,f1,ip->max,f2,f1,ip->prio,f2);
-   total+=ip->traffic;
+   total_traffic+=ip->traffic;
    total_direct+=ip->direct;
    total_proxy+=ip->proxy;
    total_upload+=ip->upload;
@@ -1661,7 +1662,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
   fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">SUMMARY:</td>",colspan-7);
   fprintf(f,"<th align=\"right\">%Lu M</th>\
-  <th align=\"right\">%Lu M</th>\n", total, total_direct);
+  <th align=\"right\">%Lu M</th>\n", total_traffic, total_direct);
   if(qos_proxy)
   {
    fprintf(f,"<th align=\"right\">%Lu M</th>\n", total_proxy);
@@ -1679,28 +1680,28 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fputs("<tr><td>Analytic category</td>\n",f);
    fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
 
-   if_exists(sum,sums,sum->l>=total/4)
+   if_exists(sum,sums,sum->l>=total_traffic/4)
    {
     fprintf(f,"<tr><td>Top 25%% of traffic</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
    
    if_exists(sum,sums,sum->i==10)
    {
     fprintf(f,"<tr><td>Top 10 downloaders</td>\n");
-    fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
-   if_exists(sum,sums,sum->l>=total/2)
+   if_exists(sum,sums,sum->l>=total_traffic/2)
    {
     fprintf(f,"<tr><td>Top 50%% of traffic</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
-   if_exists(sum,sums,sum->l>=4*total/5)
+   if_exists(sum,sums,sum->l>=4*total_traffic/5)
    {
     fprintf(f,"<tr><td>Top 80%% of traffic</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/5)
@@ -1709,30 +1710,30 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     top20_count=sum->i;
     top20_perc1=(100*sum->i+50)/active_classes;
     top20_sum=sum->l;
-    top20_perc2=(100*sum->l+50)/total;
+    top20_perc2=(100*sum->l+50)/total_traffic;
     fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",top20_count,top20_perc1,top20_sum,top20_perc2);
    }
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/4)
    {
     fprintf(f,"<tr><td>Top 25%% downloaders</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/2)
    {
     fprintf(f,"<tr><td>Top 50%% downloaders</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->i>=4*(active_classes+1)/5)
    {
     fprintf(f,"<tr><td>Top 80%% downloaders</td>\n");
-    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total);
+    fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    fprintf(f,"<tr><td><a href=\"%sERP.log\">All users, all traffic</a></td>\n", log_url);
-   fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total);
+   fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total_traffic);
    fputs("</table>\n", f);
 
    /* write basic ERP data to log directory */
@@ -1742,8 +1743,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\t%d\t%Lu M\t%s",
-                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, active_classes, total, d); /* d = date*/
+     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\t%d\t%Lu M\t%d\t%s",
+                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, active_classes, total_traffic, total, d); /* d = date*/
      fclose(iplog);
     }
    }
