@@ -1525,7 +1525,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    for_each(keyword,keywords)
    {
-    fprintf(f,"<td align=\"right\"><font color=\"#%s\">%d M</font></td>",keyword->html_color,group->min*keyword->data_limit);
+    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%d M</span></td>",keyword->html_color,group->min*keyword->data_limit);
    }   
    i+=group->desired; 
    total+=group->count;
@@ -1557,6 +1557,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   int colspan;
   FILE *iplog;
   struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums=NULL;
+  int limit_count=0, prio_count=0;
 
   colspan=11;
   if(qos_proxy)
@@ -1594,13 +1595,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    char *f1="", *f2="";
    if(ip->max<ip->desired)
    {
-    f1="<font color=\"red\">";
-    f2="</font>";
+    f1="<span style=\"color:red\">";
+    f2="</span>";
+    limit_count++;
    }
    else if(ip->prio>highest_priority+1)
    {
-    f1="<font color=\"brown\">";
-    f2="</font>";
+    f1="<span style=\"color:brown\">";
+    f2="</span>";
+    prio_count++;
    }
 
 #ifdef DEBUG
@@ -1622,7 +1625,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     fputs("</td>\n",f);    
    }
    fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->credit);
-   fprintf(f,"<td align=\"right\"><font color=\"#%s\">%Lu M</font></td>",
+   fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%Lu M</span></td>",
              ip->keyword->html_color, ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
    fprintf(f,"<td align=\"right\">%s%Lu M%s</td><td align=\"right\">%Lu M</td>\n", f1, ip->traffic, f2, ip->direct);
    if(qos_proxy)
@@ -1668,7 +1671,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<th align=\"right\">%Lu M</th>\n", total_proxy);
   }
   fprintf(f,"<th align=\"right\">%Lu M</th>", total_upload);
-  fputs("<td colspan=\"4\"></td></th>\n</table>\n",f);
+  fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">FUP-LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</table>\n",limit_count,prio_count);
 
   if(active_classes>10)
   {
@@ -1743,8 +1746,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\t%d\t%Lu M\t%d\t%s",
-                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, active_classes, total_traffic, total, d); /* d = date*/
+     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\t%s",
+                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
+                    active_classes, total_traffic, total, limit_count, prio_count, d); /* d = date*/
      fclose(iplog);
     }
    }
