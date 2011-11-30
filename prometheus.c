@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20110428
+/* Modified by: xChaos, 20111130
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.2.h"
 
-const char *version = "0.8.3"; 
+const char *version = "0.8.3-b";
 
 /* Version numbers: 0.8.3 is development releases ("beta"), 0.8.4 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
@@ -1511,6 +1511,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   printf("Sorting data and generating statistics page %s ...\n",ptr);
   /*-----------------------------------------------------------------*/
 
+  fputs("<script type=\"text/javascript\" src=\"/jquery.js\"></script>\n",f);
   fputs("<table border>\n<tr><th align=\"right\">#</th><th align=\"right\">group</th><th align=\"right\">IPs</th><th align=\"right\">requested</th>\n",f);
   fprintf(f,"<th colspan=\"%d\">data limits</th>\n",keywordcount);
   fputs("</tr>\n",f);
@@ -1554,12 +1555,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  {
   unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
   int active_classes=0;
-  int colspan;
+  int colspan=11;
   FILE *iplog;
   struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums=NULL;
   int limit_count=0, prio_count=0;
+  int popup_button=0;
 
-  colspan=11;
   if(qos_proxy)
   {
    colspan++;
@@ -1609,7 +1610,24 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 #ifdef DEBUG
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
 #endif
-   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a></td>\n", ip->name, i, log_url, ip->name, ip->name);
+   /* hostnames -------------------------------------- */
+   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a>\n", ip->name, i, log_url, ip->name, ip->name);   
+   fprintf(f,"<span id=\"sharing_%d\" style=\"display:none\">",i);
+   popup_button=0;
+   for_selected(sharedip,ips,eq(ip->name,sharedip->sharing))
+   {
+    fprintf(f,"<br /><a href=\"%s%s.log\">%s</a>\n", log_url, sharedip->name, sharedip->name);
+    popup_button=1;
+   }
+   fputs("</span>\n",f);
+   if(popup_button)
+   {
+    fprintf(f,"<span id=\"toggle_%d\">[<a href=\"#\" onClick=\"$(\'#toggle_%d\').remove();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer; text-decoration:none;\">+</a>]</span>",
+              i, i, i, i, i);
+   }
+   fputs("</td>\n",f);
+   /* ----------------------------------------------- */
+
    if(found_lmsid)
    {
     fputs("<td align=\"right\">",f);
@@ -1622,17 +1640,38 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     {
      fputs("-------",f);
     }
-    fputs("</td>\n",f);    
+    fputs("</td>\n",f);
    }
    fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->credit);
    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%Lu M</span></td>",
-             ip->keyword->html_color, ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
-   fprintf(f,"<td align=\"right\">%s%Lu M%s</td><td align=\"right\">%Lu M</td>\n", f1, ip->traffic, f2, ip->direct);
+             ip->keyword->html_color,
+             ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
+   fprintf(f,"<td align=\"right\">%s%Lu M%s",f1, ip->traffic, f2);
+
+   /* download --------------------------------------- */
+   fprintf(f,"</td><td align=\"right\">%Lu M", ip->direct);
+   fprintf(f,"<span id=\"download_%d\" style=\"display:none\">",i);
+   for_selected(sharedip,ips,eq(ip->name,sharedip->sharing))
+   {
+    fprintf(f,"<br />%Lu M", sharedip->direct);
+   }
+   fputs("</span></td>\n",f);
+   /* ----------------------------------------------- */
+
    if(qos_proxy)
    {
     fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->proxy);
    }
-   fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->upload);
+   /* upload ---------------------------------------- */
+   fprintf(f,"<td align=\"right\">%Lu M", ip->upload);
+   fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">",i);
+   for_selected(sharedip,ips,eq(ip->name,sharedip->sharing))
+   {
+    fprintf(f,"<br />%Lu M", sharedip->upload);
+   }
+   fputs("</span></td>\n",f);
+   /* ----------------------------------------------- */
+
    fprintf(f,"<td align=\"right\">%d k</td><td align=\"right\">%d k</td><td align=\"right\">%s%d k%s</td><td>%s%d%s</td></tr>\n",
              ip->min,ip->desired,f1,ip->max,f2,f1,ip->prio,f2);
    total_traffic+=ip->traffic;
@@ -1664,8 +1703,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
   }
   fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">SUMMARY:</td>",colspan-7);
-  fprintf(f,"<th align=\"right\">%Lu M</th>\
-  <th align=\"right\">%Lu M</th>\n", total_traffic, total_direct);
+  fprintf(f,"<th align=\"right\">%Lu M</th><th align=\"right\">%Lu M</th>\n", total_traffic, total_direct);
   if(qos_proxy)
   {
    fprintf(f,"<th align=\"right\">%Lu M</th>\n", total_proxy);
@@ -1747,8 +1785,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     if(iplog)
     {
      fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\t%s",
-                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
-                    active_classes, total_traffic, total, limit_count, prio_count, d); /* d = date*/
+                   time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
+                   active_classes, total_traffic, total, limit_count, prio_count, d); /* d = date*/
      fclose(iplog);
     }
    }

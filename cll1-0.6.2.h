@@ -71,7 +71,7 @@
 
 /* String macros & sequences, updated 2004-04-19 by xCh. */
 
-#define eq(A,B) !strcmp(A,B)
+#define eq(A,B) ((A) && (B) && !strcmp(A,B))
 #define strcmpi(A,B) strcasecmp(A,B)
 #define strlwr(A) {char *_S=A; while(_&&*_S){*_S=tolower(*_S);_S++;}}
 #define strupr(A) {char *_S=A; while(_&&*_S){*_S=toupper(*_S);_S++;}}
