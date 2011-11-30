@@ -1622,7 +1622,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fputs("</span>\n",f);
    if(popup_button)
    {
-    fprintf(f,"<span>[<a href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer; text-decoration:none;\">+</a>]</span>",
+    fprintf(f,"<span>[<a href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer; text-decoration:none;\">+</a>]</span>",
               i, i, i);
    }
    fputs("</td>\n",f);
