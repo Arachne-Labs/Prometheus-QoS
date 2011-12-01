@@ -864,7 +864,7 @@ void parse_ip_log(int argc, char **argv)
     {
      fputs("-------",f);
     }    
-    fprintf(f, "<td align=\"right\">%ld M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
+    fprintf(f, "<td align=\"right\">%ld&nbsp;M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
                iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
     iplog->i=i;
@@ -1536,14 +1536,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 #ifdef DEBUG
    printf("%d k group: %d bandwidth requested: %d k\n",group->min,group->count,group->desired);
 #endif
-   fprintf(f,"<tr><td align=\"right\">%d</td><td align=\"right\">%d k</td>",
+   fprintf(f,"<tr><td align=\"right\">%d</td><td align=\"right\">%d&nbsp;k</td>",
              count, group->min);
-   fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d k</td>",
+   fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d&nbsp;k</td>",
              group->count, group->desired);
 
    for_each(keyword, keywords)
    {
-    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%d M</span></td>",
+    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%d&nbsp;M</span></td>",
               keyword->html_color, group->min*keyword->data_limit);
    }   
    i += group->desired; 
@@ -1668,20 +1668,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
     fputs("</td>\n",f);
    }
-   fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->credit);
-   fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%Lu M</span></td>",
+   fprintf(f,"<td align=\"right\">%Lu&nbsp;M</td>\n", ip->credit);
+   fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%Lu&nbsp;M</span></td>",
              ip->keyword->html_color,
              ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
-   fprintf(f,"<td align=\"right\">%s%Lu M%s", f1, ip->traffic, f2);
+   fprintf(f,"<td align=\"right\">%s%Lu&nbsp;M%s", f1, ip->traffic, f2);
 
    /* download --------------------------------------- */
-   fprintf(f,"</td><td align=\"right\">%Lu M", ip->direct);
+   fprintf(f,"</td><td align=\"right\">%Lu&nbsp;M", ip->direct);
    if(use_jquery_popups)
    {
      fprintf(f,"<span id=\"download_%d\" style=\"display:none\">",i);
      for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing))
      {
-      fprintf(f,"<br />%Lu M", sharedip->direct);
+      fprintf(f,"<br />%Lu&nbsp;M", sharedip->direct);
      }
      fputs("</span>\n",f);
    }
@@ -1690,23 +1690,23 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    if(qos_proxy)
    {
-    fprintf(f,"<td align=\"right\">%Lu M</td>\n", ip->proxy);
+    fprintf(f,"<td align=\"right\">%Lu&nbsp;M</td>\n", ip->proxy);
    }
    /* upload ---------------------------------------- */
-   fprintf(f,"<td align=\"right\">%Lu M", ip->upload);
+   fprintf(f,"<td align=\"right\">%Lu&nbsp;M", ip->upload);
    if(use_jquery_popups)
    {
      fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">",i);
      for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))
      {
-      fprintf(f,"<br />%Lu M", sharedip->upload);
+      fprintf(f,"<br />%Lu&nbsp;M", sharedip->upload);
      }
      fputs("</span>\n",f);
    }
    fputs("</td>\n",f);
    /* ----------------------------------------------- */
 
-   fprintf(f,"<td align=\"right\">%d k</td><td align=\"right\">%d k</td><td align=\"right\">%s%d k%s</td><td>%s%d%s</td></tr>\n",
+   fprintf(f,"<td align=\"right\">%d&nbsp;k</td><td align=\"right\">%d&nbsp;k</td><td align=\"right\">%s%d&nbsp;k%s</td><td>%s%d%s</td></tr>\n",
              ip->min,ip->desired,f1,ip->max,f2,f1,ip->prio,f2);
 
    total_traffic+=ip->traffic;
@@ -1737,12 +1737,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
   }
   fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">%d CLASSES</th>", colspan-7, i);
-  fprintf(f,"<th align=\"right\">%Lu M</th><th align=\"right\">%Lu M</th>\n", total_traffic, total_direct);
+  fprintf(f,"<th align=\"right\">%Lu&nbsp;M</th><th align=\"right\">%Lu&nbsp;M</th>\n", total_traffic, total_direct);
   if(qos_proxy)
   {
-   fprintf(f,"<th align=\"right\">%Lu M</th>\n", total_proxy);
+   fprintf(f,"<th align=\"right\">%Lu&nbsp;M</th>\n", total_proxy);
   }
-  fprintf(f,"<th align=\"right\">%Lu M</th>", total_upload);
+  fprintf(f,"<th align=\"right\">%Lu&nbsp;M</th>", total_upload);
   fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">FUP-LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</table>\n",limit_count,prio_count);
 
   if(active_classes>10)
