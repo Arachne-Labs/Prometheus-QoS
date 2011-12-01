@@ -62,6 +62,10 @@ char         *log_dir = "/var/www/logs/"; /* log directory pathname, ended with 
 char         *log_url = "logs/"; /* log directory relative URI prefix (partial URL) */
 char    *html_log_dir = "/var/www/logs/html/";
 
+char      *jquery_url = "http://code.jquery.com/jquery-latest.js";
+char         *lms_url = "/lms/?m=customerinfo&amp;id=";
+int use_jquery_popups = 1;
+
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 
 void help(void)
@@ -408,6 +412,9 @@ void get_config(char *config_filename)
   option("log-traffic-directory",log_dir);
   option("log-traffic-html-directory",html_log_dir);
   option("log-traffic-url-path",log_url);
+  option("jquery-url",jquery_url);
+  option("lms-url",lms_url);
+  ioption("use-jquery-popups",use_jquery_popups);
   option("qos-free-zone",qos_free_zone);
   ioption("qos-free-delay",qos_free_delay);
   ioption("qos-proxy-enable",qos_proxy);
@@ -839,24 +846,26 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f)
  {
-  fprintf(f,"<table border><tr><th colspan=\"2\">%s %s</th><th align=\"right\">lms</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",month,year);
+  fprintf(f, "<table border><tr><th colspan=\"2\">%s %s</th><th align=\"right\">lms</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",
+             month, year);
 
-  for_each(iplog,iplogs)
+  for_each(iplog, iplogs)
   {
    if(iplog->traffic)
    {
-    fprintf(f,"<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">", i++, iplog->name); 
+    fprintf(f, "<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">", 
+               i++, iplog->name); 
     if(iplog->lmsid > 0)
     {
      /*base URL will be configurable soon ... */
-     fprintf(f,"<a href=\"https://hermes.spoje.net/?m=customerinfo&amp;id=%d\">%04d</a>\n", iplog->lmsid, iplog->lmsid);
+     fprintf(f, "<a href=\"%s%d\">%04d</a>\n", lms_url, iplog->lmsid, iplog->lmsid);
     }
     else if(iplog->lmsid == 0)
     {
      fputs("-------",f);
     }    
-    fprintf(f,"<td align=\"right\">%ld M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
-              iplog->traffic, iplog->traffic>>10, iplog->guaranted);
+    fprintf(f, "<td align=\"right\">%ld M</td><th align=\"right\">%ld G</th><td align=\"right\">%ld kbps</th></tr>\n",
+               iplog->traffic, iplog->traffic>>10, iplog->guaranted);
     total+=iplog->traffic>>10;
     iplog->i=i;
     iplog->l=total;
@@ -1127,9 +1136,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  puts("Resolving shared connections ...");
  /*-----------------------------------------------------------------*/
- for_selected(ip,ips,ip->sharing)
+ for_each(ip,ips) if(ip->sharing)
  {
-  for_selected(sharedip,ips,eq(sharedip->name,ip->sharing))
+  for_each(sharedip,ips) if(eq(sharedip->name,ip->sharing))
   {
    sharedip->traffic+=ip->traffic;
    ip->traffic=0;
@@ -1233,7 +1242,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    save_line(":post_common - [0:0]");
    save_line(":forw_common - [0:0]");
 
-   for_selected(ip,ips,ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0"))
+   for_each(ip,ips) if (ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0"))
    {
     buf=hash_id(ip->addr,bitmask);
     if_exists(idx,idxs,eq(idx->id,buf))
@@ -1259,7 +1268,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     bitmask-=idxtable_bitmask2;
     idxcount=0;
 
-    for_selected(idx,idxs,idx->parent==NULL)
+    for_each(idx,idxs) if(idx->parent == NULL)
     {
      buf=hash_id(idx->addr,bitmask);
      if_exists(metaindex,idxs,eq(metaindex->id,buf))
@@ -1356,7 +1365,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sleep(qos_free_delay);
   }
 
-  sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q %d default 1",tc,lan,htb_r2q);
+  sprintf(str,"%s qdisc add dev %s root handle 1: htb r2q %d default 1",
+              tc,lan,htb_r2q);
   safe_run(str);
 
   sprintf(str, "%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio %d",
@@ -1387,14 +1397,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  /* sub-scope - local variables */  
  {
-  long long int rate=line;
-  long long int max=line;
-  int group_count=0;
-  FILE *credit_file=NULL;
+  long long int rate = line;
+  long long int max = line;
+  int group_count = 0;
+  FILE *credit_file = NULL;
   
   if(!just_preview && !dry_run && enable_credit)
   {
-   credit_file=fopen(credit,"w");
+   credit_file = fopen(credit,"w");
   }
     
   for_each(group,groups)
@@ -1412,27 +1422,27 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     safe_run(str);
    }
    
-   if(group_count++<max_nesting)
+   if(group_count++ < max_nesting)
    {
-    parent=group->id;
+    parent = group->id;
    }
    
-   rate-=digital_divide*group->min;
-   if(rate<group->min)
+   rate -= digital_divide*group->min;
+   if(rate < group->min)
    {
-    rate=group->min;
+    rate = group->min;
    }
     
    /*shaping of aggresive downloaders, with credit file support */
    if(use_credit)
    {
-    int group_rate=group->min, priority_sequence=lowest_priority;
+    int group_rate = group->min, priority_sequence = lowest_priority;
     
-    for_selected(ip, ips, ip->min==group->min && ip->max>ip->min)
+    for_each(ip, ips) if(ip->min == group->min && ip->max > ip->min)
     {
-     if( ip->keyword->data_limit && !ip->fixedprio &&
-         ip->traffic>ip->credit+
-         (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)) )
+     if(    ip->keyword->data_limit && !ip->fixedprio 
+         && (   ip->traffic>ip->credit
+              + (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))) )
      {
       if(group_rate<ip->max)
       {
@@ -1447,9 +1457,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      }
      else
      {
-      if( ip->keyword->data_prio && !ip->fixedprio &&
-          ip->traffic>ip->credit+
-           (ip->min*ip->keyword->data_prio+(ip->keyword->fixed_prio<<20)) )
+      if(    ip->keyword->data_prio 
+          && !ip->fixedprio 
+          && (   ip->traffic>ip->credit
+               + (ip->min*ip->keyword->data_prio+(ip->keyword->fixed_prio<<20))) )
       {
        ip->prio=priority_sequence--;
        if(ip->prio<highest_priority+1)
@@ -1469,8 +1480,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
        fprintf(credit_file,"%s %Lu\n",ip->addr,lcredit);
       }
      }
-    }
-        
+    }        
    }
   }
   if(credit_file)
@@ -1492,8 +1502,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   f=fopen("/var/run/prometheus.previous","w");
   if(f)
   {
-   for_selected(ip,ips,ip->traffic || ip->direct || ip->proxy ||ip->upload)
-    fprintf(f,"%s %Lu %Lu %Lu %Lu\n",ip->addr,ip->traffic,ip->direct,ip->proxy,ip->upload);
+   for_each(ip,ips) if(ip->traffic || ip->direct || ip->proxy || ip->upload)
+   {
+    fprintf(f,"%s %Lu %Lu %Lu %Lu\n",
+              ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
+   }
    fclose(f);
   }
 
@@ -1503,54 +1516,62 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(f)
  {
-
   int count=1;
   i=0;
 
   /*-----------------------------------------------------------------*/
-  printf("Sorting data and generating statistics page %s ...\n",ptr);
+  printf("Sorting data and generating statistics page %s ...\n", ptr);
   /*-----------------------------------------------------------------*/
 
-  fputs("<script type=\"text/javascript\" src=\"/jquery.js\"></script>\n",f);
+  if(use_jquery_popups)
+  {
+   fprintf(f,"<script type=\"text/javascript\" src=\"%s\"></script>\n", jquery_url);
+  }
   fputs("<table border>\n<tr><th align=\"right\">#</th><th align=\"right\">group</th><th align=\"right\">IPs</th><th align=\"right\">requested</th>\n",f);
-  fprintf(f,"<th colspan=\"%d\">data limits</th>\n",keywordcount);
+  fprintf(f,"<th colspan=\"%d\">data limits</th>\n", keywordcount);
   fputs("</tr>\n",f);
 
-  for_each(group,groups) 
+  for_each(group, groups) 
   { 
 #ifdef DEBUG
    printf("%d k group: %d bandwidth requested: %d k\n",group->min,group->count,group->desired);
 #endif
-   fprintf(f,"<tr><td align=\"right\">%d</td><td align=\"right\">%d k</td>",count,group->min);
-   fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d k</td>",group->count,group->desired);
+   fprintf(f,"<tr><td align=\"right\">%d</td><td align=\"right\">%d k</td>",
+             count, group->min);
+   fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d k</td>",
+             group->count, group->desired);
 
-   for_each(keyword,keywords)
+   for_each(keyword, keywords)
    {
-    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%d M</span></td>",keyword->html_color,group->min*keyword->data_limit);
+    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%d M</span></td>",
+              keyword->html_color, group->min*keyword->data_limit);
    }   
-   i+=group->desired; 
-   total+=group->count;
+   i += group->desired; 
+   total += group->count;
    count++; 
   }
 #ifdef DEBUG
-   printf("Total groups: %d Total bandwidth requested: %d k\nAGGREGATION: 1/%d\n",count,i,i/line);
+   printf("Total groups: %d Total bandwidth requested: %d k\nAGGREGATION: 1/%d\n",
+          count, i, i/line);
 #endif
    fprintf(f,"<tr><th colspan=\"2\" align=\"left\">Line %Ld k</td>",line);
    fprintf(f,"<th align=\"right\">%d</td><th align=\"right\">%d k</td>",total,i);
 
-   for_each(keyword,keywords)
+   for_each(keyword, keywords)
    {
     fprintf(f,"<th align=\"right\">%d IPs</th>",keyword->ip_count);
    }
-   fprintf(f,"</tr><tr><th colspan=\"4\">Aggregation 1/%d</th>\n",(int)(0.5+i/line));
-   fprintf(f,"<th colspan=\"%d\">%d traffic classes</th></tr>\n",keywordcount,total);
+   fprintf(f,"</tr><tr><th colspan=\"4\">Aggregation 1/%d</th>\n", (int)(0.5+i/line));
+   fprintf(f,"<th colspan=\"%d\">%d traffic classes</th></tr>\n", keywordcount, total);
 
    fputs("</table>\n",f);
  }
- else if(!dry_run && !just_flush) 
+ else if(!dry_run && !just_flush)
+ {
   perror(html);
+ }
 
- i=1;
+ i=0;
  if(f)
  {
   unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
@@ -1591,16 +1612,18 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 <td align=\"right\">maximum</td>\
 <td>prio</td></tr>\n",f);	
 
-  for_each(ip,ips)
+  for_each(ip,ips) if(!use_jquery_popups || !ip->sharing)
   {
    char *f1="", *f2="";
-   if(ip->max<ip->desired)
+   i++;
+      
+   if(ip->max < ip->desired)
    {
     f1="<span style=\"color:red\">";
     f2="</span>";
     limit_count++;
    }
-   else if(ip->prio>highest_priority+1)
+   else if(ip->prio > highest_priority+1)
    {
     f1="<span style=\"color:brown\">";
     f2="</span>";
@@ -1611,19 +1634,22 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
 #endif
    /* hostnames -------------------------------------- */
-   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a>\n", ip->name, i, log_url, ip->name, ip->name);   
-   fprintf(f,"<span id=\"sharing_%d\" style=\"display:none\">",i);
-   popup_button=0;
-   for_selected(sharedip,ips,eq(ip->name,sharedip->sharing))
+   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a>\n", ip->name, i, log_url, ip->name, ip->name);
+   if(use_jquery_popups)
    {
-    fprintf(f,"<br /><a href=\"%s%s.log\">%s</a>\n", log_url, sharedip->name, sharedip->name);
-    popup_button=1;
-   }
-   fputs("</span>\n",f);
-   if(popup_button)
-   {
-    fprintf(f,"<span>[<a href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer; text-decoration:none;\">+</a>]</span>",
-              i, i, i);
+     fprintf(f,"<span id=\"sharing_%d\" style=\"display:none\">",i);
+     popup_button=0;
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing))
+     {
+      fprintf(f,"<br /><a href=\"%s%s.log\">%s</a>\n", log_url, sharedip->name, sharedip->name);
+      popup_button++;
+     }
+     fputs("</span>\n",f);
+     if(popup_button)
+     {
+      fprintf(f,"<span>[<a href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer;\">+%d</a>]</span>",
+                i, i, i, popup_button);
+     }
    }
    fputs("</td>\n",f);
    /* ----------------------------------------------- */
@@ -1634,7 +1660,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     if(ip->lmsid > 0)
     {
      /*base URL will be configurable soon ... */
-     fprintf(f,"<a href=\"https://hermes.spoje.net/?m=customerinfo&amp;id=%d\">%04d</a>\n", ip->lmsid, ip->lmsid);
+     fprintf(f,"<a href=\"%s%d\">%04d</a>\n", lms_url, ip->lmsid, ip->lmsid);
     }
     else if(ip->lmsid == 0)
     {
@@ -1646,16 +1672,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<td align=\"right\"><span style=\"color:#%s\">%Lu M</span></td>",
              ip->keyword->html_color,
              ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
-   fprintf(f,"<td align=\"right\">%s%Lu M%s",f1, ip->traffic, f2);
+   fprintf(f,"<td align=\"right\">%s%Lu M%s", f1, ip->traffic, f2);
 
    /* download --------------------------------------- */
    fprintf(f,"</td><td align=\"right\">%Lu M", ip->direct);
-   fprintf(f,"<span id=\"download_%d\" style=\"display:none\">",i);
-   for_selected(sharedip,ips,eq(ip->name,sharedip->sharing))
+   if(use_jquery_popups)
    {
-    fprintf(f,"<br />%Lu M", sharedip->direct);
+     fprintf(f,"<span id=\"download_%d\" style=\"display:none\">",i);
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing))
+     {
+      fprintf(f,"<br />%Lu M", sharedip->direct);
+     }
+     fputs("</span>\n",f);
    }
-   fputs("</span></td>\n",f);
+   fputs("</td>\n",f);
    /* ----------------------------------------------- */
 
    if(qos_proxy)
@@ -1664,16 +1694,21 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
    /* upload ---------------------------------------- */
    fprintf(f,"<td align=\"right\">%Lu M", ip->upload);
-   fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">",i);
-   for_selected(sharedip,ips,eq(ip->name,sharedip->sharing))
+   if(use_jquery_popups)
    {
-    fprintf(f,"<br />%Lu M", sharedip->upload);
+     fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">",i);
+     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))
+     {
+      fprintf(f,"<br />%Lu M", sharedip->upload);
+     }
+     fputs("</span>\n",f);
    }
-   fputs("</span></td>\n",f);
+   fputs("</td>\n",f);
    /* ----------------------------------------------- */
 
    fprintf(f,"<td align=\"right\">%d k</td><td align=\"right\">%d k</td><td align=\"right\">%s%d k%s</td><td>%s%d%s</td></tr>\n",
              ip->min,ip->desired,f1,ip->max,f2,f1,ip->prio,f2);
+
    total_traffic+=ip->traffic;
    total_direct+=ip->direct;
    total_proxy+=ip->proxy;
@@ -1687,9 +1722,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     sum->i=active_classes;
     insert(sum,sums,order_by,i);
    }
-   
-   i++;
-   
+
    if(!just_preview)
    {
     sprintf(str,"%s/%s.log",log_dir,ip->name);
@@ -1697,12 +1730,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     if(iplog)
     {
      fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
-                    time(NULL),ip->name,ip->traffic,ip->direct,ip->proxy,ip->upload,ip->min,ip->max,ip->desired,ip->lmsid,d); /* d = date*/
+                    time(NULL), ip->name, ip->traffic, ip->direct, ip->proxy,
+                    ip->upload, ip->min, ip->max, ip->desired, ip->lmsid, d); /* d = date*/
      fclose(iplog);
     }
    }
   }
-  fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">SUMMARY:</td>",colspan-7);
+  fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">%d CLASSES</th>", colspan-7, i);
   fprintf(f,"<th align=\"right\">%Lu M</th><th align=\"right\">%Lu M</th>\n", total_traffic, total_direct);
   if(qos_proxy)
   {
@@ -1786,7 +1820,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     {
      fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\t%s",
                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
-                   active_classes, total_traffic, total, limit_count, prio_count, d); /* d = date*/
+                   active_classes, total_traffic, i, limit_count, prio_count, d); /* d = date*/
      fclose(iplog);
     }
    }
@@ -1809,9 +1843,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  i=0;
  printf("%-22s %-15s mark\n","name","ip");
 
- for_selected(ip,ips,ip->mark>0)
+ for_each(ip,ips) if(ip->mark>0)
  { 
-  
   if(idxs)
   {
    char *buf;
