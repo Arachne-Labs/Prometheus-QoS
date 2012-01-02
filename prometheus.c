@@ -853,8 +853,8 @@ void parse_ip_log(int argc, char **argv)
   {
    if(iplog->traffic)
    {
-    fprintf(f, "<tr><td align=\"right\">%d</td><th align=\"left\">%s</td><td align=\"right\">", 
-               i++, iplog->name); 
+    fprintf(f, "<tr><td align=\"right\">%d</td><td align=\"left\"><a href=\"%s%s.log\">%s</td></td><td align=\"right\">", 
+               i++, log_url, iplog->name, iplog->name);  
     if(iplog->lmsid > 0)
     {
      /*base URL will be configurable soon ... */
