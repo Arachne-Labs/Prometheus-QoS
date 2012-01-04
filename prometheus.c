@@ -59,7 +59,7 @@ char            *html = "/var/www/traffic.html"; /* hall of fame filename */
 char         *preview = "/var/www/preview.html"; /* hall of fame preview */
 char          *cmdlog = "/var/log/prometheuslog"; /* command log filename */
 char         *log_dir = "/var/www/logs/"; /* log directory pathname, ended with slash */
-char         *log_url = "logs/"; /* log directory relative URI prefix (partial URL) */
+char         *log_url = "/logs/"; /* log directory relative URI prefix (partial URL) */
 char    *html_log_dir = "/var/www/logs/html/";
 
 char      *jquery_url = "http://code.jquery.com/jquery-latest.js";
