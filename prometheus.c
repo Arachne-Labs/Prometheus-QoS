@@ -65,6 +65,20 @@ char    *html_log_dir = "/var/www/logs/html/";
 char      *jquery_url = "http://code.jquery.com/jquery-latest.js";
 char         *lms_url = "/lms/?m=customerinfo&amp;id=";
 int use_jquery_popups = 1;
+int      row_odd_even = 0; /*<tr class="odd/even"> */
+
+const char *tr_odd_even(void)
+{
+ row_odd_even = 1 - row_odd_even;
+ if(row_odd_even)
+ {
+  return "<tr class=\"even\">\n";
+ }
+ else
+ {
+  return "<tr class=\"odd\">\n";
+ }
+}
 
 /* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
 
@@ -846,15 +860,16 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f)
  {
-  fprintf(f, "<table border><tr><th colspan=\"2\">%s %s</th><th align=\"right\">lms</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr>\n ",
+  fprintf(f, "<table border=\"1\"><thead><tr class=\"bgGrey\"><th colspan=\"2\">%s %s</th><th align=\"right\">lms</th><th colspan=\"2\">Data transfers</th><th align=\"right\">Min.speed</th></tr></thead><tbody>\n ",
              month, year);
 
+  row_odd_even = 0;
   for_each(iplog, iplogs)
   {
    if(iplog->traffic)
    {
-    fprintf(f, "<tr><td align=\"right\">%d</td><td align=\"left\"><a href=\"%s%s.log\">%s</td></td><td align=\"right\">", 
-               i++, log_url, iplog->name, iplog->name);  
+    fprintf(f, "%s<td align=\"right\">%d</td><td align=\"left\"><a href=\"%s%s.log\">%s</td></td><td align=\"right\">", 
+               tr_odd_even(), i++, log_url, iplog->name, iplog->name);  
     if(iplog->lmsid > 0)
     {
      /*base URL will be configurable soon ... */
@@ -871,66 +886,67 @@ void parse_ip_log(int argc, char **argv)
     iplog->l=total;
    }
   }
-  fprintf(f,"<tr><th colspan=\"4\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th><th align=\"right\">%Ld kbps</th></tr>\n", total, line);
-  fputs("</table>\n", f);
+  fprintf(f,"<tr class=\"bgGrey\"><th colspan=\"4\" align=\"left\">Total:</th><th align=\"right\">%ld GB</th><th align=\"right\">%Ld kbps</th></tr>\n", total, line);
+  fputs("</tbody></table>\n", f);
 
+  row_odd_even = 0;
   if(i>10)
   {
-   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Resource Planning (ERP)</th></tr>\n",f);
-   fputs("<tr><td>Analytic category</td>\n",f);
-   fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
+   fputs("<a name=\"erp\"></a><p><table border=\"0\"><thead><caption>Enterprise Resource Planning (ERP)</caption></tr>\n",f);
+   fputs("<tr class=\"bgGrey\"><td>Analytic category</td>\n",f);
+   fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n</thead><tbody>\n",f);
 
    if_exists(iplog,iplogs,iplog->l>=total/4)
    {
-    fprintf(f,"<tr><td>Top 25%% of traffic</td>\n");
+    fprintf(f,"%s<td>Top 25%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
    
    if_exists(iplog,iplogs,iplog->i==10)
    {
-    fprintf(f,"<tr><td>Top 10 downloaders</td>\n");
+    fprintf(f,"%s<td>Top 10 downloaders</td>\n", tr_odd_even());
     fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->l>=total/2)
    {
-    fprintf(f,"<tr><td>Top 50%% of traffic</td>\n");
+    fprintf(f,"%s<td>Top 50%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><th align=\"right\">%d %%</th></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->l>=4*total/5)
    {
-    fprintf(f,"<tr><td>Top 80%% of traffic</td>\n");
+    fprintf(f,"%s<td>Top 80%% of traffic</td>\n",tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><th align=\"right\">%d %%</th></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
    if_exists (iplog,iplogs,iplog->i>=i/5)
    {
-    fprintf(f,"<tr><td>Top 20%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 20%% downloaders</td>\n",tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->i>=i/4)
    {
-    fprintf(f,"<tr><td>Top 25%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 25%% downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->i>=i/2)
    {
-    fprintf(f,"<tr><td>Top 50%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 50%% downloaders</td>\n",tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->i>=4*i/5)
    {
-    fprintf(f,"<tr><td>Top 80%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 80%% downloaders</td>\n",tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%ld G</td><td align=\"right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
 
-   fprintf(f,"<tr><td>All users, all traffic</td>\n");
+   fprintf(f,"<tr class=\"bgGrey\"><td>All users, all traffic</td>\n");
    fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%ld G</th><th align=\"right\">100 %%</th></tr>\n",i-1,total);
-   fputs("</table>\n", f);
+   fputs("</tbody></table>\n", f);
   }
 
   fprintf(f, stats_html_signature, version);
@@ -1527,19 +1543,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    fprintf(f,"<script type=\"text/javascript\" src=\"%s\"></script>\n", jquery_url);
   }
-  fputs("<table border>\n<tr><th align=\"right\">#</th><th align=\"right\">group</th><th align=\"right\">IPs</th><th align=\"right\">requested</th>\n",f);
+  fputs("<table border=\"0\">\n<thead><tr class=\"bgGrey\"><th align=\"right\">#</th><th align=\"right\">group</th><th align=\"right\">IPs</th><th align=\"right\">requested</th>\n",f);
   fprintf(f,"<th colspan=\"%d\">data limits</th>\n", keywordcount);
-  fputs("</tr>\n",f);
+  fputs("</tr></thead><tbody>\n",f);
 
+  row_odd_even = 0;
   for_each(group, groups) 
   { 
 #ifdef DEBUG
    printf("%d k group: %d bandwidth requested: %d k\n",group->min,group->count,group->desired);
 #endif
-   fprintf(f,"<tr><td align=\"right\">%d</td><td align=\"right\">%d&nbsp;k</td>",
-             count, group->min);
-   fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d&nbsp;k</td>",
-             group->count, group->desired);
+   fprintf(f, "%s<td align=\"right\">%d</td><td align=\"right\">%d&nbsp;k</td>",
+              tr_odd_even(), count, group->min);
+   fprintf(f, "<td align=\"right\">%d</td><td align=\"right\">%d&nbsp;k</td>",
+              group->count, group->desired);
 
    for_each(keyword, keywords)
    {
@@ -1554,7 +1571,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    printf("Total groups: %d Total bandwidth requested: %d k\nAGGREGATION: 1/%d\n",
           count, i, i/line);
 #endif
-   fprintf(f,"<tr><th colspan=\"2\" align=\"left\">Line %Ld k</td>",line);
+   fprintf(f,"<tr class=\"bgGrey\"><th colspan=\"2\" align=\"left\">Line %Ld k</td>",line);
    fprintf(f,"<th align=\"right\">%d</td><th align=\"right\">%d k</td>",total,i);
 
    for_each(keyword, keywords)
@@ -1564,7 +1581,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"</tr><tr><th colspan=\"4\">Aggregation 1/%d</th>\n", (int)(0.5+i/line));
    fprintf(f,"<th colspan=\"%d\">%d traffic classes</th></tr>\n", keywordcount, total);
 
-   fputs("</table>\n",f);
+   fputs("</tbody></table>\n",f);
  }
  else if(!dry_run && !just_flush)
  {
@@ -1591,9 +1608,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    colspan++;
   }
   
-  fprintf(f,"<p><table border>\n<tr><th colspan=\"%d\">%s",colspan,title);
-  fprintf(f," (%s)</th></tr>\n", d);
-  fputs("<tr><td align=\"right\">#</td><td>hostname</td>",f);
+  fprintf(f,"<p><table border>\n<thead><caption>%s",title);
+  fprintf(f," (%s)</caption>\n", d);
+  fputs("<tr class=\"bgGrey\"><td align=\"right\">#</td><td>hostname</td>",f);
   if(found_lmsid)
   {
    fputs("<td align=\"right\">lms</td>\n",f);
@@ -1610,8 +1627,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 <td align=\"right\">minimum</td>\
 <td align=\"right\">desired</td>\
 <td align=\"right\">maximum</td>\
-<td>prio</td></tr>\n",f);	
+<td>prio</td></tr>\n\
+</thead><tbody>\n",f);	
 
+  row_odd_even = 0;
   for_each(ip,ips) if(!use_jquery_popups || !ip->sharing)
   {
    char *f1="", *f2="";
@@ -1634,7 +1653,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
 #endif
    /* hostnames -------------------------------------- */
-   fprintf(f,"<tr><td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a>\n", ip->name, i, log_url, ip->name, ip->name);
+   fprintf(f,"%s<td align=\"right\"><a name=\"%s\"></a>%d</td><td><a href=\"%s%s.log\">%s</a>\n", 
+              tr_odd_even(), ip->name, i, log_url, ip->name, ip->name);
    if(use_jquery_popups)
    {
      fprintf(f,"<span id=\"sharing_%d\" style=\"display:none\">",i);
@@ -1736,52 +1756,53 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
    }
   }
-  fprintf(f,"<tr><th colspan=\"%d\" align=\"left\">%d CLASSES</th>", colspan-7, i);
+  fprintf(f,"<tr class=\"bgGrey\"><th colspan=\"%d\" align=\"left\">%d CLASSES</th>", colspan-7, i);
   fprintf(f,"<th align=\"right\">%Lu&nbsp;M</th><th align=\"right\">%Lu&nbsp;M</th>\n", total_traffic, total_direct);
   if(qos_proxy)
   {
    fprintf(f,"<th align=\"right\">%Lu&nbsp;M</th>\n", total_proxy);
   }
   fprintf(f,"<th align=\"right\">%Lu&nbsp;M</th>", total_upload);
-  fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">FUP-LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</table>\n",limit_count,prio_count);
+  fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">FUP-LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</tbody></table>\n",limit_count,prio_count);
 
+  row_odd_even = 0;
   if(active_classes>10)
   {
    int top20_count=0,top20_perc1=0;
    long long top20_perc2=0;
    unsigned long long top20_sum=0l;
   
-   fputs("<a name=\"erp\"></a><p><table border><tr><th colspan=\"5\">Enterprise Resource Planning (ERP)</th></tr>\n",f);
-   fputs("<tr><td>Analytic category</td>\n",f);
-   fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr>\n",f);
+   fputs("<a name=\"erp\"></a><p><table border><thead><caption>Enterprise Resource Planning (ERP)</caption>\n",f);
+   fputs("<tr class=\"bgGrey\"><td>Analytic category</td>\n",f);
+   fputs("<td colspan=\"2\" align=\"center\">Active Classes</td><td colspan=\"2\" align=\"center\">Data transfers</td></tr></thead><tbody>\n",f);
 
    if_exists(sum,sums,sum->l>=total_traffic/4)
    {
-    fprintf(f,"<tr><td>Top 25%% of traffic</td>\n");
+    fprintf(f,"%s<td>Top 25%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
    
    if_exists(sum,sums,sum->i==10)
    {
-    fprintf(f,"<tr><td>Top 10 downloaders</td>\n");
+    fprintf(f,"%s<td>Top 10 downloaders</td>\n", tr_odd_even());
     fprintf(f,"<th align=\"right\">10</th><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->l>=total_traffic/2)
    {
-    fprintf(f,"<tr><td>Top 50%% of traffic</td>\n");
+    fprintf(f,"%s<td>Top 50%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->l>=4*total_traffic/5)
    {
-    fprintf(f,"<tr><td>Top 80%% of traffic</td>\n");
+    fprintf(f,"%s<td>Top 80%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><th align=\"right\">%Ld %%</th></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/5)
    {
-    fprintf(f,"<tr><td>Top 20%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 20%% downloaders</td>\n", tr_odd_even());
     top20_count=sum->i;
     top20_perc1=(100*sum->i+50)/active_classes;
     top20_sum=sum->l;
@@ -1791,25 +1812,25 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/4)
    {
-    fprintf(f,"<tr><td>Top 25%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 25%% downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->i>=(active_classes+1)/2)
    {
-    fprintf(f,"<tr><td>Top 50%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 50%% downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><th align=\"right\">%d %%</th><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->i>=4*(active_classes+1)/5)
    {
-    fprintf(f,"<tr><td>Top 80%% downloaders</td>\n");
+    fprintf(f,"%s<td>Top 80%% downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td align=\"right\">%d</td><td align=\"right\">%d %%</td><td align=\"right\">%Lu M</td><td align=\"right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
-   fprintf(f,"<tr><td><a href=\"%sERP.log\">All users, all traffic</a></td>\n", log_url);
+   fprintf(f,"<tr class=\"bgGrey\"><td><a href=\"%sERP.log\">All users, all traffic</a></td>\n", log_url);
    fprintf(f,"<th align=\"right\">%d</th><th align=\"right\">100 %%</th><th align=\"right\">%Lu M</th><th align=\"right\">100 %%</th></tr>\n",active_classes,total_traffic);
-   fputs("</table>\n", f);
+   fputs("</tbody></table>\n", f);
 
    /* write basic ERP data to log directory */
    if(!just_preview)
