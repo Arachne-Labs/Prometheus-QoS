@@ -1,6 +1,6 @@
 #!/bin/bash
-pimp_2way_nat="/mnt/mtdblock0/pimp-2way-nat.tmp"
-pimp_snat="/mnt/mtdblock0/pimp-snat.tmp"
+pimp_2way_nat="/dev/shm/pimp-2way-nat.tmp"
+pimp_snat="/dev/shm/pimp-snat.tmp"
 etchosts="/mnt/mtdblock0/hosts"
 
 echo -n "Writing $pimp_2way_nat"
