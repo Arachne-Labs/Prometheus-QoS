@@ -1646,9 +1646,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f, "<td style=\"text-align: right\">%d</td><td style=\"text-align: right\">%d&nbsp;kb/s</td>",
               group->count, group->desired);
 
-   for_each(keyword, keywords)
+   for_each(keyword, keywords) if(keyword->ip_count)
    {
-    fprintf(f,"<td style=\"text-align: right\"><span style=\"color:#%s\">%d&nbsp;Mb/s</span></td>",
+    fprintf(f,"<td style=\"text-align: right\"><span style=\"color:#%s\">%d&nbsp;MB</span></td>",
               keyword->html_color, group->min*keyword->data_limit);
    }   
    i += group->desired; 
@@ -1664,7 +1664,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 <th colspan=\"2\" style=\"text-align: left\">Line %Ld kb/s</td>",line);
    fprintf(f,"<th style=\"text-align: right\">%d</td><th style=\"text-align: right\">%d kb/s</td>",total,i);
 
-   for_each(keyword, keywords)
+   for_each(keyword, keywords) if(keyword->ip_count)
    {
     fprintf(f,"<th style=\"text-align: right\">%d IPs</th>",keyword->ip_count);
    }
