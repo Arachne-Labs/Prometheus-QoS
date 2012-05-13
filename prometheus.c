@@ -1659,7 +1659,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    printf("Total groups: %d Total bandwidth requested: %d kb/s\nAGGREGATION: 1/%d\n",
           count, i, i/line);
 #endif
-   fprintf(f,"<tr><th colspan=\"2\" style=\"text-align: left\">Line %Ld kb/s</td>",line);
+   fprintf(f,"</tr></tbody>\n\
+<thead><tr>\n\
+<th colspan=\"2\" style=\"text-align: left\">Line %Ld kb/s</td>",line);
    fprintf(f,"<th style=\"text-align: right\">%d</td><th style=\"text-align: right\">%d kb/s</td>",total,i);
 
    for_each(keyword, keywords)
@@ -1669,7 +1671,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"</tr><tr><th colspan=\"4\">Aggregation 1/%d</th>\n", (int)(0.5+i/line));
    fprintf(f,"<th colspan=\"%d\">%d traffic classes</th></tr>\n", keywordcount, total);
 
-   fputs("</tbody></table>\n",f);
+   fputs("</thead></table>\n",f);
  }
  else if(!dry_run && !just_flush)
  {
@@ -1707,8 +1709,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 <th style=\"text-align: right\">min</th>\n\
 <th style=\"text-align: right\">max</th>\n\
 <th style=\"text-align: right\">limit</th>\n\
-<th>prio</th></tr>\n\
-<tr>\n\
+<th>&nbsp;</th>\n\
+</tr><tr>\n\
 <th style=\"text-align: right\">#</th>\n\
 <th>hostname [+sharing]</th>\n\
 <th style=\"text-align: right\">LMS</th>\n\
@@ -1720,7 +1722,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 <th style=\"text-align: right\">kb/s</th>\n\
 <th style=\"text-align: right\">kb/s</th>\n\
 <th style=\"text-align: right\">kb/s</th>\n\
-<th>&nbsp;</th>\n\
+<th>prio</th>\n\
 </tr></thead><tbody>\n",f);	
 
   row_odd_even = 0;
@@ -1854,14 +1856,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
    }
   }
-  fprintf(f,"<tr><th colspan=\"%d\" style=\"text-align: left\">%d CLASSES</th>", colspan-7, i);
+  fprintf(f,"</tbody><thead><tr>\n\
+<th colspan=\"%d\" style=\"text-align: left\">%d CLASSES</th>", colspan-7, i);
   fprintf(f,"<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%Lu</th>\n", total_traffic, total_direct);
   if(qos_proxy)
   {
    fprintf(f,"<th style=\"text-align: right\">%Lu</th>\n", total_proxy);
   }
   fprintf(f,"<th style=\"text-align: right\">%Lu</th>", total_upload);
-  fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">FUP-LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</tbody></table>\n",limit_count,prio_count);
+  fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",limit_count,prio_count);
 
   row_odd_even = 0;
   if(active_classes>10)
