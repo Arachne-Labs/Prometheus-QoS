@@ -1,6 +1,6 @@
 #!/bin/bash
 cd /root/bin/
-#you have to provider hosts file (prometheus syntax) to these scripts
+#you have to provide hosts file (prometheus syntax) to these scripts
 #/root/bin/updatehosts
 /root/bin/make-pimp
 /root/bin/make-iptables-restore
