@@ -895,7 +895,7 @@ void parse_ip_log(int argc, char **argv)
   }
  }
  sprintf(str,"%s/%s-%s.html",html_log_dir,year,month);
- printf("Writing %s ...",str);
+ printf("Writing %s ... ",str);
  f=fopen(str,"w");
  if(f)
  {
@@ -1030,7 +1030,34 @@ void parse_ip_log(int argc, char **argv)
   fclose(f);
   puts(" done.");
  }
+ else
+ {
+  perror(str);
+ }
 }
+
+void append_log(struct IP *self) /*using global variables*/
+{
+ char *d, *str;
+ FILE *f; 
+
+ date(d); /* this is typical cll1.h macro - prints current date */ 
+ string(str,STRLEN); 
+ sprintf(str,"%s/%s.log", log_dir, self->name);
+ f=fopen(str,"a");
+ if(f)
+ {
+  fprintf(f,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
+            time(NULL), self->name, self->traffic, self->direct, self->proxy,
+            self->upload, self->min, self->max, self->desired, self->lmsid, d); /* d = date*/
+  fclose(f);
+ }
+ else
+ {
+  perror(str);
+ }
+}
+
 
 /*-----------------------------------------------------------------*/
 /* Are you looking for int main(int argc, char **argv) ? :-))      */
@@ -1448,7 +1475,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  if(just_flush)
  {
   fclose(iptables_file);
-  if(log_file) fclose(log_file);
+  if(log_file)
+  { 
+   fclose(log_file);
+  }
   puts("Just flushed iptables and tc classes - now exiting ...");
   exit(0);
  }
@@ -1592,10 +1622,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
  else if(!dry_run && !just_flush)
  {
+  const char *previous="/var/run/prometheus.previous";
   /*-----------------------------------------------------------------*/
-  printf("Writing data transfer database ...\n");
+  printf("Writing data transfer database %s ... ", previous);
   /*-----------------------------------------------------------------*/
-  f=fopen("/var/run/prometheus.previous","w");
+  f=fopen(previous,"w");
   if(f)
   {
    for_each(ip,ips)
@@ -1607,6 +1638,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
    }
    fclose(f);
+   puts(" done.");
+  }
+  else
+  {
+   perror(previous);
   }
   f=fopen(html,"w");
   ptr=html;
@@ -1684,7 +1720,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
   int active_classes=0;
   int colspan=12;
-  FILE *iplog;
   struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums=NULL;
   int limit_count=0, prio_count=0;
   int popup_button=0;
@@ -1815,6 +1850,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))
      {
       fprintf(f,"<br />%Lu", sharedip->upload);
+      if(!just_preview)
+      {
+       append_log(sharedip);
+      }
      }
      fputs("</span>\n",f);
    }
@@ -1845,15 +1884,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    if(!just_preview)
    {
-    sprintf(str,"%s/%s.log",log_dir,ip->name);
-    iplog=fopen(str,"a");
-    if(iplog)
-    {
-     fprintf(iplog,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
-                    time(NULL), ip->name, ip->traffic, ip->direct, ip->proxy,
-                    ip->upload, ip->min, ip->max, ip->desired, ip->lmsid, d); /* d = date*/
-     fclose(iplog);
-    }
+    append_log(ip);
    }
   }
   fprintf(f,"</tbody><thead><tr>\n\
@@ -1970,6 +2001,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    /* write basic ERP data to log directory */
    if(!just_preview)
    {
+    FILE *iplog;
     sprintf(str,"%s/ERP.log",log_dir);
     iplog=fopen(str,"a");
     if(iplog)
@@ -1978,6 +2010,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
                    active_classes, total_traffic, i, limit_count, prio_count, d); /* d = date*/
      fclose(iplog);
+    }
+    else
+    {
+     perror(str);
     }
    }
   }
