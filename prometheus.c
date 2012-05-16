@@ -656,8 +656,7 @@ void get_traffic_statistics(void)
      }
     }  
   }
-
- free(cmd);
+  free(cmd);
 }
  
 /* ========== This function executes, logs OR ALSO prints command ========== */
@@ -689,7 +688,7 @@ void run_restore(void)
  string(restor,STRLEN);
 
  /*-----------------------------------------------------------------*/
- printf("Running %s <%s ...\n",iptablesrestore,iptablesfile);
+ printf("Running %s <%s ...\n", iptablesrestore, iptablesfile);
  /*-----------------------------------------------------------------*/
  
  save_line("COMMIT");
@@ -1643,7 +1642,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
     if(ip->traffic || ip->direct || ip->proxy || ip->upload)
     {
-     fprintf(f, "%d:{\"ip\":%s, \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu}\n",
+     fprintf(f, " %d:{ \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu }",
                 ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
     }
     jsoncount++;
