@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20120511
+/* Modified by: xChaos, 20120516
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.2.h"
 
-const char *version = "0.8.3-c";
+const char *version = "0.8.3-d";
 
 /* Version numbers: 0.8.3 is development releases ("beta"), 0.8.4 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
@@ -44,10 +44,10 @@ const char *stats_html_signature = "<span class=\"small\">Statistics generated b
 
 /* ======= All path names are defined here (for RPM patch) =======  */
 
-char              *tc = "/sbin/tc"; /* requires tc with HTB support */
-char        *iptables = "/sbin/iptables"; /* requires iptables utility */
-char    *iptablessave = "/sbin/iptables-save"; /* not yet required */
-char *iptablesrestore = "/sbin/iptables-restore";  /* requires iptables-restore */
+const char        *tc = "/sbin/tc"; /* requires tc with HTB support */
+const char  *iptables = "/sbin/iptables"; /* requires iptables utility */
+const char *iptablessave = "/sbin/iptables-save"; /* not yet required */
+const char *iptablesrestore = "/sbin/iptables-restore";  /* requires iptables-restore */
 const char        *ls = "/bin/ls"; /* this is not user configurable :-) */
 
 char          *config = "/etc/prometheus/prometheus.conf"; /* main configuration file */
@@ -55,8 +55,10 @@ char           *hosts = "/etc/prometheus/hosts"; /* per-IP bandwidth definition 
 
 char    *iptablesfile = "/var/spool/prometheus.iptables"; /* temporary file for iptables-restore*/
 char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
-char            *html = "/var/www/traffic.html"; /* hall of fame filename */
+char        *classmap = "/var/lib/misc/prometheus.classes"; /* credit log file */
+char            *html = "/var/www/traffic.html"; /* hall of fame - html version */
 char         *preview = "/var/www/preview.html"; /* hall of fame preview */
+char            *json = "/var/www/traffic.json"; /* hall of fame - json version */
 char          *cmdlog = "/var/log/prometheuslog"; /* command log filename */
 char         *log_dir = "/var/www/logs/"; /* log directory pathname, ended with slash */
 char         *log_url = "/logs/"; /* log directory relative URI prefix (partial URL) */
@@ -66,6 +68,7 @@ char      *jquery_url = "http://code.jquery.com/jquery-latest.js";
 char         *lms_url = "/lms/?m=customerinfo&amp;id=";
 int use_jquery_popups = 1;
 int      row_odd_even = 0; /*<tr class="odd/even"> */
+
 
 const char *tr_odd_even(void)
 {
@@ -424,7 +427,7 @@ void get_config(char *config_filename)
   option("iptables",iptables);
   option("iptables-save",iptablessave); /* new */
   option("iptables-restore",iptablesrestore); /* new */
-  option("iptables-file",iptablesfile); /* new */
+  option("iptables-in-filename",iptablesfile); /* new */
   option("hosts",hosts);
   option("lan-interface",lan);
   option("wan-interface",wan);
@@ -435,9 +438,11 @@ void get_config(char *config_filename)
   ioption("hall-of-fame-enable",hall_of_fame);
   option("hall-of-fame-title",title);
   option("hall-of-fame-filename",html);
+  option("json-filename",json);
   option("hall-of-fame-preview",preview);
   option("log-filename",cmdlog);
   option("credit-filename",credit);
+  option("classmap-filename",classmap);
   ioption("credit-enable",enable_credit);
   option("log-traffic-directory",log_dir);
   option("log-traffic-html-directory",html_log_dir);
@@ -474,7 +479,7 @@ void get_config(char *config_filename)
  done;
  printf("\n");
  
- /*leaf discipline for keywords*/
+ /* leaf discipline for keywords */
  for_each(keyword,keywords)
  {
     if(!strcmpi(keyword->leaf_discipline, ""))
@@ -897,7 +902,7 @@ void parse_ip_log(int argc, char **argv)
  sprintf(str,"%s/%s-%s.html",html_log_dir,year,month);
  printf("Writing %s ... ",str);
  f=fopen(str,"w");
- if(f)
+ if(f > 0)
  {
   fprintf(f, "<table class=\"decorated last\"><thead>\n\
 <tr><th colspan=\"2\">%s %s</th>\n\
@@ -934,11 +939,11 @@ void parse_ip_log(int argc, char **argv)
     iplog->l=total;
    }
   }
-  fprintf(f,"<tr>\
+  fprintf(f,"</tbody><thead><tr>\
   <td colspan=\"4\" style=\"text-align: left\">Total:</td>\
   <td style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></td>\
   <td style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></td></tr>\n", total, line);
-  fputs("</tbody></table>\n", f);
+  fputs("</thead></table>\n", f);
 
   row_odd_even = 0;
   if(i>10)
@@ -1028,7 +1033,7 @@ void parse_ip_log(int argc, char **argv)
 
   fprintf(f, stats_html_signature, version);
   fclose(f);
-  puts(" done.");
+  puts("done.");
  }
  else
  {
@@ -1045,7 +1050,7 @@ void append_log(struct IP *self) /*using global variables*/
  string(str,STRLEN); 
  sprintf(str,"%s/%s.log", log_dir, self->name);
  f=fopen(str,"a");
- if(f)
+ if(f > 0)
  {
   fprintf(f,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
             time(NULL), self->name, self->traffic, self->direct, self->proxy,
@@ -1622,27 +1627,34 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
  else if(!dry_run && !just_flush)
  {
-  const char *previous="/var/run/prometheus.previous";
   /*-----------------------------------------------------------------*/
-  printf("Writing data transfer database %s ... ", previous);
+  printf("Writing daily statistics  %s ... ", json);
   /*-----------------------------------------------------------------*/
-  f=fopen(previous,"w");
-  if(f)
+  f=fopen(json, "w");
+  if(f > 0)
   {
-   for_each(ip,ips)
+   int jsoncount=0;
+   fprintf(f, "{\n");
+   for_each(ip, ips)
    {
+    if(jsoncount)
+    {
+     fprintf(f, ",\n");
+    }
     if(ip->traffic || ip->direct || ip->proxy || ip->upload)
     {
-     fprintf(f,"%s %Lu %Lu %Lu %Lu\n",
-               ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
+     fprintf(f, "%d:{\"ip\":%s, \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu}\n",
+                ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
     }
+    jsoncount++;
    }
+   fprintf(f, "}\n");
    fclose(f);
-   puts(" done.");
+   puts("done.");
   }
   else
   {
-   perror(previous);
+   perror(json);
   }
   f=fopen(html,"w");
   ptr=html;
@@ -2026,19 +2038,26 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  {
   puts("Statistics preview generated (-p switch) - now exiting ...");
   exit(0);
- }
-  
- /*-----------------------------------------------------------------*/
- puts("Generating iptables and tc classes ...");
- /*-----------------------------------------------------------------*/
+ }  
 
  i=0;
 #ifdef DEBUG
  printf("%-22s %-15s mark\n","name","ip");
 #endif
 
- for_each(ip,ips) if(ip->mark>0)
- { 
+ printf("Writing %s ... ", classmap); 
+ f = fopen(classmap, "w"); 
+ if(f < 0)
+ {
+  perror(classmap);
+ }
+
+ /*-----------------------------------------------------------------*/
+ puts("Generating iptables and tc classes ... ");
+ /*-----------------------------------------------------------------*/
+
+ for_each(ip, ips) if(ip->mark > 0)
+ {
   if(idxs)
   {
    char *buf;
@@ -2067,27 +2086,32 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   /* -------------------------------------------------------- mark download */
   
-  sprintf(str,"-A %s -d %s/32 -o %s -j %s%d",chain_postrouting,ip->addr,lan,mark_iptables,ip->mark);
+  sprintf(str, "-A %s -d %s/32 -o %s -j %s%d",
+               chain_postrouting, ip->addr, lan, mark_iptables, ip->mark);
   /*sprintf(str,"-A %s -d %s/32 -o %s -j MARK --set-mark %d",chain_postrouting,ip->addr,lan,ip->mark);*/
   /* -m limit --limit 1/s */  
   save_line(str);
 
   if(qos_proxy)
   {
-   sprintf(str,"-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j %s%d",chain_postrouting,proxy_ip,proxy_port,ip->addr,lan,mark_iptables,ip->mark);
+   sprintf(str, "-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j %s%d",
+                chain_postrouting, proxy_ip, proxy_port, ip->addr, lan, mark_iptables, ip->mark);
    /*sprintf(str,"-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j MARK --set-mark %d",chain_postrouting,proxy_ip,proxy_port,ip->addr,lan,ip->mark);*/
    save_line(str);
   }
 
-  sprintf(str,"-A %s -d %s/32 -o %s -j ACCEPT",chain_postrouting,ip->addr,lan);
+  sprintf(str, "-A %s -d %s/32 -o %s -j ACCEPT",
+               chain_postrouting, ip->addr, lan);
   save_line(str);
 
   /* -------------------------------------------------------- mark upload */
-  sprintf(str,"-A %s -s %s/32 -o %s -j %s%d",chain_forward,ip->addr,wan,mark_iptables,ip->mark);
+  sprintf(str, "-A %s -s %s/32 -o %s -j %s%d", 
+               chain_forward, ip->addr, wan, mark_iptables, ip->mark);
   /*  sprintf(str,"-A %s -s %s/32 -o %s -j MARK --set-mark %d",chain_forward,ip->addr,wan,ip->mark);*/
   save_line(str);
 
-  sprintf(str,"-A %s -s %s/32 -o %s -j ACCEPT",chain_forward,ip->addr,wan);
+  sprintf(str, "-A %s -s %s/32 -o %s -j ACCEPT",
+               chain_forward, ip->addr, wan);
   save_line(str);
 
   if(ip->min)
@@ -2097,17 +2121,21 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    printf("(down: %dk-%dk ", ip->min, ip->max); 
 #endif
 
-   sprintf(str,"%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
+                tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
    safe_run(str);
 
    if(strcmpi(ip->keyword->leaf_discipline, "none"))
    {
-     sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+     sprintf(str, "%s qdisc add dev %s parent 1:%d handle %d %s", 
+                  tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
      safe_run(str);
-   }   
+   }
+
    if(filter_type == 1)
    {
-     sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, lan, ip->mark, ip->mark);
+     sprintf(str, "%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",
+                  tc, lan, ip->mark, ip->mark);
      safe_run(str);
    }
 
@@ -2125,13 +2153,21 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    
    if(strcmpi(ip->keyword->leaf_discipline, "none"))
    {
-     sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s",tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+     sprintf(str, "%s qdisc add dev %s parent 1:%d handle %d %s",
+                  tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
      safe_run(str);
    }   
+
    if(filter_type == 1)
    {
-     sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",tc, wan, ip->mark, ip->mark);
+     sprintf(str, "%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",
+                  tc, wan, ip->mark, ip->mark);
      safe_run(str);
+   }
+  
+   if(f)
+   {
+     fprintf(f, "%s %d", ip->addr, ip->mark);
    }
   }
   else
@@ -2142,7 +2178,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
   i++;
  }
-
+ if(f)
+ {
+  puts("done.");
+  fclose(f);
+ }
+ 
  if(idxs)
  {
    chain_forward = "forw_common";
@@ -2156,31 +2197,36 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /* -------------------------------- classify or reject free download */
  {
    char *final_chain = "DROP"; /* REJECT would be better, but it is impossible in mangle */
-   if(free_min) final_chain = "ACCEPT";
+   if(free_min)
+   {
+    final_chain = "ACCEPT";
+   }
    if(qos_proxy)
    {
      if(free_min)
      {
-       sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s%d",chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables,3);
+       sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s%d",
+                   chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables,3);
        save_line(str);
      }
-     sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s",chain_postrouting,proxy_ip,proxy_port,lan,final_chain);
+     sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s",
+                  chain_postrouting,proxy_ip,proxy_port,lan,final_chain);
      save_line(str);
    }
    if(free_min)
    {
-     sprintf(str,"-A %s -o %s -j %s%d",chain_postrouting,lan,mark_iptables,3);
+     sprintf(str,"-A %s -o %s -j %s%d", chain_postrouting, lan, mark_iptables, 3);
      save_line(str);
    }
-   sprintf(str,"-A %s -o %s -j %s",chain_postrouting,lan,final_chain);
+   sprintf(str,"-A %s -o %s -j %s", chain_postrouting, lan, final_chain);
    save_line(str);
    /* ------------------------------- classify or reject free  upload */
    if(free_min)
    {
-     sprintf(str,"-A %s -o %s -j %s%d",chain_forward,wan,mark_iptables,3);
+     sprintf(str,"-A %s -o %s -j %s%d", chain_forward, wan, mark_iptables, 3);
      save_line(str);
    }
-   sprintf(str,"-A %s -o %s -j %s",chain_forward,wan,final_chain);
+   sprintf(str,"-A %s -o %s -j %s", chain_forward, wan, final_chain);
    save_line(str);
  }
 
@@ -2190,25 +2236,25 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    puts("Generating free bandwith classes ...");
    /*-----------------------------------------------------------------*/
    sprintf(str, "%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc,lan,parent,free_min,free_max,burst,lowest_priority);
+                tc, lan, parent, free_min, free_max,burst, lowest_priority);
    safe_run(str);
    sprintf(str, "%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc,wan,parent,free_min,free_max,burst,lowest_priority);
+                tc, wan, parent, free_min, free_max, burst, lowest_priority);
    safe_run(str);
    /* tc SFQ */
    if(strcmpi(qos_leaf, "none"))
    {
-     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,lan,qos_leaf);
+     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s", tc, lan, qos_leaf);
      safe_run(str);
    
-     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s",tc,wan,qos_leaf);
+     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s", tc, wan, qos_leaf);
      safe_run(str);
    }   
    /* tc handle 1 fw flowid */
-   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,lan);
+   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3", tc, lan);
    safe_run(str);
 
-   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3",tc,wan);
+   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3", tc, wan);
    safe_run(str);
  }
  printf("Total IP count: %d\n", i);
