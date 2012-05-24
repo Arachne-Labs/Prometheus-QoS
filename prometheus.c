@@ -1861,10 +1861,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))
      {
       fprintf(f,"<br />%Lu", sharedip->upload);
-      if(!just_preview)
-      {
-       append_log(sharedip);
-      }
      }
      fputs("</span>\n",f);
    }
@@ -1896,6 +1892,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    if(!just_preview)
    {
     append_log(ip);
+    for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))
+    {
+     append_log(sharedip);
+    }
    }
   }
   fprintf(f,"</tbody><thead><tr>\n\
