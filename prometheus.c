@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20120516
+/* Modified by: xChaos, 20120610
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.2.h"
 
-const char *version = "0.8.3-d";
+const char *version = "0.8.3-e";
 
 /* Version numbers: 0.8.3 is development releases ("beta"), 0.8.4 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
@@ -1656,8 +1656,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     if(     ip->lmsid > 0 
         && (ip->traffic || ip->direct || ip->proxy || ip->upload))
     {
-     fprintf(f, " %d:{ \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu }",
-                ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
+     fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu }",
+                ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
     }
     jsoncount++;
    }
