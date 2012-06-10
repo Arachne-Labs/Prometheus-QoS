@@ -1653,7 +1653,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     {
      fprintf(f, ",\n");
     }
-    if(ip->traffic || ip->direct || ip->proxy || ip->upload)
+    if(     ip->lmsid > 0 
+        && (ip->traffic || ip->direct || ip->proxy || ip->upload))
     {
      fprintf(f, " %d:{ \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu }",
                 ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
