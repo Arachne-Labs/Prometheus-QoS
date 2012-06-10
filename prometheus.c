@@ -958,7 +958,11 @@ void parse_ip_log(int argc, char **argv)
    if_exists(iplog,iplogs,iplog->l>=total/4)
    {
     fprintf(f,"%s<td>Top 25%% of traffic</td>\n", tr_odd_even());
-    fprintf(f,"<td style=\"text-align: right\">%d</td><td style=\"text-align: right\">%d %%</td><td style=\"text-align: right\">%ld G</td><td style=\"text-align: right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+    fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
+<td style=\"text-align: right\">%d %%</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
+<td style=\"text-align: right\">%d %%</td></tr>\n",
+              iplog->i, (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
    
    if_exists(iplog,iplogs,iplog->i==10)
@@ -966,9 +970,9 @@ void parse_ip_log(int argc, char **argv)
     fprintf(f,"%s<td>Top 10 downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\"><strong>10</strong></td>\n\
 <td style=\"text-align: right\">%d %%</td>\n\
-<td style=\"text-align: right\">%ld G</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
 <td style=\"text-align: right\">%d %%</td></tr>\n",
-               (100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+               (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->l>=total/2)
@@ -976,7 +980,7 @@ void parse_ip_log(int argc, char **argv)
     fprintf(f,"%s<td>Top 50%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
 <td style=\"text-align: right\">%d %%</td>\n\
-<td style=\"text-align: right\">%ld G</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
 <td style=\"text-align: right\"><strong>%d %%</strong></td></tr>\n",
               iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
    }
@@ -986,9 +990,9 @@ void parse_ip_log(int argc, char **argv)
     fprintf(f,"%s<td>Top 80%% of traffic</td>\n",tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
 <td style=\"text-align: right\">%d %%</td>\n\
-<td style=\"text-align: right\">%ld G</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
 <td style=\"text-align: right\"><strong>%d %%</strong></td></tr>\n",
-              iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+              iplog->i, (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
 
    if_exists (iplog,iplogs,iplog->i>=i/5)
@@ -996,15 +1000,19 @@ void parse_ip_log(int argc, char **argv)
     fprintf(f,"%s<td>Top 20%% downloaders</td>\n",tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
 <td style=\"text-align: right\"><strong>%d %%</strong></td>\n\
-<td style=\"text-align: right\">%ld G</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
 <td style=\"text-align: right\">%d %%</td></tr>\n",
-              iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+              iplog->i, (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->i>=i/4)
    {
     fprintf(f,"%s<td>Top 25%% downloaders</td>\n", tr_odd_even());
-    fprintf(f,"<td style=\"text-align: right\">%d</td><td style=\"text-align: right\">%d %%</td><td style=\"text-align: right\">%ld G</td><td style=\"text-align: right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+    fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
+<td style=\"text-align: right\">%d %%</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
+<td style=\"text-align: right\">%d %%</td></tr>\n",
+               iplog->i, (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->i>=i/2)
@@ -1012,19 +1020,25 @@ void parse_ip_log(int argc, char **argv)
     fprintf(f,"%s<td>Top 50%% downloaders</td>\n",tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
 <td style=\"text-align: right\"><strong>%d %%</strong></td>\n\
-<td style=\"text-align: right\">%ld G</td><td style=\"text-align: right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+<td style=\"text-align: right\">%ld GB</td>\n\
+<td style=\"text-align: right\">%d %%</td></tr>\n",
+              iplog->i, (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
 
    if_exists(iplog,iplogs,iplog->i>=4*i/5)
    {
     fprintf(f,"%s<td>Top 80%% downloaders</td>\n",tr_odd_even());
-    fprintf(f,"<td style=\"text-align: right\">%d</td><td style=\"text-align: right\">%d %%</td><td style=\"text-align: right\">%ld G</td><td style=\"text-align: right\">%d %%</td></tr>\n",iplog->i,(100*iplog->i+50)/i,iplog->l,(int)((100*iplog->l+50)/total));
+    fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
+<td style=\"text-align: right\">%d %%</td>\n\
+<td style=\"text-align: right\">%ld GB</td>\n\
+<td style=\"text-align: right\">%d %%</td></tr>\n",
+              iplog->i, (100*iplog->i+50)/i, iplog->l, (int)((100*iplog->l+50)/total));
    }
 
    fprintf(f,"</tbody><thead><tr><th><a class=\"blue\" target=\"_blank\" href=\"%sERP.log\">All users, all traffic</a></th>\n", log_url);
    fprintf(f,"<th style=\"text-align: right\">%d</th>\n\
 <th style=\"text-align: right\">100 %%</th>\n\
-<th style=\"text-align: right\">%ld G</th>\n\
+<th style=\"text-align: right\">%ld GB</th>\n\
 <th style=\"text-align: right\">100 %%</th></tr>\n",i-1,total);
    fputs("</thead></table>\n", f);
   }
@@ -1924,7 +1938,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    if_exists(sum,sums,sum->l>=total_traffic/4)
    {
     fprintf(f,"%s<td>Top 25%% of traffic</td>\n", tr_odd_even());
-    fprintf(f,"<td style=\"text-align: right\">%d</td><td style=\"text-align: right\">%d %%</td><td style=\"text-align: right\">%Lu M</td><td style=\"text-align: right\">%Ld %%</td></tr>\n",sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
+    fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
+<td style=\"text-align: right\">%d %%</td>\n\
+<td style=\"text-align: right\">%Lu MB</td>\n\
+<td style=\"text-align: right\">%Ld %%</td></tr>\n",
+              sum->i, (100*sum->i+50)/active_classes, sum->l, (100*sum->l+50)/total_traffic);
    }
    
    if_exists(sum,sums,sum->i==10)
@@ -1934,7 +1952,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 <td style=\"text-align: right\">%d %%</td>\n\
 <td style=\"text-align: right\">%Lu MB</td>\n\
 <td style=\"text-align: right\">%Ld %%</td></tr>\n",
-              (100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
+              (100*sum->i+50)/active_classes, sum->l, (100*sum->l+50)/total_traffic);
    }
 
    if_exists(sum,sums,sum->l>=total_traffic/2)
@@ -2004,7 +2022,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f,"<thead><tr><th><a class=\"blue\" target=\"_blank\" href=\"%sERP.log\">All users, all traffic</a></th>\n", log_url);
    fprintf(f,"<th style=\"text-align: right\">%d</th>\n\
 <th style=\"text-align: right\">100 %%</th>\n\
-<th style=\"text-align: right\">%Lu M</th>\n\
+<th style=\"text-align: right\">%Lu MB</th>\n\
 <th style=\"text-align: right\">100 %%</th></tr>\n",active_classes,total_traffic);
    fputs("</thead></table>\n", f);
 
