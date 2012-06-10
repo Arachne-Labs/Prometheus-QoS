@@ -610,7 +610,7 @@ void get_traffic_statistics(void)
      {
       printf("(upload) ");
      }
-     printf("IP %s: %Lu M (%ld pkts)\n", ipaddr, traffic, pkts);
+     printf("IP %s: %Lu MB (%ld pkts)\n", ipaddr, traffic, pkts);
 
      if_exists(ip,ips,eq(ip->addr,ipaddr)); 
      else 
@@ -2183,7 +2183,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   
    if(f)
    {
-     fprintf(f, "%s %d", ip->addr, ip->mark);
+     fprintf(f, "%s %d\n", ip->addr, ip->mark);
    }
   }
   else
