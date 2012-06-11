@@ -2,7 +2,7 @@
  /*     Prometheus QoS - you can "steal fire" from your ISP     */
 /*      "fair-per-IP" quality of service (QoS) utility          */
 /*      requires Linux 2.4.x or 2.6.x with HTB support          */
-/*      Copyright(C) 2005-2008 Michael Polak (xChaos)           */
+/*      Copyright(C) 2005-2012 Michael Polak, Arachne Labs      */
 /*    iptables-restore support Copyright(C) 2007-2008 ludva     */
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
@@ -33,7 +33,7 @@
 
 #include "cll1-0.6.2.h"
 
-const char *version = "0.8.3-e";
+const char *version = "0.8.3-f";
 
 /* Version numbers: 0.8.3 is development releases ("beta"), 0.8.4 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
@@ -89,22 +89,21 @@ void help(void)
 {
  puts("Command line switches:\n\
 \n\
--?, --help    this help screen\n\
--v, --version show Version number of this utility and exit\n\
--c filename   force alternative /etc/prometheus.Conf filename\n\
--h filename   force alternative /etc/Hosts filename (overrides hosts keyword)\n\
--f            just Flush iptables and tc classes and exit (stop shaping)\n\
--9            emergency iptables flush (do not read data transfer statistics)\n\
--p            just generate Preview of data transfer statistics and exit\n\
--d            Dry run (preview tc and iptables commands on stdout)\n\
--r            Run (reset all statistics and start shaping)\n\
--n            run Now (start shaping without delay - overrides qos-free-delay keyword)\n\
--l Mmm YYYY   generate HTML summary of traffic Logs (Mmm=Jan-Dec or Year, YYYY=year)\n\
--m            generate HTML summary of traffic logs for yesterday's Month\n\
--y            generate HTML summary of traffic logs for yesterday's Year\n");
-/* not yet implemented:
--s            start shaping! (keep data transfer statistics - but apply shaping)\n\
-*/
+-d   Dry run (preview tc and iptables commands on stdout)\n\
+-r   Run (reset all statistics and start shaping - daily usage)\n\
+-p   just generate Preview of data transfer statistics and exit (after -r)\n\
+-s   start Shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
+-n   run Now (like -r delay - overrides qos-free-delay keyword, after boot)\n\
+-f   just Flush iptables and tc classes and exit (stop shaping, no QiS)\n\
+-9   emergency iptables flush (like -f, but dumps data transfer statistics)\n\
+\n\
+-c filename  force alternative /etc/prometheus/prometheus.conf filename\n\
+-h filename  force alternative /etc/hosts filename (overrides hosts keyword)\n\
+-l Mmm YYYY  generate HTML summary of Logged traffic (Mmm=Jan-Dec) (and exit)\n\
+-m           generate HTML summary of traffic for yesterday's Month (and exit)\n\
+-y           generate HTML summary of traffic for yesterday's Year (and exit)\n\
+-? --help    show this help scree (and exit)\n\
+-v --version show Version number of this utility (and exit)\n");
 }
 
 /* === Configuraration file values defaults - stored in global variables ==== */
@@ -476,7 +475,7 @@ void get_config(char *config_filename)
   perror(config_filename);
   puts("Warning - using built-in defaults instead ...");
  }
- done;
+ done; /* ugly macro end */
  printf("\n");
  
  /* leaf discipline for keywords */
@@ -699,7 +698,7 @@ void run_restore(void)
   {
    printf("%s\n",_);
   }
-  done;
+  done; /* ugly macro end */
  }
 
  sprintf(restor,"%s <%s",iptablesrestore, iptablesfile);
@@ -880,7 +879,7 @@ void parse_ip_log(int argc, char **argv)
       accept_month = 1;
      }
     }
-    done;
+    done; /* ugly macro end */ 
 
     if(accept_month)
     {
@@ -1082,16 +1081,17 @@ void append_log(struct IP *self) /*using global variables*/
 
 program
 {
- int i=0;
- FILE *f=NULL;
- char *str, *ptr, *d;
+ int i=0;                    /* just plain old Fortran style integer :-) */
+ FILE *f=NULL;               /* everything is just stream of bytes... */
+ char *str, *ptr, *d;        /* LET A$=B$ :-) */
  char *substring;
  int class_count=0,ip_count=0;
  int parent=1;
- int just_flush=FALSE;
+ int just_flush=FALSE;       /* deactivates all previous actions */
  int nodelay=FALSE;
- int just_preview=FALSE;                /* preview - generate just stats */
- int just_logs=FALSE;                   /* just parse logs */
+ int just_preview=FALSE;     /* preview - generate just stats */
+ int start_shaping=FALSE;    /* apply FUP - requires classmap file */
+ int just_logs=FALSE;        /* just parse logs */
  int run=FALSE;
  int total=0;
  
@@ -1100,12 +1100,11 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2012 Michael Polak (xChaos)\n\
+Version %s - Copyright (C)2005-2012 Michael Polak, Arachne Labs\n\
 iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
- /*----- Boring... we have to check command line options first: ----*/
-   
+ /*----- Boring... we have to check command line options first: ----*/   
  arguments
  {
   argument("-c") { nextargument(config); }
@@ -1114,6 +1113,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-f") { run=TRUE; just_flush=TRUE; }
   argument("-9") { run=TRUE; just_flush=9; }
   argument("-p") { run=TRUE; just_preview=TRUE; }
+  argument("-s") { run=TRUE; just_preview=TRUE; start_shaping=TRUE; }
   argument("-r") { run=TRUE; }
   argument("-n") { run=TRUE; nodelay=TRUE; }
   argument("-l") { just_logs=TRUE; }
@@ -1264,7 +1264,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   perror(hosts);
   exit(-1);
  }
- done;
+ done; /* ugly macro end */
 
  /*-----------------------------------------------------------------*/
  /* cll1.h - let's allocate brand new character buffer...           */
@@ -1307,7 +1307,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
    }
   }
-  done;
+  done; /* ugly macro end */
  }
 
  if(!just_preview)
@@ -1634,6 +1634,45 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(just_preview)
  {
+  if(start_shaping)
+  {
+   printf("Reading %s and applying Fair Use Policy rules ... \n", classmap);
+   parse(classmap)
+   {
+    ptr=strchr(_,' ');
+    if(ptr)
+    {
+     *ptr=0;
+     ptr++;
+     if_exists(ip,ips,eq(ip->addr,_))
+     {
+      ip->mark=atoi(ptr);
+      if(ip->max < ip->desired) /* apply FUP limit immediately.... */
+      {
+       printf("Applying limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);       
+       printf("(down: %dk-%dk ", ip->min, ip->max); 
+       sprintf(str, "%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
+                    tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
+       safe_run(str);
+       printf("up: %dk-%dk)\n", (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), 
+                                (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed));
+       sprintf(str,"%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                    tc, wan, ip->group, ip->mark,
+                    (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed),
+                    (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), burst, ip->prio);
+       safe_run(str);
+      }
+     }
+    }
+   }
+   fail
+   { 
+    perror(classmap);
+    puts("Warning - classmap file not fund, just generating preview ...");
+    start_shaping=FALSE;
+   }
+   done; /* ugly macro end */
+  }
   f=fopen(preview,"w");
   ptr=preview; 
  }
@@ -1791,18 +1830,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    char *f1="", *f2="";
    i++;
       
-   if(ip->max < ip->desired)
-   {
-    f1="<span style=\"color:red\">";
-    f2="</span>";
-    limit_count++;
-   }
-   else if(ip->prio > highest_priority+1)
-   {
-    f1="<span style=\"color:brown\">";
-    f2="</span>";
-    prio_count++;
-   }
 
 #ifdef DEBUG
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
@@ -2053,7 +2080,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(just_preview)
  {
-  puts("Statistics preview generated (-p switch) - now exiting ...");
+  char swchar='p';
+  if(start_shaping)
+  {
+   swchar='s';
+  }
+  printf("Statistics preview generated (-%c switch) - now exiting ...\n", swchar);
   exit(0);
  }  
 
