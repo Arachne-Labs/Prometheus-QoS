@@ -1829,7 +1829,19 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    char *f1="", *f2="";
    i++;
-      
+
+   if(ip->max < ip->desired) 
+   { 
+    f1="<span style=\"color:red\">"; 
+    f2="</span>"; 
+    limit_count++; 
+   } 
+   else if(ip->prio > highest_priority+1) 
+   { 
+    f1="<span style=\"color:brown\">"; 
+    f2="</span>"; 
+    prio_count++; 
+   }       
 
 #ifdef DEBUG
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
