@@ -58,7 +58,7 @@ char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
 char        *classmap = "/var/lib/misc/prometheus.classes"; /* credit log file */
 char            *html = "/var/www/traffic.html"; /* hall of fame - html version */
 char         *preview = "/var/www/preview.html"; /* hall of fame preview */
-char            *json = "/var/www/traffic.json"; /* hall of fame - json version */
+char            *json = "/var/www/logs/traffic.json"; /* hall of fame - json version */
 char          *cmdlog = "/var/log/prometheuslog"; /* command log filename */
 char         *log_dir = "/var/www/logs/"; /* log directory pathname, ended with slash */
 char         *log_url = "/logs/"; /* log directory relative URI prefix (partial URL) */
@@ -1649,17 +1649,17 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    fprintf(f, "{\n");
    for_each(ip, ips)
    {
-    if(jsoncount)
-    {
-     fprintf(f, ",\n");
-    }
     if(     ip->lmsid > 0 
         && (ip->traffic || ip->direct || ip->proxy || ip->upload))
     {
+     if(jsoncount)
+     {
+      fprintf(f, ",\n");
+     }
      fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu }",
                 ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
+     jsoncount++;
     }
-    jsoncount++;
    }
    fprintf(f, "}\n");
    fclose(f);
