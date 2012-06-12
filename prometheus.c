@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20120610
+/* Modified by: xChaos, 20120612
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -57,8 +57,9 @@ char    *iptablesfile = "/var/spool/prometheus.iptables"; /* temporary file for 
 char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
 char        *classmap = "/var/lib/misc/prometheus.classes"; /* credit log file */
 char            *html = "/var/www/traffic.html"; /* hall of fame - html version */
-char         *preview = "/var/www/preview.html"; /* hall of fame preview */
+char         *preview = "/var/www/preview.html"; /* hall of fame preview - html version */
 char            *json = "/var/www/logs/traffic.json"; /* hall of fame - json version */
+char    *json_preview = "/var/www/logs/preview.json"; /* hall of fame preview - json version */
 char          *cmdlog = "/var/log/prometheuslog"; /* command log filename */
 char         *log_dir = "/var/www/logs/"; /* log directory pathname, ended with slash */
 char         *log_url = "/logs/"; /* log directory relative URI prefix (partial URL) */
@@ -439,6 +440,7 @@ void get_config(char *config_filename)
   option("hall-of-fame-filename",html);
   option("json-filename",json);
   option("hall-of-fame-preview",preview);
+  option("json-preview",json_preview);
   option("log-filename",cmdlog);
   option("credit-filename",credit);
   option("classmap-filename",classmap);
@@ -1673,13 +1675,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
    done; /* ugly macro end */
   }
-  f=fopen(preview,"w");
-  ptr=preview; 
+  html=preview;
+  json=json_preview;
  }
- else if(!dry_run && !just_flush)
+
+ if(!dry_run && !just_flush)
  {
   /*-----------------------------------------------------------------*/
-  printf("Writing daily statistics  %s ... ", json);
+  printf("Writing json overview  %s ... ", json);
   /*-----------------------------------------------------------------*/
   f=fopen(json, "w");
   if(f > 0)
@@ -1695,8 +1698,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      {
       fprintf(f, ",\n");
      }
-     fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu }",
-                ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload);
+     fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu, \"min\":%d, \"max\":%d, \"limit\":%d }",
+                ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload, ip->min, ip->desired, ip->max);
      jsoncount++;
     }
    }
@@ -1708,17 +1711,16 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    perror(json);
   }
-  f=fopen(html,"w");
-  ptr=html;
  }
 
- if(f)
+ f=fopen(html,"w");
+ if(f > 0)
  {
   int count=1;
   i=0;
 
   /*-----------------------------------------------------------------*/
-  printf("Sorting data and generating statistics page %s ...\n", ptr);
+  printf("Sorting data and generating statistics page %s ...\n", html);
   /*-----------------------------------------------------------------*/
 
   if(use_jquery_popups)
@@ -1779,7 +1781,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
 
  i=0;
- if(f)
+ if(f > 0)
  {
   unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
   int active_classes=0;
@@ -2226,7 +2228,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      safe_run(str);
    }
   
-   if(f)
+   if(f > 0)
    {
      fprintf(f, "%s %d\n", ip->addr, ip->mark);
    }
@@ -2239,7 +2241,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
   i++;
  }
- if(f)
+ if(f > 0)
  {
   puts("done.");
   fclose(f);
