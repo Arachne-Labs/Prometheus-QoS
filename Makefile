@@ -7,7 +7,7 @@ sbindir=$(prefix)/sbin
 sysconfdir=/etc
 
 main: prometheus
-	$(CC) -o prometheus prometheus.c
+	$(CC) -o prometheus parselog.c prometheus.c
 
 deb: main
 	debian/prometheus.debian
