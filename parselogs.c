@@ -1,6 +1,7 @@
 #include "cll1-0.6.2.h"
 #define STRLEN 512
 
+/* globals declared in prometheus.c */
 extern char *log_dir;
 extern const char *version;
 extern const char *stats_html_signature;
@@ -11,8 +12,8 @@ extern char *log_url;
 extern char *lms_url;
 extern long long int line;
 
+/* function implemented in prometheus.c */
 const char *tr_odd_even(void);
-/* implemented in prometheus.c */
 
 struct IpLog
 {

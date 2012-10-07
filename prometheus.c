@@ -7,7 +7,7 @@
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20120612
+/* Modified by: xChaos, 20121007
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -27,13 +27,12 @@
    GNU General Public License is located in file COPYING */
 
 #define STRLEN 512
-#define FIRSTGROUPID 1024
-#define FIRSTIPCLASS 2048
 #undef DEBUG
 
 #include "cll1-0.6.2.h"
+#include "ipstruct.h"
 
-const char *version = "0.8.3-f";
+const char *version = "0.8.3-g";
 
 /* Version numbers: 0.8.3 is development releases ("beta"), 0.8.4 will be "stable" */
 /* Debian(RPM) package versions/patchlevels: 0.7.9-2, 0.8.0-1, 0.8.0-2, etc. */
@@ -73,6 +72,9 @@ int      row_odd_even = 0; /*<tr class="odd/even"> */
 
 void parse_ip_log(int argc, char **argv);
 /* implementid in parselog.c */
+
+void parse_hosts(char *hosts);
+/* implementid in parsehosts.c */
 
 const char *tr_odd_even(void)
 {
@@ -146,6 +148,8 @@ int         burst_main = 64;
 int        burst_group = 32;
 int     magic_treshold = 8; /* reduce ceil by X*magic_treshhold kbps (hard shaping) */
 int       keywordcount = 0;
+int class_count        = 0;
+int ip_count           = 0;
 /* not yet implemented:
 int      fixed_packets = 0; maximum number of pps per IP address (not class!) 
 int       packet_limit = 5; maximum number of pps to htn CEIL, not rate !!! 
@@ -160,40 +164,11 @@ const int idxtable_treshold2 = 12;      /* this is no longer configurable */
 const int idxtable_bitmask1  = 3;        /* this is no longer configurable */
 const int idxtable_bitmask2  = 3;        /* this is no longer configurable */
 
+struct IP *ips = NULL, *ip, *sharedip;
+struct Group *groups = NULL, *group;
+struct Keyword *keyword, *defaultkeyword=NULL, *keywords=NULL;
+
 /* ==== This is C<<1 stuff - learn C<<1 first! https://dev.arachne.cz/svn/cll1h ==== */
-
-struct IP
-{
- char *addr;
- char *name;
- char *sharing;
- int min;
- int desired;
- int max;
- int mark;
- int prio;
- int fixedprio;
- int group;
- int lmsid;
- unsigned long long direct;
- unsigned long long proxy;
- unsigned long long upload;
- unsigned long long traffic;
- unsigned long long credit;
- unsigned long pktsup;
- unsigned long pktsdown;
- struct Keyword *keyword;
- list(IP);
-} *ips=NULL, *ip, *sharedip;
-
-struct Group
-{
- int min;
- int count;
- int desired;
- int id;
- list(Group);
-} *groups=NULL, *group;
 
 struct Index
 {
@@ -205,27 +180,6 @@ struct Index
  list(Index);
 } *idxs=NULL, *idx, *metaindex;
 
-struct Keyword
-{
- char *key;
- 
- int asymetry_ratio;        /* ratio for ADSL-like upload */
- int asymetry_fixed;        /* fixed treshold for ADSL-like upload */
- int data_limit;            /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
- int data_prio;             /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
- long fixed_limit;          /* fixed data limit for setting lower HTB ceil */
- long fixed_prio;           /* fixed data lmit for setting lower HTB prio */
- int reserve_min;	    /* bonus for nominal HTB rate bandwidth (in kbps) */
- int reserve_max;	    /* malus for nominal HTB ceil (in kbps) */
-// int divide_max;	    /* relative malus: new_ceil=rate+(old_ceil-rate)/divide_max */
-// int htb_ceil_bonus_divide; /* relative bonus: new_ceil=old_ceil+old_ceil/htb_ceil_bonus_divide */
- int default_prio;	    /* default HTB priority for this keyword */
- char *html_color;
- int ip_count;
- char *leaf_discipline;
- 
- list(Keyword);
-} *keyword,*defaultkeyword=NULL,*keywords=NULL;
 
 /* Damned, this must be object oriented! This looks almost like constructor ;-) */
 
@@ -712,57 +666,6 @@ void run_restore(void)
  free(restor);
 }
 
-/* == This function strips extra characters after IP address and stores it = */
-
-void parse_ip(char *str)
-{
- char *ptr,*ipaddr=NULL,*ipname=NULL,*lmsid=NULL;
-
- ptr=strchr(str,'{');
- if(ptr)
- {
-  lmsid=++ptr;
-  while(*ptr && *ptr!='}')
-  {
-   ptr++;
-  }
-  *ptr=0;
- }
- 
- ptr=str;
- while(*ptr && *ptr!=' ' && *ptr!=9)
- {
-  ptr++;
- }
- 
- *ptr=0;
- ipaddr=str;
- ptr++;
- while(*ptr && (*ptr==' ' || *ptr==9))
- {
-  ptr++;
- }
- ipname=ptr; 
- while(*ptr && *ptr!=' ' && *ptr!=9)
- {
-  ptr++;
- }
- *ptr=0;
-
- if_exists(ip,ips,eq(ip->addr,ipaddr));
- else
- {
-  TheIP();
- }
- ip->addr=ipaddr;
- ip->name=ipname;
- if(lmsid)
- {
-  ip->lmsid=atoi(lmsid);
-  found_lmsid=1;
- }
-}
-
 char *parse_datafile_line(char *str)
 {
  char *ptr=strchr(str,' ');
@@ -778,9 +681,6 @@ char *parse_datafile_line(char *str)
   return NULL;
  }
 }
-
-
-
 
 void append_log(struct IP *self) /*using global variables*/
 {
@@ -804,7 +704,6 @@ void append_log(struct IP *self) /*using global variables*/
  }
 }
 
-
 /*-----------------------------------------------------------------*/
 /* Are you looking for int main(int argc, char **argv) ? :-))      */
 /*-----------------------------------------------------------------*/
@@ -815,7 +714,7 @@ program
  FILE *f=NULL;               /* everything is just stream of bytes... */
  char *str, *ptr, *d;        /* LET A$=B$ :-) */
  char *substring;
- int class_count=0,ip_count=0;
+
  int parent=1;
  int just_flush=FALSE;       /* deactivates all previous actions */
  int nodelay=FALSE;
@@ -894,107 +793,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  printf("Parsing class defintion file %s ...\n", hosts);
  /*-----------------------------------------------------------------*/
- int groupidx = FIRSTGROUPID;
- parse(hosts)
- {
-  str=_;
-
-  if(*str<'0' || *str>'9')
-  {
-   /* any line starting with non-number is comment ...*/
-   continue;
-  }
-  
-  //Does this IP share QoS class with some other ?
-  substring=strstr(str,"sharing-");
-  if(substring)
-  { 
-   substring+=8; //"sharing-"
-   parse_ip(str);
-   ip_count++;
-   ip->sharing=substring;
-   ip->keyword=defaultkeyword; /* settings for default keyword */
-   while(*substring && *substring!='\n')
-   {
-    substring++;
-   }
-   *substring=0; 
-  }
-  else
-  {
-   //Do we have to create new QoS class for this IP ?
-
-   if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
-   {
-    parse_ip(str);
-    ip_count++;
-    ip->keyword=keyword;
-    keyword->ip_count++;
-    ip->prio=keyword->default_prio;
-    substring+=strlen(keyword->key)+1;
-    ptr=substring;
-    while(*ptr && *ptr!='-')
-    {
-     ptr++;
-    }
-    if(*ptr=='-')
-    {
-     *ptr=0;
-     ip->max = ip->desired=atoi(ptr+1);
-    }
-    ip->min = atoi(substring);
-    if(ip->min <= 0)
-    {
-     printf(" %s: Illegal value of minimum bandwidth 0 kbps, using %d kb/s\n",
-            str, free_min);
-     ip->min = free_min;
-    }
-    if(ip->max <= ip->min)
-    {
-     ip->fixedprio = 1;
-     ip->max = ip->min+ip->keyword->reserve_min;
-    }
-    else 
-    {
-     ip->max -= ip->keyword->reserve_max;
-     if(ip->max<ip->min)
-     {
-      ip->max=ip->min;
-     }
-    }
-    ip->mark=FIRSTIPCLASS+1+class_count++;
-
-    if_exists(group,groups,group->min==ip->min) 
-    { 
-     group->count++;      
-     group->desired += ip->min;
-     ip->group = group->id;   
-    }
-    else
-    {
-     create(group,Group);
-     group->min = ip->min;
-     group->id = groupidx++;
-     ip->group = group->id;
-
-     if(group->min<8) group->min=8;
-     /* Warning - this is maybe because of primitive tc namespace, can be fixed */
-     /* it is because class IDs are derived from min. bandwidth. - xCh */
-     //if(group->min>MAX_GUARANTED_KBPS) group->min=MAX_GUARANTED_KBPS;
-     
-     group->count=1;
-     group->desired=ip->min;   
-     insert(group,groups,desc_order_by,min);
-    }
-   }//endif keyword-
-  }//endif sharing-
- }
- fail
- {
-  perror(hosts);
-  exit(-1);
- }
- done; /* ugly macro end */
+ parse_hosts(hosts);
 
  /*-----------------------------------------------------------------*/
  /* cll1.h - let's allocate brand new character buffer...           */
@@ -1014,7 +813,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    ip->lmsid=sharedip->lmsid;
    break;
   }
-  if(!sharedip)
+  if(not sharedip)
   {
    printf("Unresolved shared connection: %s %s sharing-%s\n",
           ip->addr, ip->name, ip->sharing);

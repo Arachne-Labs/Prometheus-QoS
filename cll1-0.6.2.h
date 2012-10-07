@@ -34,6 +34,8 @@
 /* Section For Dummies part 1, updated 2004-05-07 by xCh. */
 
 #define not !
+#define and &&
+#define or &&
 #define TRUE 1
 #define FALSE 0
 #define loop while(1)
