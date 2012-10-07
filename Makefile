@@ -5,9 +5,16 @@ prefix=/usr
 mandir=$(prefix)/share/man
 sbindir=$(prefix)/sbin
 sysconfdir=/etc
+OBJECTS=parsehosts.o parselogs.o prometheus.o
+HEADERS=cll1-0.6.2.h ipstruct.h
 
 main: prometheus
-	$(CC) -o prometheus parsehosts.c parselogs.c prometheus.c
+
+%.o: %.c $(HEADERS)
+	gcc -c $< -o $@
+
+prometheus: $(OBJECTS)
+	$(CC) $(OBJECTS) -o prometheus
 
 deb: main
 	debian/prometheus.debian
@@ -38,4 +45,4 @@ install: main
 
 clean:
 	rm -f prometheus
-	rm -f optinal-tools/prometheus-stats
+	rm -f $(OBJECTS)
