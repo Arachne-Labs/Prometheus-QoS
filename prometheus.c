@@ -881,11 +881,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    if(qos_proxy)
    {
     save_line(":post_noproxy - [0:0]");
-    sprintf(str,"-A POSTROUTING -p ! tcp -o %s -j post_noproxy", lan);
+    sprintf(str,"-A POSTROUTING ! -p tcp -o %s -j post_noproxy", lan);
     save_line(str);   
-    sprintf(str,"-A POSTROUTING -s ! %s -o %s -j post_noproxy", proxy_ip, lan);
+    sprintf(str,"-A POSTROUTING ! -s %s -o %s -j post_noproxy", proxy_ip, lan);
     save_line(str);   
-    sprintf(str,"-A POSTROUTING -s %s -p tcp --sport ! %d -o %s -j post_noproxy", proxy_ip, proxy_port, lan);
+    sprintf(str,"-A POSTROUTING -s %s -p tcp ! --sport %d -o %s -j post_noproxy", proxy_ip, proxy_port, lan);
     save_line(str);   
 
     chain="post_noproxy";    
