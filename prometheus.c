@@ -980,13 +980,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     
     for_each(ip, ips) if(ip->min == group->min && ip->max > ip->min)
     {
-     if(    ip->keyword->data_limit && !ip->fixedprio 
-         && (   ip->traffic>ip->credit
-              + (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20))) )
+     ip->realquota=ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20));
+     if(     ip->keyword->data_limit 
+         and not ip->fixedprio 
+         and ip->traffic > ip->realquota )
      {
-      if(group_rate<ip->max)
+      if(group_rate < ip->max)
       {
-       ip->max=group_rate;
+       ip->max = group_rate;
       }
       group_rate+=magic_treshold;
       ip->prio=lowest_priority;

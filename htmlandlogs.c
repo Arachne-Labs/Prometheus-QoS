@@ -225,8 +225,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    }
    fprintf(f,"<td style=\"text-align: right\">%Lu</td>\n", ip->credit);
    fprintf(f,"<td style=\"text-align: right\"><span style=\"color:#%s\">%Lu</span></td>",
-             ip->keyword->html_color,
-             ip->credit+(ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
+             ip->keyword->html_color, ip->realquota);
    fprintf(f,"<td style=\"text-align: right\">%s%Lu%s", f1, ip->traffic, f2);
 
    /* download --------------------------------------- */

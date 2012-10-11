@@ -16,6 +16,7 @@ struct IP
  unsigned long long upload;
  unsigned long long traffic;
  unsigned long long credit;
+ unsigned long long realquota;
  unsigned long pktsup;
  unsigned long pktsdown;
  struct Keyword *keyword;

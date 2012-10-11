@@ -21,8 +21,11 @@ void write_json_traffic(char *json)
      {
       fprintf(f, ",\n");
      }
-     fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu, \"min\":%d, \"max\":%d, \"limit\":%d }",
-                ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload, ip->min, ip->desired, ip->max);
+     fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu,\
+                  \"min\":%d, \"max\":%d, \"limit\":%d, \"realquota\":%Lu, \"credit\":%Lu, \"dailyquota\":%ld }",
+                ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload, 
+                ip->min, ip->desired, ip->max, ip->realquota, ip->credit, 
+                (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
      jsoncount++;
     }
    }
