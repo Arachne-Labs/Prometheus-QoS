@@ -1086,7 +1086,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  printf("Writing statistics into HTML page %s ...\n", html);
  /*-----------------------------------------------------------------*/
- write_htmlandlogs(json_traffic,d,total, just_preview);
+ write_htmlandlogs(html, d,total, just_preview);
 
  if(just_preview)
  {

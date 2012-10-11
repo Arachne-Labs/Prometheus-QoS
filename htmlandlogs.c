@@ -50,17 +50,13 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 {
  int i;
  char *str;
- FILE *f=fopen(html,"w");
+ FILE *f=fopen(html, "w");
 
  string(str,STRLEN); 
  if(f > 0)
  {
   int count=1;
   i=0;
-
-  /*-----------------------------------------------------------------*/
-  printf("Writing statistics summary into HTML page %s ...\n", html);
-  /*-----------------------------------------------------------------*/
 
   if(use_jquery_popups)
   {

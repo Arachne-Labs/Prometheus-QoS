@@ -35,7 +35,7 @@
 
 #define not !
 #define and &&
-#define or &&
+#define or ||
 #define TRUE 1
 #define FALSE 0
 #define loop while(1)
