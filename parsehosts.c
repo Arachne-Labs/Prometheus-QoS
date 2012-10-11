@@ -14,9 +14,32 @@ extern int class_count;
 extern int ip_count;
 extern int found_lmsid;
 extern int free_min;
+extern const int highest_priority;
 
-/* function implemented in prometheus.c */
-void TheIP(void);
+/* This must be object oriented! This looks almost like constructor ;-) */
+void TheIP(void)
+{
+ create(ip,IP);
+ ip->name        = "";
+ ip->addr        = "";
+ ip->sharing     = NULL;
+ ip->prio        = highest_priority+1;
+ ip->lmsid       = -1;
+ ip->fixedprio   = \
+ ip->mark        = \
+ ip->min         = \
+ ip->max         = \
+ ip->desired     = \
+ ip->credit      = \
+ ip->upload      = \
+ ip->proxy       = \
+ ip->direct      = \
+ ip->traffic     = \
+ ip->pktsup      = \
+ ip->pktsdown    = 0;
+ ip->keyword     = keywords;
+ push(ip,ips);
+}
 
 /* == This function strips extra characters after IPv4 address and stores it = */
 void parse_ip(char *str)
