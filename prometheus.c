@@ -80,7 +80,7 @@ char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
 char        *classmap = "/var/lib/misc/prometheus.classes"; /* credit log file */
 char            *html = "/var/www/traffic.html"; /* hall of fame - html version */
 char         *preview = "/var/www/preview.html"; /* hall of fame preview - html version */
-char            *json = "/var/www/logs/traffic.json"; /* hall of fame - json version */
+char    *json_traffic = "/var/www/logs/traffic.json"; /* hall of fame - json version */
 char    *json_preview = "/var/www/logs/preview.json"; /* hall of fame preview - json version */
 char          *cmdlog = "/var/log/prometheuslog"; /* command log filename */
 char         *log_dir = "/var/www/logs/"; /* log directory pathname, ended with slash */
@@ -149,10 +149,13 @@ struct Group *groups = NULL, *group;
 struct Keyword *keyword, *defaultkeyword=NULL, *keywords=NULL;
 
 void parse_ip_log(int argc, char **argv);
-/* implementid in parselog.c */
+/* implemented in parselog.c */
 
 void parse_hosts(char *hosts);
-/* implementid in parsehosts.c */
+/* implemented in parsehosts.c */
+
+void write_json_traffic(char *json);
+/* implemented in json.c */
 
 const char *tr_odd_even(void)
 {
@@ -278,7 +281,7 @@ void get_config(char *config_filename)
   ioption("hall-of-fame-enable",hall_of_fame);
   option("hall-of-fame-title",title);
   option("hall-of-fame-filename",html);
-  option("json-filename",json);
+  option("json-filename",json_traffic);
   option("hall-of-fame-preview",preview);
   option("json-preview",json_preview);
   option("log-filename",cmdlog);
@@ -1086,41 +1089,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    done; /* ugly macro end */
   }
   html=preview;
-  json=json_preview;
+  json_traffic=json_preview;
  }
 
  if(!dry_run && !just_flush)
  {
   /*-----------------------------------------------------------------*/
-  printf("Writing json overview  %s ... ", json);
+  printf("Writing json traffic overview  %s ... ", json_traffic);
   /*-----------------------------------------------------------------*/
-  f=fopen(json, "w");
-  if(f > 0)
-  {
-   int jsoncount=0;
-   fprintf(f, "{\n");
-   for_each(ip, ips)
-   {
-    if(     ip->lmsid > 0 
-        && (ip->traffic || ip->direct || ip->proxy || ip->upload))
-    {
-     if(jsoncount)
-     {
-      fprintf(f, ",\n");
-     }
-     fprintf(f, " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \"proxy\":%Lu, \"up\":%Lu, \"min\":%d, \"max\":%d, \"limit\":%d }",
-                ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, ip->upload, ip->min, ip->desired, ip->max);
-     jsoncount++;
-    }
-   }
-   fprintf(f, "}\n");
-   fclose(f);
-   puts("done.");
-  }
-  else
-  {
-   perror(json);
-  }
+  write_json_traffic(json_traffic);
  }
 
  f=fopen(html,"w");
