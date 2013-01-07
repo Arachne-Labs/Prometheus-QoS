@@ -2,12 +2,12 @@
  /*     Prometheus QoS - you can "steal fire" from your ISP     */
 /*      "fair-per-IP" quality of service (QoS) utility          */
 /*      requires Linux 2.4.x or 2.6.x with HTB support          */
-/*      Copyright(C) 2005-2012 Michael Polak, Arachne Labs      */
+/*      Copyright(C) 2005-2013 Michael Polak, Arachne Labs      */
 /*    iptables-restore support Copyright(C) 2007-2008 ludva     */
 /*  Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  */
 
-/* Modified by: xChaos, 20121011
+/* Modified by: xChaos, 20130107
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -232,7 +232,10 @@ void get_config(char *config_filename)
    keyword->leaf_discipline="";
 
    push(keyword,keywords);
-   if(!defaultkeyword) defaultkeyword=keyword;
+   if(!defaultkeyword)
+   {
+    defaultkeyword=keyword;
+   }
    keywordcount++;
    
    kwd=NULL;
@@ -463,12 +466,16 @@ void get_traffic_statistics(void)
      else 
      {
       TheIP();
-      ip->addr=ipaddr;
+      ip->addr = ipaddr;
       if(eq(ip->addr,"0.0.0.0/0"))
       {
-       ip->name="(unregistered)";
-       ip->min=free_min;
-       ip->max=ip->desired=free_max;
+       ip->name = "(unregistered)";
+       ip->min = free_min;
+       ip->max = ip->desired=free_max;
+      }
+      else
+      {
+       ip->name = ipaddr;
       }
      }
      
