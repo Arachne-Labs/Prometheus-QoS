@@ -2,6 +2,8 @@
 
 #include "cll1-0.6.2.h"
 
+/* ======= Help screen is hopefuly self-documenting part of code :-) ======= */
+
 void help(void)
 {
  puts("Command line switches:\n\

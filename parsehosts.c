@@ -17,11 +17,11 @@ extern int free_min;
 extern const int highest_priority;
 
 /* This must be object oriented! This looks almost like constructor ;-) */
-void TheIP(void)
+void TheIP(char *ipaddr)
 {
  create(ip,IP);
  ip->name        = "";
- ip->addr        = "";
+ ip->addr        = ipaddr;
  ip->sharing     = NULL;
  ip->prio        = highest_priority+1;
  ip->lmsid       = -1;
@@ -80,9 +80,8 @@ void parse_ip(char *str)
  if_exists(ip, ips, eq(ip->addr,ipaddr));
  else
  {
-  TheIP();
+  TheIP(ipaddr);
  }
- ip->addr = ipaddr;
  ip->name = ipname;
  if(lmsid)
  {

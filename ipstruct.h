@@ -53,3 +53,6 @@ struct Keyword
  
  list(Keyword);
 };
+
+void TheIP(char *ipaddr);
+/* function implemented in parsehosts.c */

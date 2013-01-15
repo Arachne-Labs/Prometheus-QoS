@@ -5,7 +5,7 @@ prefix=/usr
 mandir=$(prefix)/share/man
 sbindir=$(prefix)/sbin
 sysconfdir=/etc
-OBJECTS=parsehosts.o parselogs.o ipv4subnets.o json.o htmlandlogs.o help.o prometheus.o
+OBJECTS=parsehosts.o parseiptables.o parselogs.o ipv4subnets.o json.o htmlandlogs.o help.o prometheus.o
 HEADERS=cll1-0.6.2.h ipstruct.h
 
 main: prometheus
