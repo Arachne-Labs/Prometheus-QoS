@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20130114
+/* Modified by: xChaos, 20130116
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.8.3-g";
+const char *version = "0.8.3-h";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.8.3 is development release, 0.8.4 will be "stable"  */
@@ -59,6 +59,7 @@ const char               *ls = "/bin/ls"; /* this is not user configurable :-) *
 char          *config = "/etc/prometheus/prometheus.conf"; /* main configuration file */
 char           *hosts = "/etc/prometheus/hosts"; /* per-IP bandwidth definition file */
 char    *iptablesfile = "/var/spool/prometheus.iptables"; /* temporary file for iptables-restore*/
+char   *ip6tablesfile = "/var/spool/prometheus.ip6tables"; /* temporary file for ip6tables-restore*/
 char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
 char        *classmap = "/var/lib/misc/prometheus.classes"; /* credit log file */
 char            *html = "/var/www/traffic.html"; /* hall of fame - html version */
@@ -90,6 +91,7 @@ int       hall_of_fame = TRUE; /* enable hall of fame */
 char              *lan = "eth0"; /* LAN interface */
 char       *lan_medium = "100Mbit"; /* 10Mbit/100Mbit ethernet */
 char              *wan = "eth1"; /* WAN/ISP interface */
+char        *ip6prefix = NULL; /* Prefix for global /48 IPv6 subnet */
 char       *wan_medium = "100Mbit"; /* 10Mbit/100Mbit ethernet */
 char         *qos_leaf = "sfq perturb 5"; /* leaf discipline */
 char    *qos_free_zone = NULL; /* QoS free zone */
@@ -262,15 +264,17 @@ void get_config(char *config_filename)
 
   option("tc",tc);
   option("iptables",iptables);
-  option("iptables-save",iptablessave); /* new */
-  option("iptables-restore",iptablesrestore); /* new */
+  option("iptables-save",iptablessave);
+  option("iptables-restore",iptablesrestore);
   option("ip6tables",ip6tables);
-  option("ip6tables-save",ip6tablessave); /* new */
-  option("ip6tables-restore",ip6tablesrestore); /* new */
-  option("iptables-in-filename",iptablesfile); /* new */
+  option("ip6tables-save",ip6tablessave);
+  option("ip6tables-restore",ip6tablesrestore);
+  option("iptables-in-filename",iptablesfile);
+  option("ip6tables-in-filename",ip6tablesfile);
   option("hosts",hosts);
   option("lan-interface",lan);
   option("wan-interface",wan);
+  option("ip6-prefix",ip6prefix);
   option("lan-medium",lan_medium);
   option("wan-medium",wan_medium);
   lloption("wan-download",line);
@@ -558,17 +562,17 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   puts("Initializing iptables and tc classes ...");
   /*-----------------------------------------------------------------*/
   
-  iptables_file=fopen(iptablesfile,"w");
+  iptables_file = fopen(iptablesfile, "w");
   if(iptables_file == NULL)
   {
-    puts("Cannot open iptablesfile!");
+    perror(iptablesfile);
     exit(-1);
   }
   
-  log_file=fopen(cmdlog,"w");
+  log_file = fopen(cmdlog, "w");
   if(log_file == NULL) 
   {
-    puts("Cannot open logfile!");
+    perror(cmdlog);
     exit(-1);
   }
   
@@ -612,7 +616,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    save_line(str);
   }
   
-  if(ip_count>idxtable_treshold1 && !just_flush)
+  if(ip_count > idxtable_treshold1 && !just_flush)
   {
    int idxcount=0, bitmask=32-idxtable_bitmask1; /* default net mask: 255.255.255.240 */
    char *subnet, *buf;
@@ -623,7 +627,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    save_line(":post_common - [0:0]");
    save_line(":forw_common - [0:0]");
 
-   for_each(ip,ips) if(ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0"))
+   for_each(ip,ips) if(ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0") && !strchr(ip->addr,':')) /* only IPv4 */
    {
     buf=index_id(ip->addr,bitmask);
     if_exists(idx,idxs,eq(idx->id,buf))
@@ -644,14 +648,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
 
    /* brutal perfomance optimalization */
-   while(idxcount>idxtable_treshold2 && bitmask>2*idxtable_bitmask2)
+   while(idxcount > idxtable_treshold2 && bitmask > 2*idxtable_bitmask2)
    {
-    bitmask-=idxtable_bitmask2;
-    idxcount=0;
+    bitmask -= idxtable_bitmask2;
+    idxcount = 0;
 
     for_each(idx,idxs) if(idx->parent == NULL)
     {
-     buf=index_id(idx->addr,bitmask);
+     buf = index_id(idx->addr,bitmask);
      if_exists(metaindex,idxs,eq(metaindex->id,buf))
      {
       metaindex->children++;
@@ -671,7 +675,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
    }
 
-   /* this should slightly optimize throughout ... */
+   /* this should slightly optimize throughput ... */
    sort(idx,idxs,desc_order_by,children);
    sort(idx,idxs,order_by,bitmask);
 
@@ -960,7 +964,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  puts("Generating iptables and tc classes ... ");
  /*-----------------------------------------------------------------*/
 
- for_each(ip, ips) if(ip->mark > 0)
+ for_each(ip, ips) if(ip->mark > 0 && !strchr(ip->addr,':')) /* works only for IPv4 so far */
  {
   if(idxs)
   {

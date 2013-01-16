@@ -191,9 +191,14 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    {
      fprintf(f,"<span id=\"sharing_%d\" style=\"display:none\">",i);
      popup_button=0;
-     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing))
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !strchr(sharedip->addr,':')) /* IPv4 only */
      {
       fprintf(f,"<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</a>\n", log_url, sharedip->name, sharedip->name);
+      popup_button++;
+     }
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !strchr(sharedip->addr,'.')) /* IPv6 only */
+     {
+      fprintf(f,"<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</a>\n", log_url, sharedip->name, sharedip->addr);
       popup_button++;
      }
      fputs("</span>\n",f);
@@ -229,7 +234,11 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    if(use_jquery_popups)
    {
      fprintf(f,"<span id=\"download_%d\" style=\"display:none\">",i);
-     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing))
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !strchr(sharedip->addr,':')) /* IPv4 only */
+     {
+      fprintf(f,"<br />%Lu", sharedip->direct);
+     }
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !strchr(sharedip->addr,'.')) /* IPv6 only */
      {
       fprintf(f,"<br />%Lu", sharedip->direct);
      }
@@ -247,7 +256,11 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    if(use_jquery_popups)
    {
      fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">",i);
-     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))
+     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && !strchr(sharedip->addr,':')) /* IPv4 only */
+     {
+      fprintf(f,"<br />%Lu", sharedip->upload);
+     }
+     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && !strchr(sharedip->addr,'.')) /* IPv6 only */
      {
       fprintf(f,"<br />%Lu", sharedip->upload);
      }

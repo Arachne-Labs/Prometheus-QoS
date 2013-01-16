@@ -15,6 +15,7 @@ extern int ip_count;
 extern int found_lmsid;
 extern int free_min;
 extern const int highest_priority;
+extern char *ip6prefix;
 
 /* This must be object oriented! This looks almost like constructor ;-) */
 void TheIP(char *ipaddr)
@@ -44,7 +45,22 @@ void TheIP(char *ipaddr)
 /* == This function strips extra characters after IPv4 address and stores it = */
 void parse_ip(char *str)
 {
- char *ptr, *ipaddr = NULL, *ipname = NULL, *lmsid = NULL;
+ char *ptr, *ipaddr, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
+
+ if(ip6prefix) /* Try this only if IPv6 subsystem is active...*/
+ {
+  ptr = strstr(str, "::");
+  if(ptr && ptr-str > 4)
+  {
+   ptr -= 4;   
+   duplicate(ptr,ip6range);
+   ptr = strstr(ip6range, "::");
+   if(ptr)
+   {
+    *(ptr+2) = 0;
+   }
+  }
+ }
 
  ptr = strchr(str, '{');
  if(ptr)
@@ -76,6 +92,23 @@ void parse_ip(char *str)
   ptr++;
  }
  *ptr=0;
+
+ if(ip6range)
+ {
+  concatenate(ip6prefix,ip6range,ptr);
+  concatenate(ptr,"/64",ip6range);
+  if_exists(ip, ips, eq(ip->addr,ip6range));
+  else
+  {
+   TheIP(ip6range);
+  }
+  ip->name = ptr;
+  ip->sharing = ipname;
+  if(lmsid)
+  {
+   ip->lmsid = atoi(lmsid);
+  }
+ }
 
  if_exists(ip, ips, eq(ip->addr,ipaddr));
  else
