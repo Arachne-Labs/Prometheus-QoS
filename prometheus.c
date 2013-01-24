@@ -137,7 +137,7 @@ struct Keyword *keyword, *defaultkeyword=NULL, *keywords=NULL;
 void help(void);
 /* implemented in help.c */
 
-void get_traffic_statistics(const char *whichiptables);
+void get_traffic_statistics(const char *whichiptables, int ipv6);
 /* implemented in parseiptables.c */
 
 void parse_ip_log(int argc, char **argv);
@@ -537,13 +537,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   /*-----------------------------------------------------------------*/
   puts("Parsing iptables verbose output ...");
   /*-----------------------------------------------------------------*/
-  get_traffic_statistics(iptables);
+  get_traffic_statistics(iptables, FALSE);
   if(ip6prefix)
   {
    /*-----------------------------------------------------------------*/
    puts("Parsing ip6tables verbose output ...");
    /*-----------------------------------------------------------------*/  
-   get_traffic_statistics(ip6tables);
+   get_traffic_statistics(ip6tables, TRUE);
   }
  }
 

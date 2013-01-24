@@ -15,7 +15,7 @@ extern int include_upload;
 
 /* ===================== traffic analyser - uses iptables  ================ */ 
 
-void get_traffic_statistics(const char *whichiptables)
+void get_traffic_statistics(const char *whichiptables, int ipv6)
 {
  char *str,*cmd;
  int downloadflag=0;
@@ -86,36 +86,64 @@ void get_traffic_statistics(const char *whichiptables)
            {
             accept = eq(ptr,mark);
            }
-            /*if(filter_type==1) accept=eq(ptr,"MARK"); else accept=eq(ptr,"CLASSIFY");*/
            break;
-   case 8: if(downloadflag)
-           { 
-            if(strstr(proxy_ip,ptr))
-            {
-             proxyflag = 1;
-            }
-           }
-           else
+   case 7: if(ipv6 && !downloadflag)
            {
             ipaddr = ptr;
            }
            break;
-   case 9: if(downloadflag)ipaddr = ptr;break;
+   case 8: if(ipv6 && downloadflag)
+           {
+            ipaddr = ptr;
+           }
+           else if(!ipv6)
+           {
+            if(downloadflag)
+            { 
+             if(strstr(proxy_ip,ptr))
+             {
+              proxyflag = 1;
+             }
+            }
+            else
+            {
+             ipaddr = ptr;
+            }
+           }
+           break;
+   case 9: if(!ipv6 && downloadflag)
+           {
+            ipaddr = ptr;
+           }
+           break;
   }
   
   if(accept && traffic>0 && ipaddr)
   {
+   /* IPv6 subnet - /64 */
+   char *isipv6 = strstr(ipaddr,"/64");
+   if(ipv6 && isipv6)
+   {
+    *isipv6=0;
+    printf("(IPv6) ");   
+   }
+   
    if(proxyflag)
    {
     printf("(proxy) ");
    }
    else if(!downloadflag)
    {
-    printf("(upload) ");
+    printf("(up) ");
    }
+   else
+   {
+    printf("(down) ");
+   }
+   
    printf("IP %s: %Lu MB (%ld pkts)\n", ipaddr, traffic, pkts);
 
-   if_exists(ip,ips,eq(ip->addr,ipaddr)); 
+   if_exists(ip, ips, eqi(ip->addr,ipaddr)); 
    else 
    {
     TheIP(ipaddr);
