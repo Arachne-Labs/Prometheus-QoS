@@ -472,6 +472,7 @@ program
  int nodelay       = FALSE;
  int just_preview  = FALSE;       /* preview - generate just stats */
  int start_shaping = FALSE;       /* apply FUP - requires classmap file */
+ int stop_shaping  = FALSE;       /* apply FUP - requires classmap file */
  int just_logs     = FALSE;       /* just parse logs */
  int run           = FALSE;
  int total         = 0;
@@ -494,6 +495,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-f") { run=TRUE; just_flush=TRUE; }
   argument("-9") { run=TRUE; just_flush=9; }
   argument("-p") { run=TRUE; just_preview=TRUE; }
+  argument("-q") { run=TRUE; just_preview=TRUE; stop_shaping=TRUE; }
   argument("-s") { run=TRUE; just_preview=TRUE; start_shaping=TRUE; }
   argument("-r") { run=TRUE; }
   argument("-n") { run=TRUE; nodelay=TRUE; }
@@ -977,7 +979,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(just_preview)
  {
-  if(start_shaping)
+  if(start_shaping || stop_shaping)
   {
    printf("Reading %s and applying Fair Use Policy rules ... \n", classmap);
    parse(classmap)
@@ -990,9 +992,17 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      if_exists(ip,ips,eq(ip->addr,_))
      {
       ip->mark=atoi(ptr);
-      if(ip->max < ip->desired) /* apply FUP limit immediately.... */
+      if(ip->max < ip->desired || stop_shaping) /* apply or disable FUP limit immediately.... */
       {
-       printf("Applying limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);       
+       if(stop_shaping)
+       {
+        ip->max = ip->desired;
+        printf("Removing limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);               
+       }
+       else
+       {
+        printf("Applying limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);       
+       }
        printf("(down: %dk-%dk ", ip->min, ip->max); 
        sprintf(str, "%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
                     tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
@@ -1013,6 +1023,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     perror(classmap);
     puts("Warning - classmap file not fund, just generating preview ...");
     start_shaping=FALSE;
+    stop_shaping=FALSE;
    }
    done; /* ugly macro end */
   }
@@ -1040,6 +1051,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    swchar='s';
   }
+  else if(stop_shaping)
+  {
+   swchar='q';
+  }
+
   printf("Statistics preview generated (-%c switch) - now exiting ...\n", swchar);
   exit(0);
  }  

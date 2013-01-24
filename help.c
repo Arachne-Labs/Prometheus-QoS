@@ -11,7 +11,8 @@ void help(void)
 -d   Dry run (preview tc and iptables commands on stdout)\n\
 -r   Run (reset all statistics and start shaping - daily usage)\n\
 -p   just generate Preview of data transfer statistics and exit (after -r)\n\
--s   start Shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
+-s   Start shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
+-q   Quit shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
 -n   run Now (like -r delay - overrides qos-free-delay keyword, after boot)\n\
 -f   just Flush iptables and tc classes and exit (stop shaping, no QiS)\n\
 -9   emergency iptables flush (like -f, but dumps data transfer statistics)\n\
