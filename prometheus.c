@@ -83,7 +83,7 @@ char             *mark = "MARK";
 char    *mark_iptables = "MARK --set-mark ";
 int            dry_run = FALSE; /* preview - use puts() instead of system() */
 char *iptablespreamble = "*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
-char      *ip6preamble = "-A FORWARD -p ipv6-icmp -j ACCEPT\n-A POSTROUTING -p ipv6-icmp -j ACCEPT";
+char      *ip6preamble = "-A FORWARD -p ipv6-icmp -j ACCEPT\n-A POSTROUTING -p ipv6-icmp -j ACCEPT\n-A FORWARD -s fe80::/10 -j ACCEPT\n-A FORWARD -d ff00::/8 -j ACCEPT\n-A POSTROUTING -s fe80::/10 -j ACCEPT\n-A POSTROUTING -d ff00::/8 -j ACCEPT";
 FILE    *iptables_file = NULL;
 FILE   *ip6tables_file = NULL;
 int      enable_credit = TRUE; /* enable credit file */
@@ -1049,7 +1049,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  printf("%-22s %-15s mark\n","name","ip");
 #endif
 
- printf("Writing %s ... ", classmap); 
+ printf("Writing %s ", classmap); 
  f = fopen(classmap, "w"); 
  if(f < 0)
  {
@@ -1057,7 +1057,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
 
  /*-----------------------------------------------------------------*/
- puts(" + generating iptables and tc classes ... ");
+ printf(" + generating iptables and tc classes ... ");
  /*-----------------------------------------------------------------*/
 
  for_each(ip, ips) if(ip->mark > 0) /* works only for IPv4 so far */

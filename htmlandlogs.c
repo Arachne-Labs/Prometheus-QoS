@@ -30,14 +30,18 @@ void append_log(struct IP *self) /*using global variables*/
  FILE *f; 
 
  date(d); /* this is typical cll1.h macro - prints current date */ 
- string(str,STRLEN); 
- sprintf(str,"%s/%s.log", log_dir, self->name);
- f=fopen(str,"a");
+ string(str, STRLEN); 
+ sprintf(str, "%s/%s.log", log_dir, self->name);
+
+ /*-----------------------------------------------------------------*/
+ printf("Writing traffic log %s ...\n", str);
+ /*-----------------------------------------------------------------*/
+ f = fopen(str, "a");
  if(f > 0)
  {
-  fprintf(f,"%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
-            time(NULL), self->name, self->traffic, self->direct, self->proxy,
-            self->upload, self->min, self->max, self->desired, self->lmsid, d); /* d = date*/
+  fprintf(f, "%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
+             time(NULL), self->name, self->traffic, self->direct, self->proxy,
+             self->upload, self->min, self->max, self->desired, self->lmsid, d); /* d = date*/
   fclose(f);
  }
  else
