@@ -83,6 +83,7 @@ char             *mark = "MARK";
 char    *mark_iptables = "MARK --set-mark ";
 int            dry_run = FALSE; /* preview - use puts() instead of system() */
 char *iptablespreamble = "*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
+char      *ip6preamble = "-A FORWARD -p ipv6-icmp -j ACCEPT\n-A POSTROUTING -p ipv6-icmp -j ACCEPT";
 FILE    *iptables_file = NULL;
 FILE   *ip6tables_file = NULL;
 int      enable_credit = TRUE; /* enable credit file */
@@ -619,6 +620,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      exit(-1);
    }
    iptables_save_line(iptablespreamble, TRUE);
+   iptables_save_line(ip6preamble, TRUE);
   }
 
   run_iptables_restore();
@@ -643,6 +645,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    ip6tables_file=fopen(ip6tablesfile,"w");
    iptables_save_line(iptablespreamble, TRUE);
+   iptables_save_line(ip6preamble, TRUE);
   }
 
   if(qos_free_zone && *qos_free_zone!='0') /* this is currently supported only for IPv4 */
@@ -1054,7 +1057,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
 
  /*-----------------------------------------------------------------*/
- puts("Generating iptables and tc classes ... ");
+ puts(" + generating iptables and tc classes ... ");
  /*-----------------------------------------------------------------*/
 
  for_each(ip, ips) if(ip->mark > 0) /* works only for IPv4 so far */
