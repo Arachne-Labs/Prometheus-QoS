@@ -125,7 +125,11 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
    if(ipv6 && isipv6)
    {
     *isipv6=0;
-    printf("(IPv6) ");   
+    printf("(IPv6) ");
+   }
+   else
+   {
+    printf("(IPv4) ");
    }
    
    if(proxyflag)
@@ -141,7 +145,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
     printf("(down) ");
    }
    
-   printf("IP %s: %Lu MB (%ld pkts)\n", ipaddr, traffic, pkts);
+   printf("%s %Lu MB (%ld pkts)\n", ipaddr, traffic, pkts);
 
    if_exists(ip, ips, eqi(ip->addr,ipaddr)); 
    else 
