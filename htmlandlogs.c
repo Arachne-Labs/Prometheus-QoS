@@ -20,6 +20,7 @@ extern char *log_url;
 extern int found_lmsid;
 extern char *lms_url;
 extern char *log_dir;
+extern char *ip6prefix;
 
 const char *tr_odd_even(void);
 /* implemented in prometheus.c, shared with parselogs.c */
@@ -89,8 +90,8 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 
    for_each(keyword, keywords) if(keyword->ip_count)
    {
-    fprintf(f,"<td style=\"text-align: right\"><span style=\"color:#%s\">%d&nbsp;MB</span></td>",
-              keyword->html_color, group->min*keyword->data_limit);
+    fprintf(f, "<td style=\"text-align: right\"><span style=\"color:#%s\">%d&nbsp;MB</span></td>",
+               keyword->html_color, group->min*keyword->data_limit);
    }   
    i += group->desired; 
    total += group->count;
@@ -172,15 +173,15 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    i++;
 
    if(ip->max < ip->desired) 
-   { 
-    f1 = "<span style=\"color:red\">"; 
+   {
+    f1 = "<span style=\"color:red\">";
     f2 = "</span>"; 
     limit_count++; 
-   } 
-   else if(ip->prio > highest_priority+1) 
-   { 
-    f1 = "<span style=\"color:brown\">"; 
-    f2 = "</span>"; 
+   }
+   else if(ip->prio > highest_priority+1)
+   {
+    f1 = "<span style=\"color:brown\">";
+    f2 = "</span>";
     prio_count++; 
    }       
 
@@ -193,23 +194,28 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 
    if(use_jquery_popups)
    {
-     fprintf(f,"<span id=\"sharing_%d\" style=\"display:none\">",i);
+     fprintf(f, "<span id=\"sharing_%d\" style=\"display:none\">",i);
      popup_button=0;
+
      for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
      {
-      fprintf(f,"<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</a>\n", log_url, sharedip->name, sharedip->name);
+      fprintf(f, "<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</a>\n", 
+                 log_url, sharedip->name, sharedip->name);
       popup_button++;
      }
+
      for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
      {
-      fprintf(f,"<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s/64</a>\n", log_url, sharedip->addr, sharedip->addr);
+      fprintf(f, "<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s/64</a>\n", 
+                 log_url, sharedip->addr, sharedip->addr);
       popup_button++;
      }
+
      fputs("</span>\n",f);
      if(popup_button)
      {
-      fprintf(f,"<span>[<a class=\"blue\" href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer;\">+%d</a>]</span>",
-                i, i, i, popup_button);
+      fprintf(f, "<span>[<a class=\"blue\" href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer;\">+%d</a>]</span>",
+                 i, i, i, popup_button);
      }
    }
    fputs("</td>\n",f);
@@ -237,7 +243,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    fprintf(f,"</td><td style=\"text-align: right\">%Lu", ip->direct);
    if(use_jquery_popups)
    {
-     fprintf(f,"<span id=\"download_%d\" style=\"display:none\">",i);
+     fprintf(f,"<span id=\"download_%d\" style=\"display:none\">", i);
      for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
      {
       fprintf(f,"<br />%Lu", sharedip->direct);
@@ -259,7 +265,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    fprintf(f,"<td style=\"text-align: right\">%Lu", ip->upload);
    if(use_jquery_popups)
    {
-     fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">",i);
+     fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">", i);
      for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
      {
       fprintf(f,"<br />%Lu", sharedip->upload);
@@ -313,6 +319,31 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
   }
   fprintf(f,"<th style=\"text-align: right\">%Lu</th>", total_upload);
   fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",limit_count,prio_count);
+
+  if(ip6prefix)
+  {
+   unsigned long long pkts4 =0, pkts6 = 0, bytes4 = 0, bytes6 = 0;
+   for_each(ip, ips)
+   { 
+    if(ip->v6)
+    {
+     bytes6 += ip->traffic;
+     pkts6 += ip->pktsdown+ip->pktsup;
+    }
+    else
+    {
+     bytes4 += ip->traffic;
+     pkts4 += ip->pktsdown+ip->pktsup;
+    }
+   }
+
+   fputs("<p><table class=\"decorated last\"><caption>IP protocols usage</caption>\n",f);
+   fprintf(f, "%s<td>Total IPv4</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%d %%)</td></tr>\n",
+              tr_odd_even(), bytes4, (float)(100*bytes4)/(bytes4+bytes6), pkts4, (float)(100*pkts4)/(pkts4+pkts6));
+   fprintf(f, "%s<td>Total IPv6</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%d %%)</td></tr>\n",
+              tr_odd_even(), bytes6, (float)(100*bytes6)/(bytes4+bytes6), pkts6, (float)(100*pkts6)/(pkts4+pkts6));
+   fputs("</table>\n", f);
+  }
 
   row_odd_even = 0;
   if(active_classes>10)

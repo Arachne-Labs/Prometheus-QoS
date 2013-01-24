@@ -630,8 +630,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
     perror(cmdlog);
     exit(-1);
-  }
-  
+  }  
   
   sprintf(str,"%s qdisc del dev %s root 2>/dev/null",tc,lan);
   safe_run(str);

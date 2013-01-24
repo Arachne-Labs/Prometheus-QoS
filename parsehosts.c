@@ -57,7 +57,7 @@ parse_ip(char *str)
   if(ptr && ptr-str > 4)
   {
    ptr -= 4;   
-   duplicate(ptr,ip6range);
+   duplicate(ptr, ip6range);
    ptr = strstr(ip6range, "::");
    if(ptr)
    {
