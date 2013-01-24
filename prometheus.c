@@ -1,5 +1,6 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Prometheus QoS - you can "steal fire" from your ISP         *//* "fair-per-IP" quality of service (QoS) utility              */
+/* Prometheus QoS - you can "steal fire" from your ISP         */
+/* "fair-per-IP" quality of service (QoS) utility              */
 /* requires Linux 2.4.x or 2.6.x with HTB support              */
 /* Copyright(C) 2005-2013 Michael Polak, Arachne Aerospace     */
 /* iptables-restore support Copyright(C) 2007-2008 ludva       */
@@ -563,12 +564,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  for_each(ip,ips) if(ip->sharing)
  {
-  for_each(sharedip,ips) if(eq(sharedip->name,ip->sharing))
+  for_each(sharedip,ips) if(eq(sharedip->name, ip->sharing))
   {
-   sharedip->traffic+=ip->traffic;
-   ip->traffic=0;
-   ip->mark=sharedip->mark; 
-   ip->lmsid=sharedip->lmsid;
+   sharedip->traffic += ip->traffic;
+   ip->traffic = 0;
+   ip->mark = sharedip->mark; 
+   ip->lmsid = sharedip->lmsid;
    break;
   }
   if(not sharedip)

@@ -123,12 +123,16 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
  i=0;
  if(f > 0)
  {
-  unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum=0;
-  int active_classes=0;
-  int colspan=12;
-  struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums=NULL;
-  int limit_count=0, prio_count=0;
-  int popup_button=0;
+  unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum = 0;
+  int active_classes = 0;
+  int colspan = 12;
+  struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums = NULL;
+  int limit_count = 0, prio_count = 0;
+  int popup_button = 0;
+  /* IPv6 vs. IPv4 stats */
+  unsigned long long pkts4 =0, pkts6 = 0, bytes4 = 0, bytes6 = 0;
+  int count4 = 0, count6 = 0;
+  double perc6;
 
   if(qos_proxy)
   {
@@ -279,13 +283,13 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    fputs("</td>\n",f);
    /* ----------------------------------------------- */
 
-   fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
+   fprintf(f, "<td style=\"text-align: right\">%d</td>\n\
 <td style=\"text-align: right\">%d</td>\n\
 <td style=\"text-align: right\">%s%d%s</td>\n\
 <td>%s%d%s</td></tr>\n",
-             ip->min, ip->desired, 
-             f1, ip->max, f2, 
-             f1, ip->prio, f2);
+              ip->min, ip->desired, 
+              f1, ip->max, f2, 
+              f1, ip->prio, f2);
 
    total_traffic+=ip->traffic;
    total_direct+=ip->direct;
@@ -312,37 +316,42 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
   }
   fprintf(f,"</tbody><thead><tr>\n\
 <th colspan=\"%d\" style=\"text-align: left\">%d CLASSES</th>", colspan-7, i);
-  fprintf(f,"<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%Lu</th>\n", total_traffic, total_direct);
+  fprintf(f, "<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%Lu</th>\n", 
+             total_traffic, total_direct);
   if(qos_proxy)
   {
-   fprintf(f,"<th style=\"text-align: right\">%Lu</th>\n", total_proxy);
+   fprintf(f," <th style=\"text-align: right\">%Lu</th>\n", total_proxy);
   }
-  fprintf(f,"<th style=\"text-align: right\">%Lu</th>", total_upload);
-  fprintf(f,"<th colspan=\"4\"><span style=\"color:red\">LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",limit_count,prio_count);
+  fprintf(f, "<th style=\"text-align: right\">%Lu</th>", total_upload);
+  fprintf(f, "<th colspan=\"4\"><span style=\"color:red\">LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",
+             limit_count, prio_count);
 
   if(ip6prefix)
   {
-   unsigned long long pkts4 =0, pkts6 = 0, bytes4 = 0, bytes6 = 0;
+ 
    for_each(ip, ips)
    { 
     if(ip->v6)
     {
      bytes6 += ip->traffic;
      pkts6 += ip->pktsdown+ip->pktsup;
+     count6++;
     }
     else
     {
      bytes4 += ip->traffic;
      pkts4 += ip->pktsdown+ip->pktsup;
+     count4++;
     }
    }
+   perc6=(double)(100*bytes6)/(bytes4+bytes6);
 
    fputs("<p><table class=\"decorated last\"><caption>IP protocols usage</caption>\n",f);
-   fprintf(f, "%s<td>Total IPv4</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%d %%)</td></tr>\n",
-              tr_odd_even(), bytes4, (float)(100*bytes4)/(bytes4+bytes6), pkts4, (float)(100*pkts4)/(pkts4+pkts6));
-   fprintf(f, "%s<td>Total IPv6</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%d %%)</td></tr>\n",
-              tr_odd_even(), bytes6, (float)(100*bytes6)/(bytes4+bytes6), pkts6, (float)(100*pkts6)/(pkts4+pkts6));
-   fputs("</table>\n", f);
+   fprintf(f, "%s<td>Total %d IPv4 (addreses)</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%.2f %%)</td></tr>\n",
+              tr_odd_even(), count4, bytes4, (double)(100*bytes4)/(bytes4+bytes6), pkts4, (float)(100*pkts4)/(pkts4+pkts6));
+   fprintf(f, "%s<td>Total %d IPv6 (/64 ranges)</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%.2f %%)</td></tr>\n",
+              tr_odd_even(), count6, bytes6, perc6, pkts6, (float)(100*pkts6)/(pkts4+pkts6));
+   fputs("</table></p>\n", f);
   }
 
   row_odd_even = 0;
@@ -359,7 +368,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 <th colspan=\"2\" style=\"text-align: center\">Data transfers</th>\n\
 </tr></thead><tbody>\n",f);
 
-   if_exists(sum,sums,sum->l>=total_traffic/4)
+   if_exists(sum,sums,sum->l >= total_traffic/4)
    {
     fprintf(f,"%s<td>Top 25%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
@@ -369,7 +378,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
               sum->i, (100*sum->i+50)/active_classes, sum->l, (100*sum->l+50)/total_traffic);
    }
    
-   if_exists(sum,sums,sum->i==10)
+   if_exists(sum,sums,sum->i == 10)
    {
     fprintf(f,"%s<td>Top 10 downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\"><strong>10</strong></td>\n\
@@ -379,7 +388,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
               (100*sum->i+50)/active_classes, sum->l, (100*sum->l+50)/total_traffic);
    }
 
-   if_exists(sum,sums,sum->l>=total_traffic/2)
+   if_exists(sum,sums,sum->l >= total_traffic/2)
    {
     fprintf(f,"%s<td>Top 50%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
@@ -389,7 +398,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
               sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
-   if_exists(sum,sums,sum->l>=4*total_traffic/5)
+   if_exists(sum,sums,sum->l >= 4*total_traffic/5)
    {
     fprintf(f,"%s<td>Top 80%% of traffic</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
@@ -399,7 +408,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
               sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
-   if_exists(sum,sums,sum->i>=(active_classes+1)/5)
+   if_exists(sum,sums,sum->i >= (active_classes+1)/5)
    {
     fprintf(f,"%s<td>Top 20%% downloaders</td>\n", tr_odd_even());
     top20_count=sum->i;
@@ -413,7 +422,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
               top20_count,top20_perc1,top20_sum,top20_perc2);
    }
 
-   if_exists(sum,sums,sum->i>=(active_classes+1)/4)
+   if_exists(sum,sums,sum->i >= (active_classes+1)/4)
    {
     fprintf(f,"%s<td>Top 25%% downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
@@ -433,7 +442,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
               sum->i,(100*sum->i+50)/active_classes,sum->l,(100*sum->l+50)/total_traffic);
    }
 
-   if_exists(sum,sums,sum->i>=4*(active_classes+1)/5)
+   if_exists(sum,sums,sum->i >= 4*(active_classes+1)/5)
    {
     fprintf(f,"%s<td>Top 80%% downloaders</td>\n", tr_odd_even());
     fprintf(f,"<td style=\"text-align: right\">%d</td>\n\
@@ -448,7 +457,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 <th style=\"text-align: right\">100 %%</th>\n\
 <th style=\"text-align: right\">%Lu MB</th>\n\
 <th style=\"text-align: right\">100 %%</th></tr>\n",active_classes,total_traffic);
-   fputs("</thead></table>\n", f);
+   fputs("</thead></table></p>\n", f);
 
    /* write basic ERP data to log directory */
    if(!just_preview)
@@ -458,9 +467,10 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog,"%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\t%s",
-                   time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
-                   active_classes, total_traffic, i, limit_count, prio_count, d); /* d = date*/
+     fprintf(iplog, "%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\tIPv6 %Lu\t%.2f %%\t%s",
+                    time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
+                    active_classes, total_traffic, i, limit_count, prio_count,
+                    bytes6, perc6, d); /* d = date*/
      fclose(iplog);
     }
     else

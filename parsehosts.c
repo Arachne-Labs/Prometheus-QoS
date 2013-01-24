@@ -51,7 +51,7 @@ parse_ip(char *str)
 {
  char *ptr, *ipaddr, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
 
- if(ip6prefix) /* Try this only if IPv6 subsystem is active...*/
+ if(ip6prefix) /* Try this only if IPv6 subsystem is active... */
  {
   ptr = strstr(str, "::");
   if(ptr && ptr-str > 4)
@@ -160,6 +160,7 @@ void parse_hosts(char *hosts)
    if(lastIP6)
    {
     lastIP6->sharing = substring;
+    lastIP6 = NULL;
    }
    while(*substring and *substring != '\n')
    {
@@ -174,6 +175,11 @@ void parse_hosts(char *hosts)
    if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
    {
     parse_ip(str);
+    if(lastIP6)
+    {
+     lastIP6->sharing = ip->name;
+     lastIP6 = NULL;
+    }
     ip->keyword = keyword;
     keyword->ip_count++;
     ip->prio = keyword->default_prio;
