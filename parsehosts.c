@@ -41,10 +41,13 @@ void TheIP(char *ipaddr)
  ip->keyword     = keywords;
  ip->v6          = (strchr(ip->addr,':')!=NULL);
  push(ip,ips);
+ ip_count++;
 }
 
+struct IP *lastIP6;
+
 /* == This function strips extra characters after IPv4 address and stores it = */
-void parse_ip(char *str)
+parse_ip(char *str)
 {
  char *ptr, *ipaddr, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
 
@@ -104,11 +107,16 @@ void parse_ip(char *str)
    TheIP(ip6range);
   }
   ip->name = ip6range;
-  ip->sharing = ipname;
+  ip->keyword = defaultkeyword; /* settings for default keyword */
   if(lmsid)
   {
    ip->lmsid = atoi(lmsid);
   }
+  lastIP6 = ip;
+ }
+ else
+ {
+  lastIP6 = NULL;
  }
 
  if_exists(ip, ips, eq(ip->addr,ipaddr));
@@ -147,9 +155,12 @@ void parse_hosts(char *hosts)
   { 
    substring += 8; /* "sharing-" */
    parse_ip(str);
-   ip_count++;
    ip->sharing = substring;
    ip->keyword = defaultkeyword; /* settings for default keyword */
+   if(lastIP6)
+   {
+    lastIP6->sharing = substring;
+   }
    while(*substring and *substring != '\n')
    {
     substring++;
@@ -163,7 +174,6 @@ void parse_hosts(char *hosts)
    if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
    {
     parse_ip(str);
-    ip_count++;
     ip->keyword = keyword;
     keyword->ip_count++;
     ip->prio = keyword->default_prio;

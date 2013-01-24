@@ -1049,7 +1049,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  printf("%-22s %-15s mark\n","name","ip");
 #endif
 
- printf("Writing %s ", classmap); 
+ printf("Writing %s", classmap); 
  f = fopen(classmap, "w"); 
  if(f < 0)
  {
