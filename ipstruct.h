@@ -20,6 +20,7 @@ struct IP
  unsigned long pktsup;
  unsigned long pktsdown;
  struct Keyword *keyword;
+ int v6;
  list(IP);
 };
 

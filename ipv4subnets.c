@@ -1,10 +1,9 @@
 #include "cll1-0.6.2.h"
 
-/* ====== iptables indexes are used to reduce complexity to log8(N) ===== */
+/* ====== iptables indexes are used to reduce complexity to log(N) ===== */
 
 char *very_ugly_ipv4_code(char *inip, int bitmask, int format_as_chainname)
 {
- /* warning: this function was debugged only for bitmask values 20,24,28 !!!*/
  int dot=0, n;
  char *ip,*outip,*outptr,*fmt;
 
@@ -13,7 +12,7 @@ char *very_ugly_ipv4_code(char *inip, int bitmask, int format_as_chainname)
 
  if(ip && *ip && bitmask>=0 && bitmask<=32)
  {
-  string(outip,strlen(ip)+10); /*fuck unicode? assertion: 10>strlen("_%d_%d") */
+  string(outip,strlen(ip)+10); /* assertion: 10>strlen("_%d_%d") */
  }
  else 
  {
@@ -90,12 +89,12 @@ char *very_ugly_ipv4_code(char *inip, int bitmask, int format_as_chainname)
  return outip;
 }
 
-char *index_id(char *ip,int bitmask)
+char *index_id(char *ip, int bitmask)
 { 
  return very_ugly_ipv4_code(ip,bitmask,1);
 }
 
-char *subnet_id(char *ip,int bitmask)
+char *subnet_id(char *ip, int bitmask)
 {
  return very_ugly_ipv4_code(ip,bitmask,0);
 }

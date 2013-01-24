@@ -1,13 +1,12 @@
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Prometheus QoS - you can "steal fire" from your ISP         */
-/* "fair-per-IP" quality of service (QoS) utility              */
+/* Prometheus QoS - you can "steal fire" from your ISP         *//* "fair-per-IP" quality of service (QoS) utility              */
 /* requires Linux 2.4.x or 2.6.x with HTB support              */
 /* Copyright(C) 2005-2013 Michael Polak, Arachne Aerospace     */
 /* iptables-restore support Copyright(C) 2007-2008 ludva       */
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20130116
+/* Modified by: xChaos, 20130124
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +28,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.8.3-h";
+const char *version = "0.8.3-i";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.8.3 is development release, 0.8.4 will be "stable"  */
@@ -79,11 +78,13 @@ int      row_odd_even = 0; /*<tr class="odd/even"> */
 /* === Configuraration file values defaults - stored in global variables ==== */
 
 int        filter_type = 1; /*1 mark, 2 classify*/
+char      *final_chain = "DROP"; /* REJECT would be better, but it is impossible in mangle */
 char             *mark = "MARK";
 char    *mark_iptables = "MARK --set-mark ";
 int            dry_run = FALSE; /* preview - use puts() instead of system() */
 char *iptablespreamble = "*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
 FILE    *iptables_file = NULL;
+FILE   *ip6tables_file = NULL;
 int      enable_credit = TRUE; /* enable credit file */
 int         use_credit = FALSE; /* use credit file (if enabled)*/
 char            *title = "Hall of Fame - Greatest Suckers"; /* hall of fame title */
@@ -102,8 +103,8 @@ char         *proxy_ip = "192.168.1.1/32"; /* our IP with proxy port */
 int         proxy_port = 3128; /* proxy port number */
 long long int     line = 1024; /* WAN/ISP download in kbps */
 long long int       up = 1024; /* WAN/ISP upload in kbps */
-int           free_min = 32; /* minimum guaranted bandwidth for all undefined hosts */
-int           free_max = 64; /* maximum allowed bandwidth for all undefined hosts */
+int           free_min = 256; /* minimum guaranted bandwidth for all undefined hosts */
+int           free_max = 512; /* maximum allowed bandwidth for all undefined hosts */
 int     qos_free_delay = 0; /* seconds to sleep before applying new QoS rules */
 int     digital_divide = 2; /* controls digital divide weirdness ratio, 1...3 */ 
 int        max_nesting = 3; /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
@@ -174,6 +175,7 @@ struct Index
  struct Index *parent;
  int bitmask;
  int children;
+ int ipv6;
  list(Index);
 } *idxs=NULL, *idx, *metaindex;
 
@@ -185,6 +187,12 @@ char *index_id(char *ip, int bitmask);
 
 char *subnet_id(char *ip, int bitmask);
 /* function implemented in ipv4subnets.c */
+
+char *index6_id(char *ip, int bitmask);
+/* function implemented in ipv6subnets.c */
+
+char *subnet6_id(char *ip, int bitmask);
+/* function implemented in ipv6subnets.c */
 
 /* ================= Let's parse configuration file here ================ */
 
@@ -373,12 +381,19 @@ void safe_run(char *cmd)
  }
 }
 
-void save_line(char *line)
+void iptables_save_line(char *line, int ipv6)
 {
- fprintf(iptables_file,"%s\n",line);
+ if(ipv6)
+ {
+  fprintf(ip6tables_file,"%s\n",line);
+ }
+ else
+ {
+  fprintf(iptables_file,"%s\n",line);
+ }
 }
 
-void run_restore(void)
+void run_iptables_restore(void)
 {
  char *restor;
  string(restor,STRLEN);
@@ -386,8 +401,8 @@ void run_restore(void)
  /*-----------------------------------------------------------------*/
  printf("Running %s <%s ...\n", iptablesrestore, iptablesfile);
  /*-----------------------------------------------------------------*/
- 
- save_line("COMMIT");
+
+ iptables_save_line("COMMIT", FALSE);
  fclose(iptables_file);
  if(dry_run) 
  {
@@ -400,7 +415,25 @@ void run_restore(void)
 
  sprintf(restor,"%s <%s",iptablesrestore, iptablesfile);
  safe_run(restor);
- 
+
+ if(ip6prefix)
+ {
+  /*-----------------------------------------------------------------*/
+  printf("Running %s <%s ...\n", ip6tablesrestore, ip6tablesfile);
+  /*-----------------------------------------------------------------*/
+  iptables_save_line("COMMIT", TRUE);
+  fclose(ip6tables_file);
+  if(dry_run) 
+  {
+   parse(ip6tablesfile)
+   {
+    printf("%s\n",_);
+   }
+   done; /* ugly macro end */
+  }
+  sprintf(restor,"%s <%s",ip6tablesrestore, ip6tablesfile);
+  safe_run(restor);
+ }
  free(restor);
 }
 
@@ -446,7 +479,7 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2012 Michael Polak, Arachne Labs\n\
+Version %s - Copyright (C)2005-2013 Michael Polak, Arachne Labs\n\
 iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
@@ -505,6 +538,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   puts("Parsing iptables verbose output ...");
   /*-----------------------------------------------------------------*/
   get_traffic_statistics(iptables);
+  if(ip6prefix)
+  {
+   /*-----------------------------------------------------------------*/
+   puts("Parsing ip6tables verbose output ...");
+   /*-----------------------------------------------------------------*/  
+   get_traffic_statistics(ip6tables);
+  }
  }
 
  /*-----------------------------------------------------------------*/
@@ -568,6 +608,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     perror(iptablesfile);
     exit(-1);
   }
+  iptables_save_line(iptablespreamble, FALSE);
+
+  if(ip6prefix)
+  {
+   ip6tables_file = fopen(ip6tablesfile, "w");
+   if(ip6tables_file == NULL)
+   {
+     perror(ip6tablesfile);
+     exit(-1);
+   }
+   iptables_save_line(iptablespreamble, TRUE);
+  }
+
+  run_iptables_restore();
   
   log_file = fopen(cmdlog, "w");
   if(log_file == NULL) 
@@ -576,8 +630,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     exit(-1);
   }
   
-  save_line(iptablespreamble);
-  run_restore();
   
   sprintf(str,"%s qdisc del dev %s root 2>/dev/null",tc,lan);
   safe_run(str);
@@ -586,24 +638,29 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   safe_run(str);
   
   iptables_file=fopen(iptablesfile,"w");
-  save_line(iptablespreamble);
+  iptables_save_line(iptablespreamble, FALSE);
+  if(ip6prefix)
+  {
+   ip6tables_file=fopen(ip6tablesfile,"w");
+   iptables_save_line(iptablespreamble, TRUE);
+  }
 
-  if(qos_free_zone && *qos_free_zone!='0')
+  if(qos_free_zone && *qos_free_zone!='0') /* this is currently supported only for IPv4 */
   {
    char *chain;
    
    sprintf(str,"-A FORWARD -d %s -o %s -j ACCEPT", qos_free_zone, wan);
-   save_line(str);
+   iptables_save_line(str, FALSE); /* this is currently supported only for IPv4 */
    
    if(qos_proxy)
    {
-    save_line(":post_noproxy - [0:0]");
+    iptables_save_line(":post_noproxy - [0:0]", FALSE);
     sprintf(str,"-A POSTROUTING ! -p tcp -o %s -j post_noproxy", lan);
-    save_line(str);   
+    iptables_save_line(str , FALSE);
     sprintf(str,"-A POSTROUTING ! -s %s -o %s -j post_noproxy", proxy_ip, lan);
-    save_line(str);   
+    iptables_save_line(str, FALSE);
     sprintf(str,"-A POSTROUTING -s %s -p tcp ! --sport %d -o %s -j post_noproxy", proxy_ip, proxy_port, lan);
-    save_line(str);   
+    iptables_save_line(str, FALSE);
 
     chain="post_noproxy";    
    }
@@ -613,23 +670,36 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    }
     
    sprintf(str,"-A %s -s %s -o %s -j ACCEPT", chain, qos_free_zone, lan);
-   save_line(str);
+   iptables_save_line(str, FALSE);
   }
   
   if(ip_count > idxtable_treshold1 && !just_flush)
   {
-   int idxcount=0, bitmask=32-idxtable_bitmask1; /* default net mask: 255.255.255.240 */
+   int idxcount=0, bitmask=32-idxtable_bitmask1;
    char *subnet, *buf;
    /*-----------------------------------------------------------------*/
    printf("Detected %d addresses - indexing iptables rules to improve performance...\n",ip_count);
    /*-----------------------------------------------------------------*/
 
-   save_line(":post_common - [0:0]");
-   save_line(":forw_common - [0:0]");
-
-   for_each(ip,ips) if(ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0") && !strchr(ip->addr,':')) /* only IPv4 */
+   iptables_save_line(":post_common - [0:0]", FALSE);
+   iptables_save_line(":forw_common - [0:0]", FALSE);
+   if(ip6prefix)
    {
-    buf=index_id(ip->addr,bitmask);
+    iptables_save_line(":post_common - [0:0]", TRUE);
+    iptables_save_line(":forw_common - [0:0]", TRUE);
+   }
+
+   for_each(ip,ips) if(ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0")) 
+   {
+    if(ip->v6)
+    {
+     buf=index6_id(ip->addr,bitmask+32);
+    }
+    else
+    {
+     buf=index_id(ip->addr, bitmask);
+    }
+    
     if_exists(idx,idxs,eq(idx->id,buf))
     {
      idx->children++;
@@ -637,11 +707,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     else
     {
      create(idx,Index);
-     idx->addr=ip->addr;
-     idx->id=buf;
-     idx->bitmask=bitmask;
-     idx->parent=NULL;
-     idx->children=0;
+     idx->addr = ip->addr;
+     idx->id = buf;
+     idx->bitmask = bitmask+32*ip->v6;
+     idx->parent = NULL;
+     idx->children = 0;
+     idx->ipv6 = ip->v6;
      idxcount++;
      push(idx,idxs);
     }
@@ -655,7 +726,14 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
     for_each(idx,idxs) if(idx->parent == NULL)
     {
-     buf = index_id(idx->addr,bitmask);
+     if(idx->ipv6)
+     {
+      buf = index6_id(idx->addr, bitmask+32);
+     }
+     else
+     {
+      buf = index_id(idx->addr, bitmask);
+     }
      if_exists(metaindex,idxs,eq(metaindex->id,buf))
      {
       metaindex->children++;
@@ -663,11 +741,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      else
      {
       create(metaindex,Index);
-      metaindex->addr=idx->addr;
-      metaindex->id=buf;
-      metaindex->bitmask=bitmask;
-      metaindex->parent=NULL;
-      metaindex->children=0;
+      metaindex->addr = idx->addr;
+      metaindex->id = buf;
+      metaindex->bitmask = bitmask+32*idx->ipv6;
+      metaindex->parent = NULL;
+      metaindex->children = 0;
+      metaindex->ipv6 = idx->ipv6;
       idxcount++;
       push(metaindex,idxs);
      }
@@ -682,20 +761,26 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    i=0;
    for_each(idx,idxs)
    {
-    subnet=subnet_id(idx->addr,idx->bitmask);
-    printf("%d: %s/%d\n",
-           ++i, subnet, idx->bitmask);
+    if(idx->ipv6)
+    {
+     subnet=subnet6_id(idx->addr, idx->bitmask);
+    }
+    else
+    {
+     subnet=subnet_id(idx->addr, idx->bitmask);
+    }
+    printf("%d: %s/%d\n", ++i, subnet, idx->bitmask);
        
     sprintf(str,":post_%s - [0:0]", idx->id);
-    save_line(str);
+    iptables_save_line(str, idx->ipv6);
 
     sprintf(str,":forw_%s - [0:0]", idx->id);
-    save_line(str);
+    iptables_save_line(str, idx->ipv6);
 
     if(idx->parent)
     {
      string(buf,strlen(idx->parent->id)+6);
-     sprintf(buf,"post_%s",idx->parent->id);
+     sprintf(buf,"post_%s", idx->parent->id);
     }
     else
     {
@@ -703,10 +788,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
 
     sprintf(str,"-A %s -d %s/%d -o %s -j post_%s", buf, subnet, idx->bitmask, lan, idx->id);
-    save_line(str);
+    iptables_save_line(str, idx->ipv6);
 
     sprintf(str,"-A %s -d %s/%d -o %s -j post_common", buf, subnet, idx->bitmask, lan);
-    save_line(str);
+    iptables_save_line(str, idx->ipv6);
 
     if(idx->parent)
     {
@@ -719,20 +804,28 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     }
 
     sprintf(str,"-A %s -s %s/%d -o %s -j forw_%s", buf, subnet, idx->bitmask, wan, idx->id);
-    save_line(str);
+    iptables_save_line(str, idx->ipv6);
 
     sprintf(str,"-A %s -s %s/%d -o %s -j forw_common", buf, subnet, idx->bitmask, wan);
-    save_line(str);
+    iptables_save_line(str, idx->ipv6);
    }
    printf("Total indexed iptables chains created: %d\n", i);
 
    sprintf(str,"-A FORWARD -o %s -j forw_common", wan);
-   save_line(str);
+   iptables_save_line(str, FALSE);
    
    sprintf(str,"-A POSTROUTING -o %s -j post_common", lan);
-   save_line(str);
+   iptables_save_line(str, FALSE);
+
+   if(ip6prefix)
+   {
+    sprintf(str,"-A FORWARD -o %s -j forw_common", wan);
+    iptables_save_line(str, TRUE);
+    
+    sprintf(str,"-A POSTROUTING -o %s -j post_common", lan);
+    iptables_save_line(str, TRUE);
+   }
   }
- 
  }
 
  if(just_flush)
@@ -930,12 +1023,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   printf("Writing json traffic overview  %s ... ", json_traffic);
   /*-----------------------------------------------------------------*/
   write_json_traffic(json_traffic);
- }
 
- /*-----------------------------------------------------------------*/
- printf("Writing statistics into HTML page %s ...\n", html);
- /*-----------------------------------------------------------------*/
- write_htmlandlogs(html, d,total, just_preview);
+  /*-----------------------------------------------------------------*/
+  printf("Writing statistics into HTML page %s ...\n", html);
+  /*-----------------------------------------------------------------*/
+  write_htmlandlogs(html, d, total, just_preview);
+ }
 
  if(just_preview)
  {
@@ -964,13 +1057,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  puts("Generating iptables and tc classes ... ");
  /*-----------------------------------------------------------------*/
 
- for_each(ip, ips) if(ip->mark > 0 && !strchr(ip->addr,':')) /* works only for IPv4 so far */
+ for_each(ip, ips) if(ip->mark > 0) /* works only for IPv4 so far */
  {
   if(idxs)
   {
    char *buf;
    duplicate(ip->addr,buf);
-   buf=index_id(ip->addr,32-idxtable_bitmask1); 
+   if(ip->v6)
+   {
+    buf=index6_id(ip->addr,64-idxtable_bitmask1);
+   }
+   else
+   {
+    buf=index_id(ip->addr,32-idxtable_bitmask1);
+   }
    
    string(chain_forward,6+strlen(buf));
    strcpy(chain_forward,"forw_");
@@ -994,33 +1094,30 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   /* -------------------------------------------------------- mark download */
   
-  sprintf(str, "-A %s -d %s/32 -o %s -j %s%d",
-               chain_postrouting, ip->addr, lan, mark_iptables, ip->mark);
-  /*sprintf(str,"-A %s -d %s/32 -o %s -j MARK --set-mark %d",chain_postrouting,ip->addr,lan,ip->mark);*/
+  sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
+               chain_postrouting, ip->addr, 32*(1+ip->v6), lan, mark_iptables, ip->mark);
   /* -m limit --limit 1/s */  
-  save_line(str);
+  iptables_save_line(str, ip->v6);
 
   if(qos_proxy)
   {
-   sprintf(str, "-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j %s%d",
-                chain_postrouting, proxy_ip, proxy_port, ip->addr, lan, mark_iptables, ip->mark);
-   /*sprintf(str,"-A %s -s %s -p tcp --sport %d -d %s/32 -o %s -j MARK --set-mark %d",chain_postrouting,proxy_ip,proxy_port,ip->addr,lan,ip->mark);*/
-   save_line(str);
+   sprintf(str, "-A %s -s %s -p tcp --sport %d -d %s/%d -o %s -j %s%d",
+                chain_postrouting, proxy_ip, proxy_port, ip->addr, 32*(1+ip->v6), lan, mark_iptables, ip->mark);
+   iptables_save_line(str, ip->v6);
   }
 
-  sprintf(str, "-A %s -d %s/32 -o %s -j ACCEPT",
-               chain_postrouting, ip->addr, lan);
-  save_line(str);
+  sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
+               chain_postrouting, ip->addr, 32*(1+ip->v6), lan);
+  iptables_save_line(str, ip->v6);
 
   /* -------------------------------------------------------- mark upload */
-  sprintf(str, "-A %s -s %s/32 -o %s -j %s%d", 
-               chain_forward, ip->addr, wan, mark_iptables, ip->mark);
-  /*  sprintf(str,"-A %s -s %s/32 -o %s -j MARK --set-mark %d",chain_forward,ip->addr,wan,ip->mark);*/
-  save_line(str);
+  sprintf(str, "-A %s -s %s/%d -o %s -j %s%d", 
+               chain_forward, ip->addr, 32*(1+ip->v6), wan, mark_iptables, ip->mark);
+  iptables_save_line(str, ip->v6);
 
-  sprintf(str, "-A %s -s %s/32 -o %s -j ACCEPT",
-               chain_forward, ip->addr, wan);
-  save_line(str);
+  sprintf(str, "-A %s -s %s/%d -o %s -j ACCEPT",
+               chain_forward, ip->addr, 32*(1+ip->v6), wan);
+  iptables_save_line(str, ip->v6);
 
   if(ip->min)
   {
@@ -1035,16 +1132,16 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    if(strcmpi(ip->keyword->leaf_discipline, "none"))
    {
-     sprintf(str, "%s qdisc add dev %s parent 1:%d handle %d %s", 
-                  tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
-     safe_run(str);
+    sprintf(str, "%s qdisc add dev %s parent 1:%d handle %d %s", 
+                 tc, lan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+    safe_run(str);
    }
 
    if(filter_type == 1)
    {
-     sprintf(str, "%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",
-                  tc, lan, ip->mark, ip->mark);
-     safe_run(str);
+    sprintf(str, "%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",
+                 tc, lan, ip->mark, ip->mark);
+    safe_run(str);
    }
 
    /* -------------------------------------------------------- upload class */
@@ -1061,21 +1158,21 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    
    if(strcmpi(ip->keyword->leaf_discipline, "none"))
    {
-     sprintf(str, "%s qdisc add dev %s parent 1:%d handle %d %s",
-                  tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
-     safe_run(str);
+    sprintf(str, "%s qdisc add dev %s parent 1:%d handle %d %s",
+                 tc, wan, ip->mark, ip->mark, ip->keyword->leaf_discipline); /*qos_leaf*/
+    safe_run(str);
    }   
 
    if(filter_type == 1)
    {
-     sprintf(str, "%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",
-                  tc, wan, ip->mark, ip->mark);
-     safe_run(str);
+    sprintf(str, "%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d",
+                 tc, wan, ip->mark, ip->mark);
+    safe_run(str);
    }
   
    if(f > 0)
    {
-     fprintf(f, "%s %d\n", ip->addr, ip->mark);
+    fprintf(f, "%s %d\n", ip->addr, ip->mark);
    }
   }
   else
@@ -1094,48 +1191,60 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  
  if(idxs)
  {
-   chain_forward = "forw_common";
-   chain_postrouting = "post_common";
+  chain_forward = "forw_common";
+  chain_postrouting = "post_common";
  }
  else
  {
-   chain_forward = "FORWARD";
-   chain_postrouting = "POSTROUTING";
+  chain_forward = "FORWARD";
+  chain_postrouting = "POSTROUTING";
  }
- /* -------------------------------- classify or reject free download */
+
+ if(free_min)
  {
-   char *final_chain = "DROP"; /* REJECT would be better, but it is impossible in mangle */
-   if(free_min)
-   {
-    final_chain = "ACCEPT";
-   }
-   if(qos_proxy)
-   {
-     if(free_min)
-     {
-       sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s%d",
-                   chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables,3);
-       save_line(str);
-     }
-     sprintf(str,"-A %s -s %s -p tcp --sport %d -o %s -j %s",
-                  chain_postrouting,proxy_ip,proxy_port,lan,final_chain);
-     save_line(str);
-   }
-   if(free_min)
-   {
-     sprintf(str,"-A %s -o %s -j %s%d", chain_postrouting, lan, mark_iptables, 3);
-     save_line(str);
-   }
-   sprintf(str,"-A %s -o %s -j %s", chain_postrouting, lan, final_chain);
-   save_line(str);
-   /* ------------------------------- classify or reject free  upload */
-   if(free_min)
-   {
-     sprintf(str,"-A %s -o %s -j %s%d", chain_forward, wan, mark_iptables, 3);
-     save_line(str);
-   }
-   sprintf(str,"-A %s -o %s -j %s", chain_forward, wan, final_chain);
-   save_line(str);
+  final_chain = "ACCEPT";
+ }
+
+ if(qos_proxy)
+ {
+  if(free_min) 
+  {
+   sprintf(str, "-A %s -s %s -p tcp --sport %d -o %s -j %s%d",
+                chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables, 3);
+   iptables_save_line(str, FALSE); /* only for IPv4 */
+  }
+  sprintf(str, "-A %s -s %s -p tcp --sport %d -o %s -j %s",
+               chain_postrouting,proxy_ip,proxy_port,lan,final_chain);
+  iptables_save_line(str, FALSE); /* only for IPv4 */
+ }
+
+ if(free_min)
+ {
+  sprintf(str, "-A %s -o %s -j %s%d",
+               chain_postrouting, lan, mark_iptables, 3);
+  iptables_save_line(str, FALSE); /* only for IPv4 */
+ }
+
+ sprintf(str,"-A %s -o %s -j %s", chain_postrouting, lan, final_chain);
+ iptables_save_line(str, FALSE);
+ if(ip6prefix)
+ {
+  sprintf(str,"-A %s -o %s -j %s", chain_postrouting, lan, final_chain);
+  iptables_save_line(str, TRUE);
+ }
+
+ if(free_min)
+ {
+  sprintf(str,"-A %s -o %s -j %s%d", chain_forward, wan, mark_iptables, 3);
+  iptables_save_line(str, FALSE); /* only for IPv4 */
+ }
+
+ sprintf(str,"-A %s -o %s -j %s", chain_forward, wan, final_chain);
+ iptables_save_line(str, FALSE);
+ if(ip6prefix)
+ {
+  sprintf(str,"-A %s -o %s -j %s", chain_postrouting, lan, final_chain);
+  iptables_save_line(str, TRUE);
  }
 
  if(free_min) /* allocate free bandwith if it is not zero... */ 
@@ -1166,7 +1275,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    safe_run(str);
  }
  printf("Total IP count: %d\n", i);
- run_restore(); 
+ run_iptables_restore();
  if(log_file)
  {
   fclose(log_file);

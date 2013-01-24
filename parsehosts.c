@@ -39,6 +39,7 @@ void TheIP(char *ipaddr)
  ip->pktsup      = \
  ip->pktsdown    = 0;
  ip->keyword     = keywords;
+ ip->v6          = (strchr(ip->addr,':')!=NULL);
  push(ip,ips);
 }
 
@@ -96,13 +97,13 @@ void parse_ip(char *str)
  if(ip6range)
  {
   concatenate(ip6prefix,ip6range,ptr);
-  concatenate(ptr,"/64",ip6range);
+  ip6range=ptr;
   if_exists(ip, ips, eq(ip->addr,ip6range));
   else
   {
    TheIP(ip6range);
   }
-  ip->name = ptr;
+  ip->name = ip6range;
   ip->sharing = ipname;
   if(lmsid)
   {
