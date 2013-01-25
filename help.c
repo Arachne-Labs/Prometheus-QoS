@@ -14,7 +14,7 @@ void help(void)
 -s   Start shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
 -q   Quit shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
 -2   Reduce HTB ceil (min+(max-min)/2 + keep stats like -p) (after -r)\n\
--4   Reduce HTB ceil (min+(max-min)/2 + keep stats like -p) (after -r)\n\
+-4   Reduce HTB ceil (min+(max-min)/4 + keep stats like -p) (after -r)\n\
 -n   run Now (like -r delay - overrides qos-free-delay keyword, after boot)\n\
 -f   just Flush iptables and tc classes and exit (stop shaping, no QiS)\n\
 -9   emergency iptables flush (like -f, but dumps data transfer statistics)\n\
