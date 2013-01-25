@@ -346,9 +346,9 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 
    perc6=(double)(bytes6)/(bytes4+bytes6)*100;
    fputs("<p><table class=\"decorated last\"><caption>IP protocols usage</caption>\n",f);
-   fprintf(f, "%s<td>Total %d IPv4 (addreses)</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%.2f %%)</td></tr>\n",
+   fprintf(f, "%s<td>Total %d IPv4 addreses</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%.2f %%)</td></tr>\n",
               tr_odd_even(), count4, bytes4, (double)(bytes4)/(bytes4+bytes6)*100, pkts4, (float)(100*pkts4)/(pkts4+pkts6));
-   fprintf(f, "%s<td>Total %d IPv6 (/64 ranges)</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%.2f %%)</td></tr>\n",
+   fprintf(f, "%s<td>Total %d IPv6 /64 ranges</td><td style=\"text-align: right\">%Lu MB (%.2f %%)</td><td style=\"text-align: right\">%Lu packets (%.2f %%)</td></tr>\n",
               tr_odd_even(), count6, bytes6, perc6, pkts6, (float)(100*pkts6)/(pkts4+pkts6));
    fputs("</table></p>\n", f);
   }
@@ -466,7 +466,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
     iplog=fopen(str,"a");
     if(iplog)
     {
-     fprintf(iplog, "%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\tIPv6 %Lu\t%.2f %%\t%s",
+     fprintf(iplog, "%ld\t%d\t%d %%\t%Lu M\t%Ld %%\tACTIVE %d\tTRAFFIC %Lu M\tCLASSES %d\tFUP-LIMIT %d\tLOW-PRIO %d\tIPv6 %Lu M\t%.2f %%\t%s",
                     time(NULL), top20_count, top20_perc1, top20_sum, top20_perc2, 
                     active_classes, total_traffic, i, limit_count, prio_count,
                     bytes6, perc6, d); /* d = date*/

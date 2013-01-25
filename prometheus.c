@@ -472,7 +472,8 @@ program
  int nodelay       = FALSE;
  int just_preview  = FALSE;       /* preview - generate just stats */
  int start_shaping = FALSE;       /* apply FUP - requires classmap file */
- int stop_shaping  = FALSE;       /* apply FUP - requires classmap file */
+ int stop_shaping  = FALSE;       /* lift FUP - requires classmap file */
+ int reduce_ceil     = 0;           /* allow only rate+(ceil-rate)/2, /4, etc. */
  int just_logs     = FALSE;       /* just parse logs */
  int run           = FALSE;
  int total         = 0;
@@ -496,6 +497,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-9") { run=TRUE; just_flush=9; }
   argument("-p") { run=TRUE; just_preview=TRUE; }
   argument("-q") { run=TRUE; just_preview=TRUE; stop_shaping=TRUE; }
+  argument("-2") { run=TRUE; just_preview=TRUE; reduce_ceil=2; }
+  argument("-4") { run=TRUE; just_preview=TRUE; reduce_ceil=4; }
   argument("-s") { run=TRUE; just_preview=TRUE; start_shaping=TRUE; }
   argument("-r") { run=TRUE; }
   argument("-n") { run=TRUE; nodelay=TRUE; }
@@ -979,7 +982,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(just_preview)
  {
-  if(start_shaping || stop_shaping)
+  if(start_shaping || stop_shaping || reduce_ceil)
   {
    printf("Reading %s and applying Fair Use Policy rules ... \n", classmap);
    parse(classmap)
@@ -992,7 +995,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      if_exists(ip,ips,eq(ip->addr,_))
      {
       ip->mark=atoi(ptr);
-      if(ip->max < ip->desired || stop_shaping) /* apply or disable FUP limit immediately.... */
+      if(ip->max < ip->desired || stop_shaping || reduce_ceil) /* apply or disable FUP limit immediately.... */
       {
        if(stop_shaping)
        {
@@ -1001,7 +1004,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
        }
        else
        {
-        printf("Applying limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);       
+        printf("Applying limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);
+        if(reduce_ceil)
+        {
+         ip->max = ip->min + (ip->desired-ip->min)/reduce_ceil;
+        }
        }
        printf("(down: %dk-%dk ", ip->min, ip->max); 
        sprintf(str, "%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
@@ -1050,6 +1057,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   if(start_shaping)
   {
    swchar='s';
+  }
+  else if(reduce_ceil)
+  {
+   swchar='0'+reduce_ceil; /* -2, -4 */
   }
   else if(stop_shaping)
   {
