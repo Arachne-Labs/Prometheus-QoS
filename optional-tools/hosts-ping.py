@@ -95,7 +95,7 @@ def append_host(html, host, base_url, counter, red_treshold, green_treshold):
     elif host[column] < green_treshold[kolikaty]:
       style[column] += ' color: green;'
   
-  loss = 100*host['loss']/host['attempts']
+  loss = float(100*host['loss'])/host['attempts']
   html.write(   ('<tr class="%s"><td style="%s">%d</td><td><a href="%s" target="_blank" class="blue">%s</a></td><td style="%s">%.1f%%</td>' + "\n")
               % (('even', 'odd')[counter % 2], style['right'], counter, base_url % (host['name'], host['smokename']), host['name'], style['loss'], loss))
 
