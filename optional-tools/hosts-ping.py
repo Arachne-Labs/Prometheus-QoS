@@ -116,6 +116,8 @@ def merge_json_avgs(filename, smoke_array):
        if avg:
          if host['avg'] and avg['avg'] and avg['attempts']+host['attempts']-avg['loss']-host['loss'] > 0:
            host['avg'] = ((avg['attempts']-avg['loss'])*avg['avg']+(host['attempts']-host['loss'])*host['avg'])/(avg['attempts']+host['attempts']-avg['loss']-host['loss'])
+         else:
+           host['avg'] =  avg['avg']
 
          if not host['best'] or host['best'] > avg['best']:
            host['best'] = avg['best']
@@ -168,7 +170,7 @@ html = open(smokeping_html, 'w')
 html.write("<h1>Aktuální odezva klientských zařízení</h1>");
 html.write(table_head % time.ctime());
 
-for kolikaty, host in enumerate(sorted(smokeping, key = lambda host: -host['loss']*attempts*timeout-host['avg'])):
+for kolikaty, host in enumerate(sorted(smokeping, key = lambda host: -host['loss']*host['attempts']*timeout-host['avg'])):
   append_host(html, host, smokeping_url, kolikaty+1, red_treshold, green_treshold)
 
 html.write(table_end)
@@ -182,7 +184,7 @@ html = open(smpater_html, 'w')
 html.write("<h1>Aktuální odezva páteřních routerů</h1>");
 html.write(table_head % time.ctime());
 
-for kolikaty, host in enumerate(sorted(smpater, key = lambda host: -host['loss']*attempts*timeout-host['avg'])):
+for kolikaty, host in enumerate(sorted(smpater, key = lambda host: -host['loss']*host['attempts']*timeout-host['avg'])):
   append_host(html, host, smpater_url, kolikaty+1, red_treshold, green_treshold)
 
 html.write(table_end)
@@ -197,7 +199,7 @@ html = open(smokeping_avg_html, 'w')
 html.write("<h1>Průměrná odezva klientských zařízení</h1>");
 html.write(table_head % time.ctime());
 
-for kolikaty, host in enumerate(sorted(smokeping, key = lambda host: -host['loss']*attempts*timeout-host['avg'])):
+for kolikaty, host in enumerate(sorted(smokeping, key = lambda host: -host['loss']*host['attempts']*timeout-host['avg'])):
   append_host(html, host, smokeping_url, kolikaty+1, red_treshold, green_treshold)
 
 html.write(table_end)
@@ -213,7 +215,7 @@ html = open(smpater_avg_html, 'w')
 html.write("<h1>Průměrná odezva páteřních routerů</h1>");
 html.write(table_head % time.ctime());
 
-for kolikaty, host in enumerate(sorted(smpater, key = lambda host: -host['loss']*attempts*timeout-host['avg'])):
+for kolikaty, host in enumerate(sorted(smpater, key = lambda host: -host['loss']*host['attempts']*timeout-host['avg'])):
   append_host(html, host, smpater_url, kolikaty+1, red_treshold, green_treshold)
 
 html.write(table_end)
