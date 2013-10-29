@@ -41,7 +41,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
   unsigned long pkts = 0;
   char *ipaddr = NULL,*ptr;
   
-  valid_columns(ptr, line->str, ' ', col) 
+  valid_columns(ptr, line->str, ' ', col)
   if(valid) switch(col)
   { 
    case 1: if(eq(ptr,"Chain"))
@@ -150,7 +150,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
    if_exists(ip, ips, eqi(ip->addr,ipaddr)); 
    else 
    {
-    TheIP(ipaddr);
+    TheIP(ipaddr, FALSE);
     if(eq(ip->addr,"0.0.0.0/0"))
     {
      ip->name = "(unregistered)";

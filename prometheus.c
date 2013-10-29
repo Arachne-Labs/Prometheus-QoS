@@ -132,7 +132,7 @@ const int idxtable_treshold2 = 12;      /* this is no longer configurable */
 const int idxtable_bitmask1  = 3;        /* this is no longer configurable */
 const int idxtable_bitmask2  = 3;        /* this is no longer configurable */
 
-struct IP *ips = NULL, *ip, *sharedip;
+struct IP *ips = NULL, *networks = NULL, *ip, *sharedip;
 struct Group *groups = NULL, *group;
 struct Keyword *keyword, *defaultkeyword=NULL, *keywords=NULL;
 
@@ -153,6 +153,10 @@ void write_json_traffic(char *json);
 
 void write_htmlandlogs(char *html, char *d, int total, int just_preview);
 /* implemented in htmlandlogs.c */
+
+void analyse_topology(char *traceroute);
+/* implemented in networks.c */
+
 
 const char *tr_odd_even(void)
 {
@@ -337,10 +341,10 @@ void get_config(char *config_filename)
  /* leaf discipline for keywords */
  for_each(keyword,keywords)
  {
-    if(!strcmpi(keyword->leaf_discipline, ""))
-    {
-        keyword->leaf_discipline = qos_leaf;
-    }
+  if(!strcmpi(keyword->leaf_discipline, ""))
+  {
+   keyword->leaf_discipline = qos_leaf;
+  }
  }
 
  if(strcmpi(cnf, "mark"))
@@ -468,6 +472,7 @@ program
  char *substring;
 
  int parent        = 1;
+ int just_networks = FALSE;  
  int just_flush    = FALSE;       /* deactivates all previous actions */
  int nodelay       = FALSE;
  int just_preview  = FALSE;       /* preview - generate just stats */
@@ -502,6 +507,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   argument("-s") { run=TRUE; just_preview=TRUE; start_shaping=TRUE; }
   argument("-r") { run=TRUE; }
   argument("-n") { run=TRUE; nodelay=TRUE; }
+  argument("-a") { run=TRUE; just_networks=TRUE; }
   argument("-l") { just_logs=TRUE; }
   argument("-m") { just_logs=TRUE; }
   argument("-y") { just_logs=TRUE; }
@@ -536,7 +542,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(althosts)
  {
-  hosts=althosts;
+  hosts = althosts;
  }
 
  if(just_flush<9)
@@ -555,21 +561,26 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
 
  /*-----------------------------------------------------------------*/
- printf("Parsing class defintion file %s ...\n", hosts);
- /*-----------------------------------------------------------------*/
- parse_hosts(hosts);
-
- /*-----------------------------------------------------------------*/
  /* cll1.h - let's allocate brand new character buffer...           */
  /*-----------------------------------------------------------------*/
  string(str,STRLEN); 
 
  /*-----------------------------------------------------------------*/
+ printf("Parsing class defintion file %s ...\n", hosts);
+ /*-----------------------------------------------------------------*/
+ parse_hosts(hosts);
+ if(just_networks)
+ {
+  analyse_topology("/usr/sbin/traceroute -n -m 10 -w 2 %s.%d");
+  exit(-1); 
+ }
+
+ /*-----------------------------------------------------------------*/
  puts("Resolving shared connections ...");
  /*-----------------------------------------------------------------*/
- for_each(ip,ips) if(ip->sharing)
+ for_each(ip, ips) if(ip->sharing)
  {
-  for_each(sharedip,ips) if(eq(sharedip->name, ip->sharing))
+  for_each(sharedip, ips) if(eq(sharedip->name, ip->sharing))
   {
    sharedip->traffic += ip->traffic;
    ip->traffic = 0;

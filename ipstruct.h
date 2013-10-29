@@ -21,6 +21,7 @@ struct IP
  unsigned long pktsdown;
  struct Keyword *keyword;
  int v6;
+ int mask;
  list(IP);
 };
 
@@ -55,5 +56,5 @@ struct Keyword
  list(Keyword);
 };
 
-void TheIP(char *ipaddr);
+void TheIP(char *ipaddr, int is_network);
 /* function implemented in parsehosts.c */

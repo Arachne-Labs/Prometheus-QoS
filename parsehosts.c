@@ -1,4 +1,4 @@
-/* Modified by: xChaos, 20121007 */
+/* Modified by: xChaos, 20131028 */
 
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
@@ -7,7 +7,7 @@
 #define FIRSTIPCLASS 2048
 
 /* globals declared in prometheus.c */
-extern struct IP *ips, *ip, *sharedip;
+extern struct IP *ips, *ip, *sharedip, *networks;
 extern struct Group *groups, *group;
 extern struct Keyword *keyword, *defaultkeyword, *keywords;
 extern int class_count;
@@ -17,8 +17,11 @@ extern int free_min;
 extern const int highest_priority;
 extern char *ip6prefix;
 
+struct IP* find_network_for_ip(char *ipaddr_orig);
+/* implemented in networks.c */
+
 /* This must be object oriented! This looks almost like constructor ;-) */
-void TheIP(char *ipaddr)
+void TheIP(char *ipaddr, int is_network)
 {
  create(ip,IP);
  ip->name        = "";
@@ -40,14 +43,22 @@ void TheIP(char *ipaddr)
  ip->pktsdown    = 0;
  ip->keyword     = keywords;
  ip->v6          = (strchr(ip->addr,':')!=NULL);
- push(ip,ips);
+ ip->mask        = ((ip->v6)?64:32);
+ if(is_network)
+ {
+  push(ip, networks);
+ }
+ else
+ {
+  push(ip, ips); 
+ }
  ip_count++;
 }
 
 struct IP *lastIP6;
 
 /* == This function strips extra characters after IPv4 address and stores it = */
-parse_ip(char *str)
+void parse_and_append_ip(char *str, struct IP *listhead)
 {
  char *ptr, *ipaddr, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
 
@@ -104,7 +115,7 @@ parse_ip(char *str)
   if_exists(ip, ips, eq(ip->addr,ip6range));
   else
   {
-   TheIP(ip6range);
+   TheIP(ip6range, FALSE);
   }
   ip->name = ip6range;
   ip->keyword = defaultkeyword; /* settings for default keyword */
@@ -119,10 +130,10 @@ parse_ip(char *str)
   lastIP6 = NULL;
  }
 
- if_exists(ip, ips, eq(ip->addr,ipaddr));
+ if_exists(ip, listhead, eq(ip->addr,ipaddr));
  else
  {
-  TheIP(ipaddr);
+  TheIP(ipaddr, (listhead==networks));
  }
  ip->name = ipname;
  if(lmsid)
@@ -138,6 +149,7 @@ void parse_hosts(char *hosts)
  int groupidx = FIRSTGROUPID;
  char *str, *ptr;
  char *substring;
+ struct IP *network;
 
  parse(hosts)
  {
@@ -154,7 +166,7 @@ void parse_hosts(char *hosts)
   if(substring)
   { 
    substring += 8; /* "sharing-" */
-   parse_ip(str);
+   parse_and_append_ip(str, ips);
    ip->sharing = substring;
    ip->keyword = defaultkeyword; /* settings for default keyword */
    if(lastIP6)
@@ -170,75 +182,116 @@ void parse_hosts(char *hosts)
   }
   else
   {
-   /*Do we have to create new QoS class for this IP ? */
-
-   if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
+   substring = strstr(str, "#255.");
+   if(substring and not strstr(str, "#255.255.255.255")) /* do not ping /32 ranges */
    {
-    parse_ip(str);
-    if(lastIP6)
+    /* netmask detected - save network*/
+    unsigned bit;
+    unsigned num, mask = 8;
+    substring += 5;
+    while(substring && *substring)
     {
-     lastIP6->sharing = ip->name;
-     lastIP6 = NULL;
-    }
-    ip->keyword = keyword;
-    keyword->ip_count++;
-    ip->prio = keyword->default_prio;
-    substring += strlen(keyword->key)+1;
-    ptr = substring;
-    while(*ptr and *ptr != '-')
-    {
-     ptr++;
-    }
-    if(*ptr == '-')
-    {
-     *ptr=0;
-     ip->max = ip->desired = atoi(ptr+1);
-    }
-    ip->min = atoi(substring);
-    if(ip->min <= 0)
-    {
-     printf(" %s: Illegal value of minimum bandwidth 0 kbps, using %d kb/s\n",
-            str, free_min);
-     ip->min = free_min;
-    }
-    if(ip->max <= ip->min)
-    {
-     ip->fixedprio = TRUE;
-     ip->max = ip->min + ip->keyword->reserve_min;
-    }
-    else 
-    {
-     ip->max -= ip->keyword->reserve_max;
-     if(ip->max<ip->min)
+     ptr = substring;
+     substring = strchr(substring, '.');
+     if(substring)
      {
-      ip->max=ip->min;
+      *substring = 0;
+      substring += 1;
      }
-    }
-    ip->mark = FIRSTIPCLASS+1+class_count++;
-
-    if_exists(group,groups,(group->min == ip->min)) 
-    { 
-     group->count++;      
-     group->desired += ip->min;
-     ip->group = group->id;   
-    }
-    else
+     num = atoi(ptr);
+     for(bit = 1; bit <=128 ; bit<<=1)
+     {
+      if(bit & num)
+      {
+       mask++;
+      }
+     }
+    } 
+    parse_and_append_ip(str, networks);
+    ip->mask = mask;
+   }
+   else
+   {
+    /*Do we have to create new QoS class for this IP ? */
+    if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
     {
-     create(group,Group);
-     group->min = ip->min;
-     group->id = groupidx++;
-     ip->group = group->id;
+     parse_and_append_ip(str, ips);
+     if(lastIP6)
+     {
+      lastIP6->sharing = ip->name;
+      lastIP6 = NULL;
+     }
+     ip->keyword = keyword;
+     keyword->ip_count++;
+     ip->prio = keyword->default_prio;
+     substring += strlen(keyword->key)+1;
+     ptr = substring;
+     while(*ptr and *ptr != '-')
+     {
+      ptr++;
+     }
+     if(*ptr == '-')
+     {
+      *ptr=0;
+      ip->max = ip->desired = atoi(ptr+1);
+     }
+     ip->min = atoi(substring);
+     if(ip->min <= 0)
+     {
+      printf(" %s: Illegal value of minimum bandwidth 0 kbps, using %d kb/s\n",
+             str, free_min);
+      ip->min = free_min;
+     }
+     if(ip->max <= ip->min)
+     {
+      ip->fixedprio = TRUE;
+      ip->max = ip->min + ip->keyword->reserve_min;
+     }
+     else 
+     {
+      ip->max -= ip->keyword->reserve_max;
+      if(ip->max<ip->min)
+      {
+       ip->max=ip->min;
+      }
+     }
+     ip->mark = FIRSTIPCLASS+1+class_count++;
 
-     if(group->min < 8) group->min = 8;
-     /* Warning - this is maybe because of primitive tc namespace, can be fixed */
-     /* it is because class IDs are derived from min. bandwidth. - xCh */
-     //if(group->min>MAX_GUARANTED_KBPS) group->min=MAX_GUARANTED_KBPS;
-     
-     group->count = 1;
-     group->desired = ip->min;   
-     insert(group, groups, desc_order_by,min);
-    }
-   }//endif keyword-
+     network = find_network_for_ip(ip->addr);
+     if(network)
+     {
+      network->min += ip->min;
+      network->desired += ip->max;
+      if(ip->max > network->max)
+      {
+       network->max = ip->max;
+      }
+     }
+
+     if_exists(group,groups,(group->min == ip->min)) 
+     { 
+      group->count++;      
+      group->desired += ip->min;
+      ip->group = group->id;   
+     }
+     else
+     {
+      create(group,Group);
+      group->min = ip->min;
+      group->id = groupidx++;
+      ip->group = group->id;
+
+      if(group->min < 8) group->min = 8;
+      /* Warning - this is maybe because of primitive tc namespace, can be fixed */
+      /* it is because class IDs are derived from min. bandwidth. - xCh */
+      //if(group->min>MAX_GUARANTED_KBPS) group->min=MAX_GUARANTED_KBPS;
+      
+      group->count = 1;
+      group->desired = ip->min;   
+      insert(group, groups, desc_order_by,min);
+     }
+    }//endif keyword-
+   }//endif netmask
   }//endif sharing-
  }
  fail

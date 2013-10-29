@@ -24,6 +24,7 @@ void help(void)
 -l Mmm YYYY  generate HTML summary of Logged traffic (Mmm=Jan-Dec) (and exit)\n\
 -m           generate HTML summary of traffic for yesterday's Month (and exit)\n\
 -y           generate HTML summary of traffic for yesterday's Year (and exit)\n\
+-a           analyse network topology (agregation statistics, using traceroute)\n\
 -? --help    show this help scree (and exit)\n\
 -v --version show Version number of this utility (and exit)\n");
 }
