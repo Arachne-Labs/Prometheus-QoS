@@ -17,7 +17,7 @@ extern int free_min;
 extern const int highest_priority;
 extern char *ip6prefix;
 
-struct IP* find_network_for_ip(char *ipaddr_orig);
+void update_network(char *look_for, struct IP* ip);
 /* implemented in networks.c */
 
 /* This must be object oriented! This looks almost like constructor ;-) */
@@ -257,16 +257,7 @@ void parse_hosts(char *hosts)
      }
      ip->mark = FIRSTIPCLASS+1+class_count++;
 
-     network = find_network_for_ip(ip->addr);
-     if(network)
-     {
-      network->min += ip->min;
-      network->desired += ip->max;
-      if(ip->max > network->max)
-      {
-       network->max = ip->max;
-      }
-     }
+     update_network(ip->addr, ip);
 
      if_exists(group,groups,(group->min == ip->min)) 
      { 

@@ -7,13 +7,13 @@
 
 extern struct IP *ips, *networks;
 
-struct IP* find_network_for_ip(char *ipaddr_orig)
+void update_network(char *look_for, struct IP* ip)
 {
  struct IP *network;
  char *netaddr, *lastnum, *ipaddr;
  int ipnum, netnum;
 
- duplicate(ipaddr_orig, ipaddr);
+ duplicate(look_for, ipaddr);
  lastnum = strrchr(ipaddr, '.');
  if(lastnum)
  {
@@ -34,11 +34,27 @@ struct IP* find_network_for_ip(char *ipaddr_orig)
        and netnum + (1<<(32-network->mask)) > ipnum
        and netnum <= ipnum)
    {
-    return network;
+    network->group += 1;
+    network->min += ip->min;
+    network->direct += ip->max<<10; /* sum of Mbps, not kbps*/
+
+    if(ip->max > network->max)
+    {
+     network->max = ip->max;
+    }
+
+    if(network->max > network->min)
+    {
+     network->desired = network->max;
+    }
+    else
+    {
+     network->desired = network->min;
+    }
+    return;
    }       
   }
  }
- return NULL;
 }
 
 void analyse_topology(char *traceroute)
@@ -46,11 +62,6 @@ void analyse_topology(char *traceroute)
  char *buf, *netaddr, *ptr, *lastnum, *str;
  int col, gateway, netnum, tracert;
  struct IP *network=NULL, *ip;
-
- for_each(ip, networks)
- {
-  printf("%s/%d %s min=%d max=%d sum=%d\n",ip->addr, ip->mask, ip->name, ip->min, ip->max, ip->desired); 
- }
 
  /*-----------------------------------------------------------------*/
  puts("Analysing network topology ...");
@@ -81,27 +92,26 @@ void analyse_topology(char *traceroute)
      }
      else if(col==2)
      {
+//#ifdef DEBUG
       printf("via [%s]\n", ptr);
-      network = find_network_for_ip(ptr);
-      if(network)
-      {
-       network->min += ip->min;
-       network->desired += ip->max;
-       if(ip->max > network->max)
-       {
-        network->max = ip->max;
-       }
-      }      
+//#endif
+      update_network(ptr, ip);
      }
     }
    }
   }
  }
  sort(network, networks, desc_order_by, min);
- sort(network, networks, desc_order_by, max);
- for_each(ip, networks)
+ sort(network, networks, desc_order_by, desired);
+
+ /*-----------------------------------------------------------------*/
+ puts("Requested network parameters are:");
+ /*-----------------------------------------------------------------*/
+ for_each(ip, networks) if(ip->desired>>10 > 0)
  {
-  printf("%s/%d %s min=%d max=%d sum=%d\n",ip->addr, ip->mask, ip->name, ip->min, ip->max, ip->desired); 
+  printf("%s/%d %s REQUESTED=%dM (classes=%d, sum_min=%dk, max_1=%dk, sum_max=%LuM, agreg.=1:%d)\n",
+         ip->addr, ip->mask, ip->name, ip->desired>>10, ip->group, ip->min, ip->max, ip->direct,
+         (int)((float)(ip->direct)/(ip->desired>>10)));
  }
  exit(-1);
 }
