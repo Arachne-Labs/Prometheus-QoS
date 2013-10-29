@@ -36,7 +36,7 @@ void update_network(char *look_for, struct IP* ip)
    {
     network->group += 1;
     network->min += ip->min;
-    network->direct += ip->max<<10; /* sum of Mbps, not kbps*/
+    network->direct += ip->max>>10; /* sum of Mbps, not kbps*/
 
     if(ip->max > network->max)
     {
@@ -45,11 +45,11 @@ void update_network(char *look_for, struct IP* ip)
 
     if(network->max > network->min)
     {
-     network->desired = network->max;
+     network->desired = network->max>>10;
     }
     else
     {
-     network->desired = network->min;
+     network->desired = network->min>>10;
     }
     return;
    }       
@@ -107,11 +107,11 @@ void analyse_topology(char *traceroute)
  /*-----------------------------------------------------------------*/
  puts("Requested network parameters are:");
  /*-----------------------------------------------------------------*/
- for_each(ip, networks) if(ip->desired>>10 > 0)
+ for_each(ip, networks) if(ip->desired)
  {
   printf("%s/%d %s REQUESTED=%dM (classes=%d, sum_min=%dk, max_1=%dk, sum_max=%LuM, agreg.=1:%d)\n",
-         ip->addr, ip->mask, ip->name, ip->desired>>10, ip->group, ip->min, ip->max, ip->direct,
-         (int)((float)(ip->direct)/(ip->desired>>10)));
+         ip->addr, ip->mask, ip->name, ip->desired, ip->group, ip->min, ip->max, ip->direct,
+         (int)((float)((ip->direct)/ip->desired)+.5));
  }
  exit(-1);
 }
