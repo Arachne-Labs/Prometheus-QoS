@@ -24,6 +24,7 @@ struct IP
  struct Keyword *keyword;
  int v6;
  int mask;
+ struct IP *uplink;
  list(IP);
 };
 

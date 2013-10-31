@@ -235,6 +235,7 @@ void parse_hosts(char *hosts)
       *ptr=0;
       ip->max = ip->desired = atoi(ptr+1);
      }
+
      ip->min = atoi(substring);
      if(ip->min <= 0)
      {
@@ -242,6 +243,7 @@ void parse_hosts(char *hosts)
              str, free_min);
       ip->min = free_min;
      }
+
      if(ip->max <= ip->min)
      {
       ip->fixedprio = TRUE;
@@ -255,8 +257,8 @@ void parse_hosts(char *hosts)
        ip->max=ip->min;
       }
      }
-     ip->mark = FIRSTIPCLASS+1+class_count++;
 
+     ip->mark = FIRSTIPCLASS+1+class_count++;
      update_network(ip->addr, ip);
 
      if_exists(group,groups,(group->min == ip->min)) 
@@ -291,4 +293,7 @@ void parse_hosts(char *hosts)
   exit(-1);
  }
  done; /* ugly macro end */
+// TheIP("0.0.0.0", TRUE);
+// ip->name = "TOTAL";
+// ip->mask = 0;
 }
