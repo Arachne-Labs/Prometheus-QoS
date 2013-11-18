@@ -258,10 +258,15 @@ void parse_hosts(char *hosts)
        ip->max = ip->min;
       }
      }
-     
+
      /* MTU is 1450 bytes = 11600 bits ~= 12 kbit, max is in kb/s */
      ip->pps_limit = ip->max/12;
-     ip->mark = FIRSTIPCLASS+1+class_count++;
+     if(ip->pps_limit > 10000) /* this limit seems to be hardcoded in iptables */
+     {
+      ip->pps_limit = 0; /* do not apply packet limits */
+     }
+
+     ip->mark = FIRSTIPCLASS+1+class_count++;     
      update_network(ip->addr, ip);
 
      if_exists(group,groups,(group->min == ip->min)) 

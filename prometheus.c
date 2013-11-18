@@ -1127,16 +1127,24 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    chain_postrouting="POSTROUTING";
   }
 
+  /* packet limits - this will be optional in future, hardcoded for now */
+  if(ip->pps_limit)
+  {
+   sprintf(limit_pkts, "-m limit --limit %d/s ", ip->pps_limit);
+  }
+  else
+  {
+   *limit_pkts = 0;
+  }  
+
 #ifdef DEBUG
-  printf("%-22s %-16s %04d ", ip->name, ip->addr, ip->mark); 
+  printf("%-22s %-16s %04d %d/s\n", ip->name, ip->addr, ip->mark, ip->pps_limit); 
 #endif
 
-  /* -------------------------------------------------------- mark download */
-  
+  /* -------------------------------------------------------- mark download */  
   sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
                chain_postrouting, ip->addr, 32*(1+ip->v6),
                lan, mark_iptables, ip->mark);
-  /* -m limit --limit 1/s */  
   iptables_save_line(str, ip->v6);
 
   if(qos_proxy)
@@ -1146,9 +1154,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                 32*(1+ip->v6), lan, mark_iptables, ip->mark);
    iptables_save_line(str, ip->v6);
   }
-
-  /* this will be optional in future - hardcoded for now*/
-  sprintf(limit_pkts,"-m limit --limit %d/s ", ip->pps_limit);
 
   sprintf(str, "-A %s -d %s/%d -o %s %s-j ACCEPT",
                chain_postrouting, ip->addr, 32*(1+ip->v6), lan, limit_pkts);
