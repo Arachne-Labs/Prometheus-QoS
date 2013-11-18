@@ -40,6 +40,7 @@ void TheIP(char *ipaddr, int is_network)
  ip->direct      = \
  ip->traffic     = \
  ip->pktsup      = \
+ ip->pps_limit   = \
  ip->pktsdown    = 0;
  ip->keyword     = keywords;
  ip->v6          = (strchr(ip->addr,':')!=NULL);
@@ -252,12 +253,14 @@ void parse_hosts(char *hosts)
      else 
      {
       ip->max -= ip->keyword->reserve_max;
-      if(ip->max<ip->min)
+      if(ip->max < ip->min)
       {
-       ip->max=ip->min;
+       ip->max = ip->min;
       }
      }
-
+     
+     /* MTU is 1450 bytes = 11600 bits ~= 12 kbit, max is in kb/s */
+     ip->pps_limit = ip->max/12;
      ip->mark = FIRSTIPCLASS+1+class_count++;
      update_network(ip->addr, ip);
 

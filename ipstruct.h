@@ -13,6 +13,7 @@ struct IP
  int fixedprio;
  int group;
  int lmsid;
+ int pps_limit;
  unsigned long long direct;
  unsigned long long proxy;
  unsigned long long upload;

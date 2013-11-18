@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20131029
+/* Modified by: xChaos, 20131118
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.8.3-i";
+const char *version = "0.8.3-j";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.8.3 is development release, 0.8.4 will be "stable"  */
@@ -118,10 +118,6 @@ int     magic_treshold = 8; /* reduce ceil by X*magic_treshhold kbps (hard shapi
 int       keywordcount = 0;
 int        class_count = 0;
 int           ip_count = 0;
-/* not yet implemented:
-int      fixed_packets = 0; maximum number of pps per IP address (not class!) 
-int       packet_limit = 5; maximum number of pps to htn CEIL, not rate !!! 
-*/
 FILE         *log_file = NULL;
 char              *kwd = "via-prometheus"; /* /etc/hosts comment, eg. #qos-64-128 */
 
@@ -469,7 +465,7 @@ program
  int i=0;                    /* just plain old Fortran style integer :-) */
  FILE *f=NULL;               /* everything is just stream of bytes... */
  char *str, *ptr, *d;        /* LET A$=B$ :-) */
- char *substring;
+ char *substring, *limit_pkts;
 
  int parent        = 1;
  int just_networks = FALSE;  
@@ -563,7 +559,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  /* cll1.h - let's allocate brand new character buffer...           */
  /*-----------------------------------------------------------------*/
- string(str,STRLEN); 
+ string(str, STRLEN); 
+ string(limit_pkts, STRLEN);
 
  /*-----------------------------------------------------------------*/
  printf("Parsing class defintion file %s ...\n", hosts);
@@ -586,6 +583,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    ip->traffic = 0;
    ip->mark = sharedip->mark; 
    ip->lmsid = sharedip->lmsid;
+   ip->pps_limit = sharedip->pps_limit; /* no other way to do this */
    break;
   }
   if(not sharedip)
@@ -1136,19 +1134,24 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   /* -------------------------------------------------------- mark download */
   
   sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
-               chain_postrouting, ip->addr, 32*(1+ip->v6), lan, mark_iptables, ip->mark);
+               chain_postrouting, ip->addr, 32*(1+ip->v6),
+               lan, mark_iptables, ip->mark);
   /* -m limit --limit 1/s */  
   iptables_save_line(str, ip->v6);
 
   if(qos_proxy)
   {
    sprintf(str, "-A %s -s %s -p tcp --sport %d -d %s/%d -o %s -j %s%d",
-                chain_postrouting, proxy_ip, proxy_port, ip->addr, 32*(1+ip->v6), lan, mark_iptables, ip->mark);
+                chain_postrouting, proxy_ip, proxy_port, ip->addr,
+                32*(1+ip->v6), lan, mark_iptables, ip->mark);
    iptables_save_line(str, ip->v6);
   }
 
-  sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
-               chain_postrouting, ip->addr, 32*(1+ip->v6), lan);
+  /* this will be optional in future - hardcoded for now*/
+  sprintf(limit_pkts,"-m limit --limit %d/s ", ip->pps_limit);
+
+  sprintf(str, "-A %s -d %s/%d -o %s %s-j ACCEPT",
+               chain_postrouting, ip->addr, 32*(1+ip->v6), lan, limit_pkts);
   iptables_save_line(str, ip->v6);
 
   /* -------------------------------------------------------- mark upload */
@@ -1156,8 +1159,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                chain_forward, ip->addr, 32*(1+ip->v6), wan, mark_iptables, ip->mark);
   iptables_save_line(str, ip->v6);
 
-  sprintf(str, "-A %s -s %s/%d -o %s -j ACCEPT",
-               chain_forward, ip->addr, 32*(1+ip->v6), wan);
+  sprintf(str, "-A %s -s %s/%d -o %s %s-j ACCEPT",
+               chain_forward, ip->addr, 32*(1+ip->v6), wan, limit_pkts);
   iptables_save_line(str, ip->v6);
 
   if(ip->min)
@@ -1168,7 +1171,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 #endif
 
    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
-                tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
+                tc, lan, ip->group, ip->mark, ip->min, ip->max, burst, ip->prio);
    safe_run(str);
 
    if(strcmpi(ip->keyword->leaf_discipline, "none"))
