@@ -259,8 +259,9 @@ void parse_hosts(char *hosts)
       }
      }
 
-     /* MTU is 1450 bytes = 11600 bits ~= 12 kbit, max is in kb/s */
-     ip->pps_limit = ip->max/12;
+     /* MTU is 1450 bytes = 11600 bits ~= 12 kbit, max is in kb/s 
+        average pkt 1/2 MTU = 6 kbit*/
+     ip->pps_limit = ip->max/6;
      if(ip->pps_limit > 10000) /* this limit seems to be hardcoded in iptables */
      {
       ip->pps_limit = 0; /* do not apply packet limits */

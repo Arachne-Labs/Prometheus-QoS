@@ -132,6 +132,9 @@ struct IP *ips = NULL, *networks = NULL, *ip, *sharedip;
 struct Group *groups = NULL, *group;
 struct Keyword *keyword, *defaultkeyword=NULL, *keywords=NULL;
 
+#define FREE_CLASS      3
+#define OVERLIMIT_CLASS 4
+
 void help(void);
 /* implemented in help.c */
 
@@ -669,6 +672,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sprintf(str,"-A FORWARD -d %s -o %s -j ACCEPT", qos_free_zone, wan);
    iptables_save_line(str, FALSE); /* this is currently supported only for IPv4 */
    
+/*
    if(qos_proxy)
    {
     iptables_save_line(":post_noproxy - [0:0]", FALSE);
@@ -681,10 +685,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
     chain="post_noproxy";    
    }
+
    else
    {
-    chain="POSTROUTING";
-   }
+*/
+   chain = "POSTROUTING";
+//   }
     
    sprintf(str,"-A %s -s %s -o %s -j ACCEPT", chain, qos_free_zone, lan);
    iptables_save_line(str, FALSE);
@@ -1127,7 +1133,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    chain_postrouting="POSTROUTING";
   }
 
-  /* packet limits - this will be optional in future, hardcoded for now */
+  /* packet limits - this will be optional in future */
   if(ip->pps_limit)
   {
    sprintf(limit_pkts, "-m limit --limit %d/s --limit-burst %d ", 
@@ -1148,6 +1154,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                lan, mark_iptables, ip->mark);
   iptables_save_line(str, ip->v6);
 
+/*
   if(qos_proxy)
   {
    sprintf(str, "-A %s -s %s -p tcp --sport %d -d %s/%d -o %s -j %s%d",
@@ -1155,9 +1162,19 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                 32*(1+ip->v6), lan, mark_iptables, ip->mark);
    iptables_save_line(str, ip->v6);
   }
-
+*/
   sprintf(str, "-A %s -d %s/%d -o %s %s-j ACCEPT",
                chain_postrouting, ip->addr, 32*(1+ip->v6), lan, limit_pkts);
+  iptables_save_line(str, ip->v6);
+
+  /* classify overlimit packets to separate overlimit class */
+  sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
+               chain_postrouting, ip->addr, 32*(1+ip->v6),
+               lan, mark_iptables, OVERLIMIT_CLASS);
+  iptables_save_line(str, ip->v6);
+
+  sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
+               chain_postrouting, ip->addr, 32*(1+ip->v6), lan);
   iptables_save_line(str, ip->v6);
 
   /* -------------------------------------------------------- mark upload */
@@ -1167,6 +1184,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   sprintf(str, "-A %s -s %s/%d -o %s %s-j ACCEPT",
                chain_forward, ip->addr, 32*(1+ip->v6), wan, limit_pkts);
+  iptables_save_line(str, ip->v6);
+
+  /* classify overlimit packets to separate overlimit class */
+  sprintf(str, "-A %s -s %s/%d -o %s -j %s%d", 
+               chain_forward, ip->addr, 32*(1+ip->v6), wan, mark_iptables, OVERLIMIT_CLASS);
+  iptables_save_line(str, ip->v6);
+
+  sprintf(str, "-A %s -s %s/%d -o %s -j ACCEPT",
+               chain_forward, ip->addr, 32*(1+ip->v6), wan);
   iptables_save_line(str, ip->v6);
 
   if(ip->min)
@@ -1255,23 +1281,25 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   final_chain = "ACCEPT";
  }
 
+/*
  if(qos_proxy)
  {
   if(free_min) 
   {
    sprintf(str, "-A %s -s %s -p tcp --sport %d -o %s -j %s%d",
                 chain_postrouting,proxy_ip,proxy_port,lan,mark_iptables, 3);
-   iptables_save_line(str, FALSE); /* only for IPv4 */
+   iptables_save_line(str, FALSE); // only for IPv4
   }
   sprintf(str, "-A %s -s %s -p tcp --sport %d -o %s -j %s",
                chain_postrouting,proxy_ip,proxy_port,lan,final_chain);
-  iptables_save_line(str, FALSE); /* only for IPv4 */
+  iptables_save_line(str, FALSE); // only for IPv4
  }
+*/
 
  if(free_min)
  {
   sprintf(str, "-A %s -o %s -j %s%d",
-               chain_postrouting, lan, mark_iptables, 3);
+               chain_postrouting, lan, mark_iptables, FREE_CLASS);
   iptables_save_line(str, FALSE); /* only for IPv4 */
  }
 
@@ -1285,7 +1313,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
  if(free_min)
  {
-  sprintf(str,"-A %s -o %s -j %s%d", chain_forward, wan, mark_iptables, 3);
+  sprintf(str,"-A %s -o %s -j %s%d", chain_forward, wan, mark_iptables, FREE_CLASS);
   iptables_save_line(str, FALSE); /* only for IPv4 */
  }
 
@@ -1300,28 +1328,38 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  if(free_min) /* allocate free bandwith if it is not zero... */ 
  {
    /*-----------------------------------------------------------------*/
-   puts("Generating free bandwith classes ...");
+   puts("Generating free bandwith class ...");
    /*-----------------------------------------------------------------*/
-   sprintf(str, "%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, lan, parent, free_min, free_max,burst, lowest_priority);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                tc, lan, parent, FREE_CLASS, free_min, free_max,burst, lowest_priority);
    safe_run(str);
-   sprintf(str, "%s class add dev %s parent 1:%d classid 1:3 htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, wan, parent, free_min, free_max, burst, lowest_priority);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                tc, wan, parent, FREE_CLASS, free_min, free_max, burst, lowest_priority);
    safe_run(str);
    /* tc SFQ */
    if(strcmpi(qos_leaf, "none"))
    {
-     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s", tc, lan, qos_leaf);
+     sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, lan, FREE_CLASS, FREE_CLASS, qos_leaf);
      safe_run(str);
    
-     sprintf(str,"%s qdisc add dev %s parent 1:3 handle 3 %s", tc, wan, qos_leaf);
+     sprintf(str,"%s qdisc add dev %s parent 1:%d handle %d %s", tc, wan, FREE_CLASS, FREE_CLASS, qos_leaf);
      safe_run(str);
    }   
    /* tc handle 1 fw flowid */
-   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3", tc, lan);
+   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, lan, FREE_CLASS, FREE_CLASS);
    safe_run(str);
 
-   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle 3 fw flowid 1:3", tc, wan);
+   sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, wan, FREE_CLASS, FREE_CLASS);
+   safe_run(str);
+
+   /*-----------------------------------------------------------------*/
+   puts("Generating bandwith class for overlimit packets...");
+   /*-----------------------------------------------------------------*/
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                tc, lan, parent, OVERLIMIT_CLASS, 1024, 4096, burst, lowest_priority);
+   safe_run(str);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+                tc, wan, parent, OVERLIMIT_CLASS, 1024, 4096, burst, lowest_priority);
    safe_run(str);
  }
  printf("Total IP count: %d\n", i);
