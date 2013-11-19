@@ -1,3 +1,5 @@
+/* Modified by: xChaos, 20131119 */
+
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 #define STRLEN 512
@@ -124,33 +126,50 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
  if(f > 0)
  {
   unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum = 0;
+  unsigned long long total_pktup = 0, total_pktdown = 0;
   int active_classes = 0;
-  int colspan = 12;
+//  int colspan = 14;
   struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums = NULL;
   int limit_count = 0, prio_count = 0;
   int popup_button = 0;
   /* IPv6 vs. IPv4 stats */
   unsigned long long pkts4 =0, pkts6 = 0, bytes4 = 0, bytes6 = 0;
   int count4 = 0, count6 = 0;
+  int mpkts;
   double perc6;
 
+/*
   if(qos_proxy)
   {
    colspan++;
   }
-  
+*/  
+  if(use_jquery_popups)
+  {
+    fprintf(f,"<script type=\"text/javascript\">\
+function show_section(n) {\
+$(\'#sharing_\'+n).show();\
+$(\'#download_'+n).show();\
+$(\'#pktsdown_\'+n).show();\
+$(\'#upload_'+n).show();\
+$(\'#pktsup_\'+n).show();\
+} </script>");
+  }
+
   fprintf(f,"<p><table class=\"decorated last\">\n<caption>%s",title);
   fprintf(f," (%s)</caption>\n", d);
   fputs("<thead><tr>\n<th colspan=\"3\">&nbsp;</th>\n",f);
-  fputs("<th style=\"text-align: right\">credit</th>\n\
+  fputs("<th style=\"text-align: right\">cred.</th>\n\
 <th style=\"text-align: right\">FUP</th>\n\
 <th style=\"text-align: right\">total</th>\n\
-<th style=\"text-align: right\">down</th>\n",f);
+<th style=\"text-align: center\" colspan=\"2\">upload</th>\n",f);
+/*
   if(qos_proxy)
   {
    fputs("<th style=\"text-align: right\">proxy</th>\n",f);
   }
-  fputs("<th style=\"text-align: right\">up</th>\n\
+*/
+  fputs("<th style=\"text-align: center\" colspan=\"2\">download</th>\n\
 <th style=\"text-align: right\">min</th>\n\
 <th style=\"text-align: right\">max</th>\n\
 <th style=\"text-align: right\">limit</th>\n\
@@ -163,11 +182,13 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
 <th style=\"text-align: right\">MB</th>\n\
 <th style=\"text-align: right\">MB</th>\n\
 <th style=\"text-align: right\">MB</th>\n\
+<th style=\"text-align: right\">pkt</th>\n\
 <th style=\"text-align: right\">MB</th>\n\
+<th style=\"text-align: right\">pkt</th>\n\
 <th style=\"text-align: right\">kb/s</th>\n\
 <th style=\"text-align: right\">kb/s</th>\n\
 <th style=\"text-align: right\">kb/s</th>\n\
-<th>prio</th>\n\
+<th>!</th>\n\
 </tr></thead><tbody>\n",f);	
 
   row_odd_even = 0;
@@ -193,7 +214,8 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    printf("%03d. %-22s %10Lu (%d/%d)\n",i ,ip->name, ip->traffic, ip->min, ip->max); 
 #endif
    /* hostnames -------------------------------------- */
-   fprintf(f,"%s<td style=\"text-align: right\"><a name=\"%s\"></a>%d</td><td><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</a>\n", 
+   fprintf(f,"%s<td style=\"text-align: right\"><a name=\"%s\"></a>%d</td>\
+<td><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</a>\n", 
               tr_odd_even(), ip->name, i, log_url, ip->name, ip->name);
 
    if(use_jquery_popups)
@@ -218,8 +240,10 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
      fputs("</span>\n",f);
      if(popup_button)
      {
-      fprintf(f, "<span>[<a class=\"blue\" href=\"#\" onClick=\"$(this).parent().hide();$(\'#sharing_%d\').show();$(\'#download_%d\').show();$(\'#upload_%d\').show();return(false);\" style=\"cursor: pointer;\">+%d</a>]</span>",
-                 i, i, i, popup_button);
+      fprintf(f, "<span>[<a class=\"blue\" href=\"#\" \
+onClick=\"$(this).parent().hide();show_section(\'%d\');return(false);\" \
+style=\"cursor: pointer;\">+%d</a>]</span>",
+                 i, popup_button);
      }
    }
    fputs("</td>\n",f);
@@ -230,7 +254,8 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
     fputs("<td style=\"text-align: right\">",f);
     if(ip->lmsid > 0)
     {
-     fprintf(f,"<a class=\"blue\" target=\"_blank\" href=\"%s%d\">%04d</a>\n", lms_url, ip->lmsid, ip->lmsid);
+     fprintf(f, "<a class=\"blue\" target=\"_blank\" href=\"%s%d\">%04d</a>\n",
+                lms_url, ip->lmsid, ip->lmsid);
     }
     else if(ip->lmsid == 0)
     {
@@ -241,42 +266,109 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    fprintf(f,"<td style=\"text-align: right\">%Lu</td>\n", ip->credit);
    fprintf(f,"<td style=\"text-align: right\"><span style=\"color:#%s\">%Lu</span></td>",
              ip->keyword->html_color, ip->realquota);
-   fprintf(f,"<td style=\"text-align: right\">%s%Lu%s", f1, ip->traffic, f2);
+   fprintf(f,"<td style=\"text-align: right\">%s%Lu%s</td>", f1, ip->traffic, f2);
 
-   /* download --------------------------------------- */
-   fprintf(f,"</td><td style=\"text-align: right\">%Lu", ip->direct);
+   /* upload --------------------------------------- */
+   fprintf(f,"<td style=\"text-align: right\">%Lu", ip->upload);
+   if(use_jquery_popups)
+   {
+     fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">", i);
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
+     {
+      fprintf(f,"<br />%Lu", sharedip->upload);
+     }
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
+     {
+      fprintf(f,"<br />%Lu", sharedip->upload);
+     }
+     fputs("</span>\n",f);
+   }
+   fputs("</td>\n",f);
+
+   /* pkts up ----------------------------------- */
+   mpkts = ip->pktsup>>20;
+   total_pktup += mpkts;
+   if(mpkts == 0)
+   {
+    mpkts = 1; /* prevent divide by zero*/
+   }
+   fprintf(f,"<td style=\"text-align: right\"><span style=\"color: gray\">%d</span>", ip->upload/mpkts);
+   if(use_jquery_popups)
+   {
+     fprintf(f,"<span id=\"pktsup_%d\" style=\"display:none\">", i);
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
+     {
+      mpkts = sharedip->pktsup>>20;
+      if(mpkts == 0)
+      {
+       mpkts = 1; /* prevent divide by zero*/
+      }   
+      fprintf(f,"<br /><span style=\"color: gray\">%d</span>", sharedip->upload/mpkts);
+     }
+     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
+     {
+      mpkts = sharedip->pktsup>>20;
+      if(mpkts == 0)
+      {
+       mpkts = 1; /* prevent divide by zero*/
+      }   
+      fprintf(f,"<br /><span style=\"color: gray\">%d</span>", sharedip->upload/mpkts);
+     }
+     fputs("</span>\n",f);
+   }
+   fputs("</td>\n",f);
+
+/*
+   if(qos_proxy)
+   {
+    fprintf(f,"<td style=\"text-align: right\">%Lu</td>\n", ip->proxy);
+   }
+*/
+   /* download ---------------------------------------- */
+   fprintf(f,"<td style=\"text-align: right\">%Lu", ip->direct);
    if(use_jquery_popups)
    {
      fprintf(f,"<span id=\"download_%d\" style=\"display:none\">", i);
-     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
+     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
      {
       fprintf(f,"<br />%Lu", sharedip->direct);
      }
-     for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
+     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
      {
       fprintf(f,"<br />%Lu", sharedip->direct);
      }
      fputs("</span>\n",f);
    }
    fputs("</td>\n",f);
-   /* ----------------------------------------------- */
 
-   if(qos_proxy)
+   /* pkts down ---------------------------------------- */
+   mpkts = ip->pktsdown>>20;
+   total_pktdown += mpkts;
+   if(mpkts == 0)
    {
-    fprintf(f,"<td style=\"text-align: right\">%Lu</td>\n", ip->proxy);
+    mpkts = 1; /* prevent divide by zero*/
    }
-   /* upload ---------------------------------------- */
-   fprintf(f,"<td style=\"text-align: right\">%Lu", ip->upload);
+   fprintf(f,"<td style=\"text-align: right\"><span style=\"color: gray\">%d</span>", ip->direct/mpkts);
    if(use_jquery_popups)
    {
-     fprintf(f,"<span id=\"upload_%d\" style=\"display:none\">", i);
+     fprintf(f,"<span id=\"pktsdown_%d\" style=\"display:none\">", i);
      for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && !sharedip->v6) /* IPv4 only */
      {
-      fprintf(f,"<br />%Lu", sharedip->upload);
+      mpkts = sharedip->pktsdown>>20;
+      if(mpkts == 0)
+      {
+       mpkts = 1; /* prevent divide by zero*/
+      }   
+      fprintf(f,"<br /><span style=\"color: gray\">%d</span>", sharedip->direct/mpkts);
      }
      for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
      {
-      fprintf(f,"<br />%Lu", sharedip->upload);
+      mpkts = sharedip->pktsdown>>20;
+      if(mpkts == 0)
+      {
+       mpkts = 1; /* prevent divide by zero*/
+      }   
+      fprintf(f,"<br /><span style=\"color: gray\">%d</span>", sharedip->direct/mpkts);
      }
      fputs("</span>\n",f);
    }
@@ -314,16 +406,21 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
     }
    }
   }
-  fprintf(f,"</tbody><thead><tr>\n\
-<th colspan=\"%d\" style=\"text-align: left\">%d CLASSES</th>", colspan-7, i);
-  fprintf(f, "<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%Lu</th>\n", 
-             total_traffic, total_direct);
+  fprintf(f, "</tbody><thead><tr>\n\
+<th colspan=\"5\" style=\"text-align: left\">%d CLASSES</th>", i);
+  fprintf(f, "<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%Lu</th>\
+<th style=\"text-align: right\">%d</th>\n",
+             total_traffic, total_upload, total_pktup/i);
+/*
   if(qos_proxy)
   {
    fprintf(f," <th style=\"text-align: right\">%Lu</th>\n", total_proxy);
   }
-  fprintf(f, "<th style=\"text-align: right\">%Lu</th>", total_upload);
-  fprintf(f, "<th colspan=\"4\"><span style=\"color:red\">LIMIT %dx</span> <span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",
+*/
+  fprintf(f, "<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%d</th>",
+             total_direct, total_pktdown/i);
+  fprintf(f, "<th colspan=\"6\"><span style=\"color:red\">LIMIT %dx</span> \
+<span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",
              limit_count, prio_count);
 
   if(ip6prefix)

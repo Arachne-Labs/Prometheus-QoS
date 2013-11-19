@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20131118
+/* Modified by: xChaos, 20131119
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -1130,7 +1130,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   /* packet limits - this will be optional in future, hardcoded for now */
   if(ip->pps_limit)
   {
-   sprintf(limit_pkts, "-m limit --limit %d/s ", ip->pps_limit);
+   sprintf(limit_pkts, "-m limit --limit %d/s --limit-burst %d ", 
+                       ip->pps_limit, ip->pps_limit);
   }
   else
   {
