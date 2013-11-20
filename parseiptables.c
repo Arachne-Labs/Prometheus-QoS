@@ -173,22 +173,22 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
     {
      ip->traffic += traffic;
     }
-    ip->direct = ip->traffic-ip->upload-ip->proxy;
-    ip->pktsdown = pkts;
+    ip->direct += ip->traffic-ip->upload-ip->proxy;
+    ip->pktsdown += pkts;
    }
    else
    {
-    ip->upload = traffic;
-    ip->pktsup = pkts;
+    ip->upload += traffic;
+    ip->pktsup += pkts;
     if(include_upload)
     {
      ip->traffic += traffic;
     }
     else 
     {
-     if(traffic > ip->traffic)
+     if(ip->upload > ip->traffic)
      {
-      ip->traffic = traffic;     
+      ip->traffic = ip->upload;
      }
     }
    }

@@ -98,7 +98,7 @@ char        *ip6prefix = NULL; /* Prefix for global /48 IPv6 subnet */
 char       *wan_medium = "100Mbit"; /* 10Mbit/100Mbit ethernet */
 char         *qos_leaf = "sfq perturb 5"; /* leaf discipline */
 char    *qos_free_zone = NULL; /* QoS free zone */
-int          qos_proxy = TRUE; /* include proxy port to QoS */
+/* int          qos_proxy = TRUE; include proxy port to QoS */
 int        found_lmsid = FALSE; /* show links to users in LMS information system */
 int     include_upload = TRUE; /* upload+download=total traffic */
 char         *proxy_ip = "192.168.1.1/32"; /* our IP with proxy port */
@@ -310,7 +310,7 @@ void get_config(char *config_filename)
   ioption("use-jquery-popups",use_jquery_popups);
   option("qos-free-zone",qos_free_zone);
   ioption("qos-free-delay",qos_free_delay);
-  ioption("qos-proxy-enable",qos_proxy);
+/*  ioption("qos-proxy-enable",qos_proxy); */
   option("qos-proxy-ip",proxy_ip);
   option("htb-leaf-discipline",qos_leaf);
   ioption("qos-proxy-port",proxy_port);
