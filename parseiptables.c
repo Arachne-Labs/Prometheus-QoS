@@ -8,7 +8,7 @@
 /* globals declared in prometheus.c */
 extern struct IP *ips, *ip, *sharedip;
 extern char *mark;
-extern char *proxy_ip;
+/* extern char *proxy_ip; */
 extern int free_min;
 extern int free_max;
 extern int include_upload;
@@ -36,7 +36,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
 
  for_each(line,lines)
  {
-  int col, accept = 0, proxyflag = 0, valid = 1, setchainname = 0, commonflag = 0; 
+  int col, accept = 0, /*proxyflag = 0, */valid = 1, setchainname = 0, commonflag = 0; 
   unsigned long long traffic = 0;
   unsigned long pkts = 0;
   char *ipaddr = NULL,*ptr;
@@ -98,14 +98,19 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
            }
            else if(!ipv6)
            {
-            if(downloadflag)
+
+/*          if(downloadflag)
             { 
              if(strstr(proxy_ip,ptr))
              {
               proxyflag = 1;
              }
-            }
-            else
+
+            } 
+            else 
+            { 
+*/
+            if(!downloadflag)
             {
              ipaddr = ptr;
             }
@@ -131,12 +136,14 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
    {
     printf("(IPv4) ");
    }
-   
+/*   
    if(proxyflag)
    {
     printf("(proxy) ");
    }
-   else if(!downloadflag)
+   else
+*/   
+   if(!downloadflag)
    {
     printf("(up) ");
    }
@@ -165,15 +172,16 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
    
    if(downloadflag)
    {
+/*
     if(proxyflag)
     {
      ip->proxy = traffic;
     }
     else
-    {
+    {*/
      ip->traffic += traffic;
-    }
-    ip->direct += ip->traffic-ip->upload-ip->proxy;
+/*    } */
+/*    ip->direct += ip->traffic-ip->upload; /*-ip->proxy;*/
     ip->pktsdown += pkts;
    }
    else

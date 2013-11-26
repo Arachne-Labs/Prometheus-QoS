@@ -101,8 +101,8 @@ char    *qos_free_zone = NULL; /* QoS free zone */
 /* int          qos_proxy = TRUE; include proxy port to QoS */
 int        found_lmsid = FALSE; /* show links to users in LMS information system */
 int     include_upload = TRUE; /* upload+download=total traffic */
-char         *proxy_ip = "192.168.1.1/32"; /* our IP with proxy port */
-int         proxy_port = 3128; /* proxy port number */
+/* char         *proxy_ip = "192.168.1.1/32";  our IP with proxy port */
+/* int         proxy_port = 3128; proxy port number */
 long long int     line = 1024; /* WAN/ISP download in kbps */
 long long int       up = 1024; /* WAN/ISP upload in kbps */
 int           free_min = 256; /* minimum guaranted bandwidth for all undefined hosts */
@@ -311,9 +311,9 @@ void get_config(char *config_filename)
   option("qos-free-zone",qos_free_zone);
   ioption("qos-free-delay",qos_free_delay);
 /*  ioption("qos-proxy-enable",qos_proxy); */
-  option("qos-proxy-ip",proxy_ip);
+/*  option("qos-proxy-ip",proxy_ip);*/
   option("htb-leaf-discipline",qos_leaf);
-  ioption("qos-proxy-port",proxy_port);
+/*  ioption("qos-proxy-port",proxy_port); */
   ioption("free-rate",free_min);
   ioption("free-ceil",free_max);
   ioption("htb-burst",burst);
