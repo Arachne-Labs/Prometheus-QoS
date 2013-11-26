@@ -151,6 +151,7 @@ void parse_hosts(char *hosts)
  char *str, *ptr;
  char *substring;
  struct IP *network;
+ int pktratio;
 
  parse(hosts)
  {
@@ -259,12 +260,15 @@ void parse_hosts(char *hosts)
       }
      }
 
-     /* MTU is 1450 bytes = 11600 bits ~= 12 kbit, max is in kb/s 
-        average pkt 1/2 MTU = 6 kbit*/
-     ip->pps_limit = ip->max/6;
-     if(ip->pps_limit > 10000) /* this limit seems to be hardcoded in iptables */
+     /* avg MTU bytes * 8 >> 10 = in bits, max is in kb/s  */
+     pktratio = (ip->keyword->allowed_avgmtu*8) >> 10;
+     if(pktratio > 0)
      {
-      ip->pps_limit = 0; /* do not apply packet limits */
+      ip->pps_limit = ip->max/pktratio;
+      if(ip->pps_limit > 10000) /* this limit seems to be hardcoded in iptables */
+      {
+       ip->pps_limit = 0; /* do not apply packet limits */
+      }
      }
 
      ip->mark = FIRSTIPCLASS+1+class_count++;     

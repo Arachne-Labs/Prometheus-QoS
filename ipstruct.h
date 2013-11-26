@@ -56,7 +56,7 @@ struct Keyword
  char *html_color;
  int ip_count;
  char *leaf_discipline;
- 
+ int allowed_avgmtu;        /* this is for calculating packet limits, 0 = no limit*/ 
  list(Keyword);
 };
 

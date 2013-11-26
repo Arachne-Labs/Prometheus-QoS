@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20131119
+/* Modified by: xChaos, 20131126
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -107,6 +107,8 @@ long long int     line = 1024; /* WAN/ISP download in kbps */
 long long int       up = 1024; /* WAN/ISP upload in kbps */
 int           free_min = 256; /* minimum guaranted bandwidth for all undefined hosts */
 int           free_max = 512; /* maximum allowed bandwidth for all undefined hosts */
+int      overlimit_min = 256; /* minimum guaranted bandwidth for all undefined hosts */
+int      overlimit_max = 512; /* maximum allowed bandwidth for all undefined hosts */
 int     qos_free_delay = 0; /* seconds to sleep before applying new QoS rules */
 int     digital_divide = 2; /* controls digital divide weirdness ratio, 1...3 */ 
 int        max_nesting = 3; /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
@@ -220,24 +222,25 @@ void get_config(char *config_filename)
    printf("%s ",kwd);
 
    create(keyword,Keyword);
-   keyword->key=kwd;
-   keyword->asymetry_ratio=1;          /* ratio for ADSL-like upload */
-   keyword->asymetry_fixed=0;          /* fixed treshold for ADSL-like upload */
-   keyword->data_limit=8;              /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
-   keyword->data_prio=4;               /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
-   keyword->fixed_limit=0;             /* fixed data limit for setting lower HTB ceil */
-   keyword->fixed_prio=0;              /* fixed data limit for setting lower HTB prio */
-   keyword->reserve_min=8;	       /* bonus for nominal HTB rate bandwidth (in kbps) */
-   keyword->reserve_max=0;	       /* malus for nominal HTB ceil (in kbps) */
-   keyword->default_prio=highest_priority+1;
-   keyword->html_color="000000";
-   keyword->ip_count=0;
-   keyword->leaf_discipline="";
+   keyword->key = kwd;
+   keyword->asymetry_ratio = 1;          /* ratio for ADSL-like upload */
+   keyword->asymetry_fixed = 0;          /* fixed treshold for ADSL-like upload */
+   keyword->data_limit = 8;              /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
+   keyword->data_prio = 4;               /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
+   keyword->fixed_limit = 0;             /* fixed data limit for setting lower HTB ceil */
+   keyword->fixed_prio = 0;              /* fixed data limit for setting lower HTB prio */
+   keyword->reserve_min = 8;	         /* bonus for nominal HTB rate bandwidth (in kbps) */
+   keyword->reserve_max = 0;	         /* malus for nominal HTB ceil (in kbps) */
+   keyword->default_prio = highest_priority+1;
+   keyword->html_color = "000000";
+   keyword->ip_count = 0;
+   keyword->leaf_discipline = "";
+   keyword->allowed_avgmtu = 0;
 
    push(keyword,keywords);
    if(!defaultkeyword)
    {
-    defaultkeyword=keyword;
+    defaultkeyword = keyword;
    }
    keywordcount++;
    
@@ -253,17 +256,18 @@ void get_config(char *config_filename)
      {
       char *tmptr=_; /*  <---- l+1 ----> */
       _+=l+1;        /*  via-prometheus-asymetry-ratio, etc. */
-      ioption("asymetry-ratio",keyword->asymetry_ratio);
-      ioption("asymetry-treshold",keyword->asymetry_fixed);
-      ioption("magic-relative-limit",keyword->data_limit);
-      ioption("magic-relative-prio",keyword->data_prio);
-      loption("magic-fixed-limit",keyword->fixed_limit);
-      loption("magic-fixed-prio",keyword->fixed_prio);
-      ioption("htb-default-prio",keyword->default_prio);
-      ioption("htb-rate-bonus",keyword->reserve_min);
-      ioption("htb-ceil-malus",keyword->reserve_max);
-      option("leaf-discipline",keyword->leaf_discipline);
-      option("html-color",keyword->html_color);
+      ioption("asymetry-ratio", keyword->asymetry_ratio);
+      ioption("asymetry-treshold", keyword->asymetry_fixed);
+      ioption("magic-relative-limit", keyword->data_limit);
+      ioption("magic-relative-prio", keyword->data_prio);
+      loption("magic-fixed-limit", keyword->fixed_limit);
+      loption("magic-fixed-prio", keyword->fixed_prio);
+      ioption("htb-default-prio", keyword->default_prio);
+      ioption("htb-rate-bonus", keyword->reserve_min);
+      ioption("htb-ceil-malus", keyword->reserve_max);
+      option("leaf-discipline", keyword->leaf_discipline);
+      option("html-color", keyword->html_color);
+      ioption("allowed-avgmtu" ,keyword->allowed_avgmtu);
       _=tmptr;
       
       if(keyword->data_limit || keyword->fixed_limit || 
@@ -316,6 +320,8 @@ void get_config(char *config_filename)
 /*  ioption("qos-proxy-port",proxy_port); */
   ioption("free-rate",free_min);
   ioption("free-ceil",free_max);
+  ioption("overlimit-rate",overlimit_min);
+  ioption("overlimit-ceil",overlimit_max);
   ioption("htb-burst",burst);
   ioption("htb-burst-main",burst_main);
   ioption("htb-burst-group",burst_group);
@@ -1356,10 +1362,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    puts("Generating bandwith class for overlimit packets...");
    /*-----------------------------------------------------------------*/
    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, lan, parent, OVERLIMIT_CLASS, 1024, 4096, burst, lowest_priority);
+                tc, lan, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority);
    safe_run(str);
    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, wan, parent, OVERLIMIT_CLASS, 1024, 4096, burst, lowest_priority);
+                tc, wan, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority);
    safe_run(str);
  }
  printf("Total IP count: %d\n", i);
