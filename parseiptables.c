@@ -1,4 +1,4 @@
-/* Modified by: xChaos, 20131029 */
+/* Modified by: xChaos, 20131208 */
 
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
@@ -181,7 +181,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
     {*/
      ip->traffic += traffic;
 /*    } */
-/*    ip->direct += ip->traffic-ip->upload; /*-ip->proxy;*/
+    ip->direct += ip->traffic-ip->upload; /*-ip->proxy;*/
     ip->pktsdown += pkts;
    }
    else
