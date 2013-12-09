@@ -98,7 +98,6 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
            }
            else if(!ipv6)
            {
-
 /*          if(downloadflag)
             { 
              if(strstr(proxy_ip,ptr))
@@ -108,8 +107,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
 
             } 
             else 
-            { 
-*/
+            {  */
             if(!downloadflag)
             {
              ipaddr = ptr;
@@ -179,9 +177,9 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
     }
     else
     {*/
-     ip->traffic += traffic;
+    ip->traffic += traffic;
 /*    } */
-    ip->direct += ip->traffic-ip->upload; /*-ip->proxy;*/
+    ip->direct += traffic; /*-ip->proxy;*/
     ip->pktsdown += pkts;
    }
    else
