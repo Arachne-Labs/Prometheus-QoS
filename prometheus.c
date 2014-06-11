@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.8.3-j";
+const char *version = "0.8.5-a";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.8.3 is development release, 0.8.4 will be "stable"  */
@@ -58,6 +58,7 @@ const char               *ls = "/bin/ls"; /* this is not user configurable :-) *
 
 char          *config = "/etc/prometheus/prometheus.conf"; /* main configuration file */
 char           *hosts = "/etc/prometheus/hosts"; /* per-IP bandwidth definition file */
+char      *macrosfile = "/etc/prometheus/prometheus.macros"; /* rewrite rules for most common tariffs */
 char    *iptablesfile = "/var/spool/prometheus.iptables"; /* temporary file for iptables-restore*/
 char   *ip6tablesfile = "/var/spool/prometheus.ip6tables"; /* temporary file for ip6tables-restore*/
 char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
@@ -132,7 +133,8 @@ const int idxtable_bitmask2  = 3;        /* this is no longer configurable */
 
 struct IP *ips = NULL, *networks = NULL, *ip, *sharedip;
 struct Group *groups = NULL, *group;
-struct Keyword *keyword, *defaultkeyword=NULL, *keywords=NULL;
+struct Keyword *keyword, *defaultkeyword=NULL, *keywords = NULL;
+struct Macro *macro, *macros = NULL;
 
 #define FREE_CLASS      3
 #define OVERLIMIT_CLASS 4
@@ -237,7 +239,7 @@ void get_config(char *config_filename)
    keyword->leaf_discipline = "";
    keyword->allowed_avgmtu = 0;
 
-   push(keyword,keywords);
+   push(keyword, keywords);
    if(!defaultkeyword)
    {
     defaultkeyword = keyword;
@@ -450,12 +452,20 @@ void run_iptables_restore(void)
 
 char *parse_datafile_line(char *str)
 {
- char *ptr=strchr(str,' ');
+ char *ptr = strchr(str,' ');
+ if(!ptr)
+ {
+  ptr = strchr(str,'\t');
+ }
 
  if(ptr)
  {
-  *ptr=0;
+  *ptr = 0;
   ptr++;
+  while(*ptr == ' ' || *ptr == '\t')
+  {
+   ptr++;
+  }
   return ptr;
  } 
  else 
@@ -609,13 +619,33 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   /*-----------------------------------------------------------------*/
   parse(credit)
   {
-   ptr=parse_datafile_line(_);
+   ptr = parse_datafile_line(_);
    if(ptr)
    {
     if_exists(ip,ips,eq(ip->addr,_))
     {
      sscanf(ptr,"%Lu",&(ip->credit));
     }
+   }
+  }
+  done; /* ugly macro end */
+ }
+
+ if(enable_credit && just_flush<9)
+ {
+  /*-----------------------------------------------------------------*/
+  printf("Parsing macro definition file %s ...\n", macrosfile);
+  /*-----------------------------------------------------------------*/
+  parse(macrosfile)
+  {
+   ptr = parse_datafile_line(_);
+   if(ptr)
+   {
+    create(macro, Macro);
+    macro->rewrite_from = _;
+    macro->rewrite_to = ptr;
+    push(macro, macros);
+    printf("%s -> %s\n", macro->rewrite_from, macro->rewrite_to);
    }
   }
   done; /* ugly macro end */

@@ -10,6 +10,7 @@
 extern struct IP *ips, *ip, *sharedip, *networks;
 extern struct Group *groups, *group;
 extern struct Keyword *keyword, *defaultkeyword, *keywords;
+extern struct Macro *macro, *macros;
 extern int class_count;
 extern int ip_count;
 extern int found_lmsid;
@@ -155,7 +156,7 @@ void parse_hosts(char *hosts)
 
  parse(hosts)
  {
-  str=_;
+  str = _;
 
   if(*str < '0' or *str > '9')
   {
@@ -163,6 +164,25 @@ void parse_hosts(char *hosts)
    continue;
   }
   
+  /* first, expand (rewrite) any predefined macros, if found*/
+  for_each(macro, macros)
+  {
+   substring = strstr(str, macro->rewrite_from);
+   if(substring);
+   {
+    int l1, l3;
+    *substring = 0;
+    substring += strlen(macro->rewrite_from);
+    l1 = strlen(str);
+    l3 = strlen(substring);
+    string(ptr, l1 + strlen(macro->rewrite_to) + l3);
+    strcpy(ptr, str);
+    strcat(ptr, macro->rewrite_to);
+    strcat(ptr, substring);
+    str = ptr;
+   }
+  }
+
   /* Does this IP share QoS class with some other ? */
   substring = strstr(str, "sharing-");
   if(substring)

@@ -60,5 +60,12 @@ struct Keyword
  list(Keyword);
 };
 
+struct Macro
+{
+ char *rewrite_from;
+ char *rewrite_to;
+ list(Macro);
+};
+
 void TheIP(char *ipaddr, int is_network);
 /* function implemented in parsehosts.c */
