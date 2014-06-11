@@ -1,4 +1,4 @@
-/* Modified by: xChaos, 20131029 */
+/* Modified by: xChaos, 20131220 */
 
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
@@ -163,23 +163,30 @@ void parse_hosts(char *hosts)
    /* any line starting with non-number is comment ...*/
    continue;
   }
-  
+
+  ptr = strchr(str,'\r'); /* fore unix-style end of line */
+  if(ptr)
+  {
+   *ptr = 0;
+  }
+ 
   /* first, expand (rewrite) any predefined macros, if found*/
   for_each(macro, macros)
   {
    substring = strstr(str, macro->rewrite_from);
-   if(substring);
+   if(substring)
    {
     int l1, l3;
     *substring = 0;
     substring += strlen(macro->rewrite_from);
     l1 = strlen(str);
     l3 = strlen(substring);
-    string(ptr, l1 + strlen(macro->rewrite_to) + l3);
+    string(ptr, l1 + strlen(macro->rewrite_to) + l3 + 1);
     strcpy(ptr, str);
     strcat(ptr, macro->rewrite_to);
     strcat(ptr, substring);
     str = ptr;
+    /*  printf("REWRITE: %s -> %s\n",_,str); */
    }
   }
 

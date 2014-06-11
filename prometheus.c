@@ -582,6 +582,23 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  string(limit_pkts, STRLEN);
 
  /*-----------------------------------------------------------------*/
+ printf("Parsing macro definition file %s ...\n", macrosfile);
+ /*-----------------------------------------------------------------*/
+ parse(macrosfile)
+ {
+  ptr = parse_datafile_line(_);
+  if(ptr)
+  {
+   create(macro, Macro);
+   macro->rewrite_from = _;
+   macro->rewrite_to = ptr;
+   push(macro, macros);
+   printf("%s -> %s\n", macro->rewrite_from, macro->rewrite_to);
+  }
+ }
+ done; /* ugly macro end */
+
+ /*-----------------------------------------------------------------*/
  printf("Parsing class defintion file %s ...\n", hosts);
  /*-----------------------------------------------------------------*/
  parse_hosts(hosts);
@@ -631,25 +648,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   done; /* ugly macro end */
  }
 
- if(enable_credit && just_flush<9)
- {
-  /*-----------------------------------------------------------------*/
-  printf("Parsing macro definition file %s ...\n", macrosfile);
-  /*-----------------------------------------------------------------*/
-  parse(macrosfile)
-  {
-   ptr = parse_datafile_line(_);
-   if(ptr)
-   {
-    create(macro, Macro);
-    macro->rewrite_from = _;
-    macro->rewrite_to = ptr;
-    push(macro, macros);
-    printf("%s -> %s\n", macro->rewrite_from, macro->rewrite_to);
-   }
-  }
-  done; /* ugly macro end */
- }
 
  if(!just_preview)
  {
