@@ -112,7 +112,7 @@ int      overlimit_min = 256; /* minimum guaranted bandwidth for all undefined h
 int      overlimit_max = 512; /* maximum allowed bandwidth for all undefined hosts */
 int     qos_free_delay = 0; /* seconds to sleep before applying new QoS rules */
 int     digital_divide = 2; /* controls digital divide weirdness ratio, 1...3 */ 
-int        max_nesting = 3; /* maximum nesting of HTB clases, built-in maximum seems to be 4 */
+int        max_nesting = 5; /* /include/uapi/linux/pkt_sched.h: #define TC_HTB_MAXDEPTH 8 [... - 3 parent classes] */
 int            htb_r2q = 256; /* should work for leaf values 512 kbps to 8 Mbps */
 int              burst = 8; /* HTB burst (in kbits) */
 int         burst_main = 64;
@@ -125,7 +125,7 @@ FILE         *log_file = NULL;
 char              *kwd = "via-prometheus"; /* /etc/hosts comment, eg. #qos-64-128 */
 
 const int highest_priority   = 0; /* highest HTB priority (HTB built-in value is 0) */
-const int lowest_priority    = 7; /* lowest HTB priority (HTB built-in value is 7) */
+const int lowest_priority    = 7; /* lowest HTB priority /include/uapi/linux/pkt_sched.h: #define TC_HTB_NUMPRIO 8 */
 const int idxtable_treshold1 = 24;      /* this is no longer configurable */
 const int idxtable_treshold2 = 12;      /* this is no longer configurable */
 const int idxtable_bitmask1  = 3;        /* this is no longer configurable */
