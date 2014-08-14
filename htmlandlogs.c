@@ -232,8 +232,8 @@ $(\'#pktsup_\'+n).show();\
 
      for_each(sharedip, ips) if(eq(ip->name, sharedip->sharing) && sharedip->v6) /* IPv6 only */
      {
-      fprintf(f, "<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s/64</a>\n", 
-                 log_url, sharedip->addr, sharedip->addr);
+      fprintf(f, "<br /><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s/%d</a>\n", 
+                 log_url, sharedip->addr, sharedip->addr, sharedip->mask);
       popup_button++;
      }
 

@@ -57,25 +57,37 @@ void TheIP(char *ipaddr, int is_network)
  ip_count++;
 }
 
-struct IP *lastIP6;
+struct IP *lastIP6range, *lastIP6uplink;
 
 /* == This function strips extra characters after IPv4 address and stores it = */
 void parse_and_append_ip(char *str, struct IP *listhead)
 {
- char *ptr, *ipaddr, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
+ char *ptr, *ipaddr, *nextip6, *ip6buf; 
+ char *ip6uplink = NULL, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
 
  if(ip6prefix) /* Try this only if IPv6 subsystem is active... */
  {
   ptr = strstr(str, "::");
-  if(ptr && ptr-str > 4)
+  while(ptr && ptr-str > 4)
   {
-   ptr -= 4;   
-   duplicate(ptr, ip6range);
-   ptr = strstr(ip6range, "::");
+   nextip6 = strstr(ptr + 2, "::");
+   ptr -= 4;
+   duplicate(ptr, ip6buf);
+   ptr = strstr(ip6buf, "::");
    if(ptr)
    {
-    *(ptr+2) = 0;
+    if(*(ptr+2) == '+')
+    {
+     *(ptr+3) = 0; /* ends with ::+ */
+     ip6uplink = ip6buf;
+    }
+    else
+    {
+     *(ptr+2) = 0; /* ends with :: */
+     ip6range = ip6buf;
+    }    
    }
+   ptr = nextip6;
   }
  }
 
@@ -103,7 +115,7 @@ void parse_and_append_ip(char *str, struct IP *listhead)
  {
   ptr++;
  }
- ipname=ptr; 
+ ipname = ptr; 
  while(*ptr and *ptr!=' ' and *ptr!=9)
  {
   ptr++;
@@ -125,11 +137,34 @@ void parse_and_append_ip(char *str, struct IP *listhead)
   {
    ip->lmsid = atoi(lmsid);
   }
-  lastIP6 = ip;
+  lastIP6range = ip;
  }
  else
  {
-  lastIP6 = NULL;
+  lastIP6range = NULL;
+ }
+
+ /* it is ugly to copy+paste and search+replace, but... */
+ if(ip6uplink)
+ {
+  concatenate(ip6prefix,ip6uplink,ptr);
+  ip6uplink=ptr;
+  if_exists(ip, ips, eq(ip->addr,ip6uplink));
+  else
+  {
+   TheIP(ip6uplink, FALSE);
+  }
+  ip->name = ip6uplink;
+  ip->keyword = defaultkeyword; /* settings for default keyword */
+  if(lmsid)
+  {
+   ip->lmsid = atoi(lmsid);
+  }
+  lastIP6uplink = ip;
+ }
+ else
+ {
+  lastIP6uplink = NULL;
  }
 
  if_exists(ip, listhead, eq(ip->addr,ipaddr));
@@ -198,10 +233,15 @@ void parse_hosts(char *hosts)
    parse_and_append_ip(str, ips);
    ip->sharing = substring;
    ip->keyword = defaultkeyword; /* settings for default keyword */
-   if(lastIP6)
+   if(lastIP6range)
    {
-    lastIP6->sharing = substring;
-    lastIP6 = NULL;
+    lastIP6range->sharing = substring;
+    lastIP6range = NULL;
+   }
+   if(lastIP6uplink)
+   {
+    lastIP6uplink->sharing = substring;
+    lastIP6uplink = NULL;
    }
    while(*substring and *substring != '\n')
    {
@@ -212,7 +252,7 @@ void parse_hosts(char *hosts)
   else
   {
    substring = strstr(str, "#255.");
-   if(substring and not strstr(str, "#255.255.255.255")) /* do not ping /32 ranges */
+   if(substring and not strstr(str, "#255.255.255.255")) /* do not ping /32 uplinks */
    {
     /* netmask detected - save network*/
     unsigned bit;
@@ -245,10 +285,15 @@ void parse_hosts(char *hosts)
     if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
     {
      parse_and_append_ip(str, ips);
-     if(lastIP6)
+     if(lastIP6range)
      {
-      lastIP6->sharing = ip->name;
-      lastIP6 = NULL;
+      lastIP6range->sharing = ip->name;
+      lastIP6range = NULL;
+     }
+     if(lastIP6uplink)
+     {
+      lastIP6uplink->sharing = ip->name;
+      lastIP6uplink = NULL;
      }
      ip->keyword = keyword;
      keyword->ip_count++;

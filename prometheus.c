@@ -258,7 +258,7 @@ void get_config(char *config_filename)
      {
       char *tmptr=_; /*  <---- l+1 ----> */
       _+=l+1;        /*  via-prometheus-asymetry-ratio, etc. */
-      ioption("asymetry-ratio", keyword->asymetry_ratio);
+      foption("asymetry-ratio", keyword->asymetry_ratio);
       ioption("asymetry-treshold", keyword->asymetry_fixed);
       ioption("magic-relative-limit", keyword->data_limit);
       ioption("magic-relative-prio", keyword->data_prio);
@@ -503,7 +503,7 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2013 Michael Polak, Arachne Labs\n\
+Version %s - Copyright (C)2005-2014 Michael Polak, Arachne Labs\n\
 iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
@@ -620,6 +620,23 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    ip->mark = sharedip->mark; 
    ip->lmsid = sharedip->lmsid;
    ip->pps_limit = sharedip->pps_limit; /* no other way to do this */
+
+   /* Ugly hack: append IPv4 addresses of sharedip to IPv6 uplinks */
+   ptr = strchr(ip->addr, '+');
+   if(ptr && ptr-ip->addr > 1 && !sharedip->v6)
+   {
+    *(--ptr) = 0;
+    concatenate(ip->addr, sharedip->addr, ptr);
+    ip->name = ip->addr = ptr;
+    ptr = strchr(ip->addr, '.');
+    while(ptr && *ptr)
+    {
+     *ptr = ':';
+     ptr = strchr(ptr, '.');
+    }
+    ip->mask += 64;
+   }
+
    break;
   }
   if(not sharedip)
@@ -1183,7 +1200,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   /* -------------------------------------------------------- mark download */  
   sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
-               chain_postrouting, ip->addr, 32*(1+ip->v6),
+               chain_postrouting, ip->addr, ip->mask,
                lan, mark_iptables, ip->mark);
   iptables_save_line(str, ip->v6);
 
@@ -1192,40 +1209,40 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    sprintf(str, "-A %s -s %s -p tcp --sport %d -d %s/%d -o %s -j %s%d",
                 chain_postrouting, proxy_ip, proxy_port, ip->addr,
-                32*(1+ip->v6), lan, mark_iptables, ip->mark);
+                ip->mask, lan, mark_iptables, ip->mark);
    iptables_save_line(str, ip->v6);
   }
 */
   sprintf(str, "-A %s -d %s/%d -o %s %s-j ACCEPT",
-               chain_postrouting, ip->addr, 32*(1+ip->v6), lan, limit_pkts);
+               chain_postrouting, ip->addr, ip->mask, lan, limit_pkts);
   iptables_save_line(str, ip->v6);
 
   /* classify overlimit packets to separate overlimit class */
   sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
-               chain_postrouting, ip->addr, 32*(1+ip->v6),
+               chain_postrouting, ip->addr, ip->mask,
                lan, mark_iptables, OVERLIMIT_CLASS);
   iptables_save_line(str, ip->v6);
 
   sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
-               chain_postrouting, ip->addr, 32*(1+ip->v6), lan);
+               chain_postrouting, ip->addr, ip->mask, lan);
   iptables_save_line(str, ip->v6);
 
   /* -------------------------------------------------------- mark upload */
   sprintf(str, "-A %s -s %s/%d -o %s -j %s%d", 
-               chain_forward, ip->addr, 32*(1+ip->v6), wan, mark_iptables, ip->mark);
+               chain_forward, ip->addr, ip->mask, wan, mark_iptables, ip->mark);
   iptables_save_line(str, ip->v6);
 
   sprintf(str, "-A %s -s %s/%d -o %s %s-j ACCEPT",
-               chain_forward, ip->addr, 32*(1+ip->v6), wan, limit_pkts);
+               chain_forward, ip->addr, ip->mask, wan, limit_pkts);
   iptables_save_line(str, ip->v6);
 
   /* classify overlimit packets to separate overlimit class */
   sprintf(str, "-A %s -s %s/%d -o %s -j %s%d", 
-               chain_forward, ip->addr, 32*(1+ip->v6), wan, mark_iptables, OVERLIMIT_CLASS);
+               chain_forward, ip->addr, ip->mask, wan, mark_iptables, OVERLIMIT_CLASS);
   iptables_save_line(str, ip->v6);
 
   sprintf(str, "-A %s -s %s/%d -o %s -j ACCEPT",
-               chain_forward, ip->addr, 32*(1+ip->v6), wan);
+               chain_forward, ip->addr, ip->mask, wan);
   iptables_save_line(str, ip->v6);
 
   if(ip->min)

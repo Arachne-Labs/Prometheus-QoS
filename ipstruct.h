@@ -42,7 +42,7 @@ struct Keyword
 {
  char *key;
  
- int asymetry_ratio;        /* ratio for ADSL-like upload */
+ float asymetry_ratio;      /* ratio for ADSL-like upload */
  int asymetry_fixed;        /* fixed treshold for ADSL-like upload */
  int data_limit;            /* hard shaping: apply magic_treshold if max*data_limit MB exceeded */
  int data_prio;             /* soft shaping (qos): reduce HTB prio if max*data_prio MB exceeded */
