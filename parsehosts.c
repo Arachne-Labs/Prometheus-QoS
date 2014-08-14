@@ -126,7 +126,7 @@ void parse_and_append_ip(char *str, struct IP *listhead)
  {
   concatenate(ip6prefix,ip6range,ptr);
   ip6range=ptr;
-  if_exists(ip, ips, eq(ip->addr,ip6range));
+  if_exists(ip, ips, eq(ip->addr,ip6range)); /* check - allocated range must be unique */
   else
   {
    TheIP(ip6range, FALSE);
@@ -149,11 +149,7 @@ void parse_and_append_ip(char *str, struct IP *listhead)
  {
   concatenate(ip6prefix,ip6uplink,ptr);
   ip6uplink=ptr;
-  if_exists(ip, ips, eq(ip->addr,ip6uplink));
-  else
-  {
-   TheIP(ip6uplink, FALSE);
-  }
+  TheIP(ip6uplink, FALSE); /* always new IP - more IPs in single uplink network */
   ip->name = ip6uplink;
   ip->keyword = defaultkeyword; /* settings for default keyword */
   if(lmsid)
