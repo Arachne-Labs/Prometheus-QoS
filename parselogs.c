@@ -20,6 +20,8 @@ struct IpLog
  char *name;
  long traffic;
  long guaranted;
+ long avg;
+ time_t logged_time;
  int i;
  int lmsid;
  long l;
@@ -32,6 +34,7 @@ void parse_ip_log(int argc, char **argv)
  long traffic=0l, traffic_month, total=0, guaranted;
  int col, col2, y_ok, m_ok, accept_month, i=1, any_month=0, lmsid;
  char mstr[4], ystr[5];
+ long log_timestamp, log_started = 0, log_ended = 0;
  FILE *f; 
  string(str,STRLEN);
  string(filename,STRLEN);
@@ -75,14 +78,15 @@ void parse_ip_log(int argc, char **argv)
  /* sorry... next release of C<<1 header file will include for_path_files(name,path) {  } macro */
  sprintf(str,"%s %s/",ls,log_dir);
  shell(str);
+ /* for_each(file, str, dir, log_dir) */
  input(str,STRLEN) 
  {
   if(strstr(str,".log"))
   {
     ptr=strrchr(str,'\n');
     if(ptr) *ptr='\0';
-    sprintf(filename,"%s/%s",log_dir,str);
-    printf("Parsing %s ...",filename);
+    sprintf(filename,"%s/%s", log_dir,str);
+    printf("Parsing %s ...", filename);
     accept_month=0;
     traffic_month=0;
     guaranted=0;
@@ -92,6 +96,7 @@ void parse_ip_log(int argc, char **argv)
      y_ok=m_ok=0;  
      valid_columns(ptr,_,'\t',col) switch(col)
      {
+      case 1: log_timestamp = atol(ptr); break;
       case 2: name = ptr;break;
       case 3: traffic = atol(ptr);break;
       /* column number   - was 7, now 11...*/
@@ -117,17 +122,32 @@ void parse_ip_log(int argc, char **argv)
      if(y_ok && m_ok) 
      {
       traffic_month += traffic;
+      if(log_started == 0)
+      {
+       log_started = log_timestamp;
+      }
       accept_month = 1;
+     }
+     else if (log_started != 0 && log_ended == 0)
+     {
+      log_ended = log_timestamp;
      }
     }
     done; /* ugly macro end */ 
 
     if(accept_month)
     {
+     if(log_ended == 0)
+     {
+      log_ended = time(NULL);
+     }
+    
      create(iplog,IpLog);
      iplog->name = name;
      iplog->guaranted = guaranted;
-     iplog->traffic = traffic_month;
+     iplog->avg = traffic_month * 8 / (log_ended - log_started); /* Mbps */
+     iplog->logged_time = (log_ended - log_started);
+     iplog->traffic = traffic_month; /* MB */
      iplog->lmsid = lmsid;
      insert(iplog,iplogs,desc_order_by,traffic);
      printf(" %ld MB\n",iplog->traffic);
@@ -143,23 +163,33 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f > 0)
  {
+  time_t max_logged_time = 0;
+
   fprintf(f, "<table class=\"decorated last\"><thead>\n\
 <tr><th colspan=\"2\">%s %s</th>\n\
 <th style=\"text-align: right\">lms</th>\n\
 <th colspan=\"2\">Data transfers</th>\n\
 <th style=\"text-align: right\">Min.speed</th>\n\
+<th style=\"text-align: right\">Avg.speed</th>\n\
 </tr></thead><tbody>\n ",
              month, year);
 
   row_odd_even = 0;
   for_each(iplog, iplogs)
   {
+   if(iplog->logged_time > max_logged_time)
+   {
+    max_logged_time = iplog->logged_time;
+   }
+
    if(iplog->traffic)
    {
     fprintf(f, "%s<td style=\"text-align: right\">%d</td>\n\
-<td style=\"text-align: left\"><a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</td>\n\
+<td style=\"text-align: left\">\
+<a class=\"blue\" target=\"_blank\" href=\"%s%s.log\">%s</td>\n\
 <td style=\"text-align: right\">", 
                tr_odd_even(), i++, log_url, iplog->name, iplog->name);  
+
     if(iplog->lmsid > 0)
     {
      /*base URL will be configurable soon ... */
@@ -167,21 +197,25 @@ void parse_ip_log(int argc, char **argv)
     }
     else if(iplog->lmsid == 0)
     {
-     fputs("-------",f);
+     fputs("------",f);
     }    
     fprintf(f, "<td style=\"text-align: right\">%ld&nbsp;MB</td>\n\
-    <td style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></td>\n\
-    <td style=\"text-align: right\">%ld&nbsp;kb/s</th></tr>\n",
-               iplog->traffic, iplog->traffic>>10, iplog->guaranted);
+<td style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></td>\n\
+<td style=\"text-align: right\">%ld&nbsp;kb/s</th>\
+<td style=\"text-align: right\">%ld&nbsp;Mb/s</th>\
+</tr>\n",
+               iplog->traffic, iplog->traffic>>10, iplog->guaranted, iplog->avg);
     total+=iplog->traffic>>10;
     iplog->i=i;
     iplog->l=total;
    }
   }
   fprintf(f,"</tbody><thead><tr>\
-  <th colspan=\"3\" style=\"text-align: left\">Total:</th>\
-  <th colspan=\"2\" style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></th>\
-  <th style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></th></tr>\n", total, line);
+<th colspan=\"3\" style=\"text-align: left\">Total:</th>\
+<th colspan=\"2\" style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></th>\
+<th style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></th>\
+<th style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></th></tr>\
+\n", total, line, (8*(total<<20))/max_logged_time/i);
   fputs("</thead></table>\n", f);
 
   row_odd_even = 0;

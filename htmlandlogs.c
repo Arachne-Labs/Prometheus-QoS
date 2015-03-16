@@ -259,7 +259,7 @@ style=\"cursor: pointer;\">+%d</a>]</span>",
     }
     else if(ip->lmsid == 0)
     {
-     fputs("-------",f);
+     fputs("------",f);
     }
     fputs("</td>\n",f);
    }
