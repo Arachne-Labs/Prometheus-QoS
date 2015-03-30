@@ -160,6 +160,11 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview);
 void analyse_topology(char *traceroute);
 /* implemented in networks.c */
 
+char *parse_datafile_line(char *str);
+/* implemented in utils.c */
+
+time_t get_mtime(const char *path);
+/* implemented in utils.c */
 
 const char *tr_odd_even(void)
 {
@@ -234,10 +239,12 @@ void get_config(char *config_filename)
    keyword->reserve_min = 8;	         /* bonus for nominal HTB rate bandwidth (in kbps) */
    keyword->reserve_max = 0;	         /* malus for nominal HTB ceil (in kbps) */
    keyword->default_prio = highest_priority+1;
+   keyword->download_aggregation = keyword->upload_aggregation = 0; /* disable by default */
    keyword->html_color = "000000";
    keyword->ip_count = 0;
    keyword->leaf_discipline = "";
    keyword->allowed_avgmtu = 0;
+   keyword->download_aggregation = keyword->upload_aggregation = 1;
 
    push(keyword, keywords);
    if(!defaultkeyword)
@@ -267,6 +274,8 @@ void get_config(char *config_filename)
       ioption("htb-default-prio", keyword->default_prio);
       ioption("htb-rate-bonus", keyword->reserve_min);
       ioption("htb-ceil-malus", keyword->reserve_max);
+      ioption("download-aggregation", keyword->download_aggregation);
+      ioption("upload-aggregation", keyword->upload_aggregation);
       option("leaf-discipline", keyword->leaf_discipline);
       option("html-color", keyword->html_color);
       ioption("allowed-avgmtu" ,keyword->allowed_avgmtu);
@@ -450,30 +459,10 @@ void run_iptables_restore(void)
  free(restor);
 }
 
-char *parse_datafile_line(char *str)
-{
- char *ptr = strchr(str,' ');
- if(!ptr)
- {
-  ptr = strchr(str,'\t');
- }
+/**/
 
- if(ptr)
- {
-  *ptr = 0;
-  ptr++;
-  while(*ptr == ' ' || *ptr == '\t')
-  {
-   ptr++;
-  }
-  return ptr;
- } 
- else 
- {
-  return NULL;
- }
-}
-
+char *parse_datafile_line(char *str);
+time_t get_mtime(const char *path);
 
 /*-----------------------------------------------------------------*/
 /* Are you looking for int main(int argc, char **argv) ? :-))      */
@@ -1049,7 +1038,9 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  {
   if(start_shaping || stop_shaping || reduce_ceil)
   {
-   printf("Reading %s and applying Fair Use Policy rules ... \n", classmap);
+   time_t how_much_seconds = time(NULL) - get_mtime(classmap); /* sice start of daily aggregation session */
+   printf("Reading %s (%ld seconds old) and applying Fair Use Policy and Aggregation rules... \n", classmap, how_much_seconds);
+     
    parse(classmap)
    {
     ptr=strchr(_,' ');
@@ -1059,28 +1050,85 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      ptr++;
      if_exists(ip,ips,eq(ip->addr,_))
      {
-      ip->mark=atoi(ptr);
-      if(ip->max < ip->desired || stop_shaping || reduce_ceil) /* apply or disable FUP limit immediately.... */
+      int unshape_this_ip = stop_shaping;
+      long avg_mbps_down = ip->direct * 8 / how_much_seconds;
+      long avg_mbps_up = ip->upload * 8 / how_much_seconds;
+      int min_mbps = ip->min>>10;
+      int agreg = 1, print_stats = 1;
+      
+      if(min_mbps < 1)
       {
-       if(stop_shaping)
+       min_mbps = 1;
+      }
+      
+      if(ip->keyword->download_aggregation)
+      {
+       if(min_mbps <= avg_mbps_down)
        {
-        ip->max = ip->desired;
-        printf("Removing limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);               
+        unshape_this_ip = 0;
+        agreg = (avg_mbps_down+1)/min_mbps;
+        ip->max /= agreg;
+        printf("Download aggregation 1:%d for %s (min: %lu Mbps avg: %ld Mbps)\n", agreg, ip->name, min_mbps, avg_mbps_down);
        }
        else
        {
-        printf("Applying limit for %-22s %-16s %04d ", ip->name, ip->addr, ip->mark);
+        unshape_this_ip = 1;
+       }
+      }
+      else if(ip->keyword->upload_aggregation)
+      {
+       if(min_mbps <= avg_mbps_up)
+       {
+        unshape_this_ip = 0;
+        agreg = (avg_mbps_up+1)/min_mbps;
+        ip->max /= agreg;
+        printf("Upload aggregation 1:%d for %s: (min: %lu Mbps avg: %ld Mbps)\n", agreg, ip->name, min_mbps, avg_mbps_up);
+       }
+       else
+       {
+        unshape_this_ip = 1;
+       }
+      }
+      ip->mark=atoi(ptr);
+      if(ip->max < ip->desired || unshape_this_ip || reduce_ceil) /* apply or disable FUP limit immediately.... */
+      {
+       if(unshape_this_ip)
+       {
+        ip->max = ip->desired;
+        if(stop_shaping) /* all limits removed, but not printed with -s (start_shaping) switch */
+        {
+         printf("Removing limit for %s (%s) ", ip->name, ip->addr);
+        }
+        else
+        {
+         print_stats = 0;
+        }
+       }
+       else
+       {
+        printf("Applying limit for %s (%s) ", ip->name, ip->addr);
         if(reduce_ceil)
         {
          ip->max = ip->min + (ip->desired-ip->min)/reduce_ceil;
         }
+        else if(ip->max < ip->min)
+        {
+         ip->max = ip->min;
+        }        
        }
-       printf("(down: %dk-%dk ", ip->min, ip->max); 
+       if(print_stats)
+       {
+        printf("(down: %dk-%dk wants %dk, ", ip->min, ip->max, ip->desired);
+       }
        sprintf(str, "%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
                     tc, lan, ip->group, ip->mark,ip->min,ip->max, burst, ip->prio);
        safe_run(str);
-       printf("up: %dk-%dk)\n", (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), 
-                                (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed));
+       if(print_stats)
+       {
+        printf("up: %dk-%dk wants %dk)\n", (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), 
+                                           (int)((ip->desired/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed),
+                                           (int)((ip->desired/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed));
+       }
        sprintf(str,"%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
                     tc, wan, ip->group, ip->mark,
                     (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed),

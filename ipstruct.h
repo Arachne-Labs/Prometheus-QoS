@@ -53,6 +53,8 @@ struct Keyword
 // int divide_max;	    /* relative malus: new_ceil=rate+(old_ceil-rate)/divide_max */
 // int htb_ceil_bonus_divide; /* relative bonus: new_ceil=old_ceil+old_ceil/htb_ceil_bonus_divide */
  int default_prio;	    /* default HTB priority for this keyword */
+ int download_aggregation;  /* apply agregation with -s start_shaping switch */
+ int upload_aggregation;    /* apply agregation with -s start_shaping switch */
  char *html_color;
  int ip_count;
  char *leaf_discipline;
