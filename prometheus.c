@@ -244,7 +244,6 @@ void get_config(char *config_filename)
    keyword->ip_count = 0;
    keyword->leaf_discipline = "";
    keyword->allowed_avgmtu = 0;
-   keyword->download_aggregation = keyword->upload_aggregation = 1;
 
    push(keyword, keywords);
    if(!defaultkeyword)
