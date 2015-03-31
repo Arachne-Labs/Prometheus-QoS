@@ -25,27 +25,30 @@ void update_network(char *look_for, struct IP* ip);
 void TheIP(char *ipaddr, int is_network)
 {
  create(ip,IP);
- ip->name        = "";
- ip->addr        = ipaddr;
- ip->sharing     = NULL;
- ip->prio        = highest_priority+1;
- ip->lmsid       = -1;
- ip->fixedprio   = \
- ip->mark        = \
- ip->min         = \
- ip->max         = \
- ip->desired     = \
- ip->credit      = \
- ip->upload      = \
- ip->proxy       = \
- ip->direct      = \
- ip->traffic     = \
- ip->pktsup      = \
- ip->pps_limit   = \
- ip->pktsdown    = 0;
- ip->keyword     = keywords;
- ip->v6          = (strchr(ip->addr,':')!=NULL);
- ip->mask        = ((ip->v6)?64:32);
+ ip->name         = "";
+ ip->addr         = ipaddr;
+ ip->sharing      = NULL;
+ ip->prio         = highest_priority+1;
+ ip->lmsid        = -1;
+ ip->fixedprio    = \
+ ip->aggregated   = \
+ ip->mark         = \
+ ip->min          = \
+ ip->max          = \
+ ip->desired      = \
+ ip->credit       = \
+ ip->upload       = \
+ ip->proxy        = \
+ ip->direct       = \
+ ip->traffic      = \
+ ip->traffic_down = \
+ ip->traffic_up   = \
+ ip->pktsup       = \
+ ip->pps_limit    = \
+ ip->pktsdown     = 0;
+ ip->keyword      = keywords;
+ ip->v6           = (strchr(ip->addr,':')!=NULL);
+ ip->mask         = ((ip->v6)?64:32);
  if(is_network)
  {
   push(ip, networks);

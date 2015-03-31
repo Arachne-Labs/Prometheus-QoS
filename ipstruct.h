@@ -10,12 +10,15 @@ struct IP
  int max;
  int mark;
  int prio;
+ int aggregated;
  int fixedprio;
  int group;
  int lmsid;
  int pps_limit;
  unsigned long long direct;
  unsigned long long proxy;
+ unsigned long long traffic_down;
+ unsigned long long traffic_up;
  unsigned long long upload;
  unsigned long long traffic;
  unsigned long long credit;

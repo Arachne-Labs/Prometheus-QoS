@@ -178,6 +178,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
     else
     {*/
     ip->traffic += traffic;
+    ip->traffic_down += traffic;
 /*    } */
     ip->direct += traffic; /*-ip->proxy;*/
     ip->pktsdown += pkts;
@@ -185,6 +186,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
    else
    {
     ip->upload += traffic;
+    ip->traffic_up += traffic;
     ip->pktsup += pkts;
     if(include_upload)
     {

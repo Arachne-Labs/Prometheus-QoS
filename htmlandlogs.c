@@ -130,7 +130,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
   int active_classes = 0;
 //  int colspan = 14;
   struct Sum {unsigned long long l; int i; list(Sum);} *sum,*sums = NULL;
-  int limit_count = 0, prio_count = 0;
+  int agreg_count = 0, limit_count = 0, prio_count = 0;
   int popup_button = 0;
   /* IPv6 vs. IPv4 stats */
   unsigned long long pkts4 =0, pkts6 = 0, bytes4 = 0, bytes6 = 0;
@@ -197,7 +197,13 @@ $(\'#pktsup_\'+n).show();\
    char *f1="", *f2="";
    i++;
 
-   if(ip->max < ip->desired) 
+   if(ip->aggregated > 1)
+   {
+    f1 = "<span style=\"color:green\">";
+    f2 = "</span>";   
+    agreg_count++;
+   }
+   else if(ip->max < ip->desired) 
    {
     f1 = "<span style=\"color:red\">";
     f2 = "</span>"; 
@@ -419,9 +425,11 @@ style=\"cursor: pointer;\">+%d</a>]</span>",
 */
   fprintf(f, "<th style=\"text-align: right\">%Lu</th><th style=\"text-align: right\">%d</th>",
              total_direct, total_pktdown/i);
-  fprintf(f, "<th colspan=\"6\"><span style=\"color:red\">LIMIT %dx</span> \
-<span style=\"color:brown\">LOW-PRIO %dx</span></th></tr>\n</thead></table>\n",
-             limit_count, prio_count);
+  fprintf(f, "<th colspan=\"6\">\
+<span style=\"color:green\">AGR %dx</span> \
+<span style=\"color:red\">FUP %dx</span> \
+<span style=\"color:brown\">PRIO %dx</span></th></tr>\n</thead></table>\n",
+             agreg_count, limit_count, prio_count);
 
   if(ip6prefix)
   { 

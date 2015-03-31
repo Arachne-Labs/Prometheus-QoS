@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20150315
+/* Modified by: xChaos, 20150331
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -605,6 +605,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   for_each(sharedip, ips) if(eq(sharedip->name, ip->sharing))
   {
    sharedip->traffic += ip->traffic;
+   sharedip->traffic_down += ip->direct;
+   sharedip->traffic_up += ip->upload;
    ip->traffic = 0;
    ip->mark = sharedip->mark; 
    ip->lmsid = sharedip->lmsid;
@@ -1051,8 +1053,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      if_exists(ip,ips,eq(ip->addr,_))
      {
       int unshape_this_ip = stop_shaping;
-      long avg_mbps_down = ip->direct * 8 / how_much_seconds;
-      long avg_mbps_up = ip->upload * 8 / how_much_seconds;
+      long avg_mbps_down = ip->traffic_down * 8 / how_much_seconds; 
+      long avg_mbps_up = ip->traffic_up * 8 / how_much_seconds;
       int min_mbps = ip->min>>10;
       int agreg = 1, print_stats = 1;
       
@@ -1066,7 +1068,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
        if(min_mbps <= avg_mbps_down)
        {
         unshape_this_ip = 0;
-        agreg = (avg_mbps_down+1)/min_mbps;
+        agreg = (int)((float)(avg_mbps_down+1)/min_mbps+.5);
         ip->max /= agreg;
         printf("Download aggregation 1:%d for %s (min: %lu Mbps avg: %ld Mbps)\n", agreg, ip->name, min_mbps, avg_mbps_down);
        }
@@ -1080,7 +1082,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
        if(min_mbps <= avg_mbps_up)
        {
         unshape_this_ip = 0;
-        agreg = (avg_mbps_up+1)/min_mbps;
+        agreg = (int)((float)(avg_mbps_up+1)/min_mbps+.5);
         ip->max /= agreg;
         printf("Upload aggregation 1:%d for %s: (min: %lu Mbps avg: %ld Mbps)\n", agreg, ip->name, min_mbps, avg_mbps_up);
        }
@@ -1089,7 +1091,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
         unshape_this_ip = 1;
        }
       }
-      ip->mark=atoi(ptr);
+      ip->aggregated = agreg;      
+      ip->mark = atoi(ptr);
       if(ip->max < ip->desired || unshape_this_ip || reduce_ceil) /* apply or disable FUP limit immediately.... */
       {
        if(unshape_this_ip)
