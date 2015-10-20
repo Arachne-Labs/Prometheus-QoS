@@ -1051,20 +1051,20 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      ptr++;
      if_exists(ip,ips,eq(ip->addr,_))
      {
-      int unshape_this_ip = stop_shaping;
+      int unshape_this_ip;
       long avg_mbps_down = ip->traffic_down * 8 / how_much_seconds; 
       long avg_mbps_up = ip->traffic_up * 8 / how_much_seconds;
-      int min_mbps = ip->min>>10;
       int agreg = 1, print_stats = 1;
-      
-      if(min_mbps < 1)
-      {
-       min_mbps = 1;
-      }
       
       if(ip->keyword->download_aggregation)
       {
-       if(min_mbps/ip->keyword->download_aggregation <= avg_mbps_down)
+       int min_mbps = (ip->min/ip->keyword->download_aggregation)>>10;
+       if(min_mbps < 1)
+       {
+        min_mbps = 1;
+       }
+  
+       if(min_mbps <= avg_mbps_down)
        {
         unshape_this_ip = 0;
         agreg = (int)((float)(avg_mbps_down+1)/min_mbps+.5);
@@ -1079,7 +1079,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
       }
       else if(ip->keyword->upload_aggregation)
       {
-       if(min_mbps/ip->keyword->upload_aggregation <= avg_mbps_up)
+       int min_mbps = (ip->min/ip->keyword->upload_aggregation)>>10;
+       if(min_mbps < 1)
+       {
+        min_mbps = 1;
+       }
+
+       if(min_mbps <= avg_mbps_up)
        {
         unshape_this_ip = 0;
         agreg = (int)((float)(avg_mbps_up+1)/min_mbps+.5);
@@ -1090,6 +1096,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
        {
         unshape_this_ip = 1;
        }
+      }
+      if(stop_shaping)
+      {
+       unshape_this_ip = 1;
       }
       ip->aggregated = agreg;      
       ip->mark = atoi(ptr);
