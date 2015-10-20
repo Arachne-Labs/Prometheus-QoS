@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20150331
+/* Modified by: xChaos, 20151020
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,10 +29,10 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.8.5-c";
+const char *version = "0.8.5-d";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-/* Versions: 0.8.3 is development release, 0.8.4 will be "stable"  */
+/* Versions: 0.8.5 is development release, 0.8.6 will be "stable"  */
 /* Official Trac URL: https://dev.arachne.cz/svn/prometheus        */
 /* Official SVN URL: https://dev.arachne.cz/repos/prometheus       */
 /* BTC donations account: 19rriLx8vR19wGefPaMhakqnCYNYwjLvxq       */
@@ -1064,11 +1064,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
       
       if(ip->keyword->download_aggregation)
       {
-       if(min_mbps <= avg_mbps_down)
+       if(min_mbps/ip->keyword->download_aggregation <= avg_mbps_down)
        {
         unshape_this_ip = 0;
         agreg = (int)((float)(avg_mbps_down+1)/min_mbps+.5);
         ip->max /= agreg;
+        ip->pps_limit /= agreg;
         printf("Download aggregation 1:%d for %s (min: %lu Mbps avg: %ld Mbps)\n", agreg, ip->name, min_mbps, avg_mbps_down);
        }
        else
@@ -1078,7 +1079,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
       }
       else if(ip->keyword->upload_aggregation)
       {
-       if(min_mbps <= avg_mbps_up)
+       if(min_mbps/ip->keyword->upload_aggregation <= avg_mbps_up)
        {
         unshape_this_ip = 0;
         agreg = (int)((float)(avg_mbps_up+1)/min_mbps+.5);
