@@ -1051,7 +1051,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      ptr++;
      if_exists(ip,ips,eq(ip->addr,_))
      {
-      int unshape_this_ip;
+      int unshape_this_ip = 0;
       long avg_mbps_down = ip->traffic_down * 8 / how_much_seconds; 
       long avg_mbps_up = ip->traffic_up * 8 / how_much_seconds;
       int agreg = 1, print_stats = 1;
