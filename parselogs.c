@@ -163,7 +163,7 @@ void parse_ip_log(int argc, char **argv)
  f=fopen(str,"w");
  if(f > 0)
  {
-  time_t max_logged_time = 0;
+//  time_t max_logged_time = 0;
 
   fprintf(f, "<table class=\"decorated last\"><thead>\n\
 <tr><th colspan=\"2\">%s %s</th>\n\
@@ -177,11 +177,11 @@ void parse_ip_log(int argc, char **argv)
   row_odd_even = 0;
   for_each(iplog, iplogs)
   {
-   if(iplog->logged_time > max_logged_time)
+/*   if(iplog->logged_time > max_logged_time)
    {
     max_logged_time = iplog->logged_time;
    }
-
+*/
    if(iplog->traffic)
    {
     fprintf(f, "%s<td style=\"text-align: right\">%d</td>\n\
@@ -214,8 +214,8 @@ void parse_ip_log(int argc, char **argv)
 <th colspan=\"3\" style=\"text-align: left\">Total:</th>\
 <th colspan=\"2\" style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></th>\
 <th style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></th>\
-<th style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></th></tr>\
-\n", total, line, (8*(total<<20))/max_logged_time/i);
+<th style=\"text-align: right\"><strong>-</strong></th></tr>\
+\n", total, line);
   fputs("</thead></table>\n", f);
 
   row_odd_even = 0;

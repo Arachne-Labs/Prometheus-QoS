@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20151020
+/* Modified by: xChaos, 20160622
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.8.5-d";
+const char *version = "0.8.5-e";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.8.5 is development release, 0.8.6 will be "stable"  */
@@ -307,6 +307,7 @@ void get_config(char *config_filename)
   lloption("wan-download",line);
   lloption("wan-upload",up);
   ioption("hall-of-fame-enable",hall_of_fame);
+  ioption("digital-divide-weirdness-ratio",digital_divide);
   option("hall-of-fame-title",title);
   option("hall-of-fame-filename",html);
   option("json-filename",json_traffic);
