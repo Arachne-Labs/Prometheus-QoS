@@ -81,10 +81,6 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
            else
            {
             sscanf(ptr,"%Lu",&traffic); 
-            if(traffic)
-            {
-             traffic_detected = 1;
-            }
             traffic += (1<<19);
             traffic >>= 20;
            }
@@ -157,6 +153,7 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
     printf("(down) ");
    }
    
+   traffic_detected = 1;
    printf("%s %Lu MB (%ld pkts)\n", ipaddr, traffic, pkts);
 
    if_exists(ip, ips, eqi(ip->addr,ipaddr)); 
