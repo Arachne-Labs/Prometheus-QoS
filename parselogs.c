@@ -1,4 +1,6 @@
 #include "cll1-0.6.2.h"
+#include "cll1-0.6.2.h"
+
 #define STRLEN 512
 
 /* globals declared in prometheus.c */
@@ -10,7 +12,6 @@ extern char *html_log_dir;
 extern int row_odd_even;
 extern char *log_url;
 extern char *lms_url;
-extern long long int line;
 
 /* function implemented in prometheus.c */
 const char *tr_odd_even(void);
@@ -213,9 +214,9 @@ void parse_ip_log(int argc, char **argv)
   fprintf(f,"</tbody><thead><tr>\
 <th colspan=\"3\" style=\"text-align: left\">Total:</th>\
 <th colspan=\"2\" style=\"text-align: right\"><strong>%ld&nbsp;GB</strong></th>\
-<th style=\"text-align: right\"><strong>%Ld&nbsp;kb/s</strong></th>\
-<th style=\"text-align: right\"><strong>-</strong></th></tr>\
-\n", total, line);
+<th style=\"text-align: right\"></th>\
+<th style=\"text-align: right\"></th></tr>\
+\n", total);
   fputs("</thead></table>\n", f);
 
   row_odd_even = 0;

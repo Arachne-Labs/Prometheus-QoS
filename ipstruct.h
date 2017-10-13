@@ -72,5 +72,26 @@ struct Macro
  list(Macro);
 };
 
+struct Index
+{
+ char *addr;
+ char *id;
+ struct Index *parent;
+ int bitmask;
+ int children;
+ int ipv6;
+ list(Index);
+};
+
+struct Interface 
+{
+ char *name;
+ long long speed;
+ int is_upstream;
+ char *chain;
+ char *idxprefix;
+ list(Interface);
+};
+
 void TheIP(char *ipaddr, int is_network);
 /* function implemented in parsehosts.c */

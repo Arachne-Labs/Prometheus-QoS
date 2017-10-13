@@ -14,7 +14,6 @@ extern const char *version;
 extern const char *stats_html_signature;
 extern char *jquery_url;
 extern int keywordcount;
-extern long long int line;
 extern int dry_run;
 extern int qos_proxy;
 extern char *title;
@@ -100,19 +99,19 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
    count++; 
   }
 #ifdef DEBUG
-   printf("Total groups: %d Total bandwidth requested: %d kb/s\nAGGREGATION: 1/%d\n",
-          count, i, i/line);
+   printf("Total groups: %d Total bandwidth requested: %d kb/s\n",
+          count, i, i);
 #endif
    fprintf(f,"</tr></tbody>\n\
 <thead><tr>\n\
-<th colspan=\"2\" style=\"text-align: left\">Line %Ld kb/s</td>",line);
+<th colspan=\"2\" style=\"text-align: left\"></td>");
    fprintf(f,"<th style=\"text-align: right\">%d</td><th style=\"text-align: right\">%d kb/s</td>",total,i);
 
    for_each(keyword, keywords) if(keyword->ip_count)
    {
     fprintf(f,"<th style=\"text-align: right\">%d IPs</th>",keyword->ip_count);
    }
-   fprintf(f,"</tr><tr><th colspan=\"4\">Aggregation 1/%d</th>\n", (int)(0.5+i/line));
+   fprintf(f,"</tr><tr><th colspan=\"4\"></th>\n");
    fprintf(f,"<th colspan=\"%d\">%d traffic classes</th></tr>\n", keywordcount, total);
 
    fputs("</thead></table>\n",f);
