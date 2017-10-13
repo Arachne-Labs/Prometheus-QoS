@@ -290,7 +290,7 @@ void get_config(char *config_filename)
   option("hosts",hosts);
   option("downstream-interfaces-list-filename",downstreamfile);
   option("upstream-interfaces-list-filename",upstreamfile);
-  option("macros-filename",upstreamfile);
+  option("macros-filename",macrosfile);
   option("ip6-prefix",ip6prefix);
   option("medium",medium);
   ioption("hall-of-fame-enable",hall_of_fame);
@@ -540,7 +540,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  printf("Parsing downstream interfaces list %s ...\n", downstreamfile);
  /*-----------------------------------------------------------------*/
- parse(upstreamfile)
+ parse(downstreamfile)
  {
   ptr = parse_datafile_line(_);
   if(ptr)
