@@ -411,6 +411,10 @@ style=\"cursor: pointer;\">+%d</a>]</span>",
      append_log(sharedip);
     }
    }
+   else
+   {
+    printf(".");
+   }
   }
   fprintf(f, "</tbody><thead><tr>\n\
 <th colspan=\"5\" style=\"text-align: left\">%d CLASSES</th>", i);

@@ -747,7 +747,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    for_each(interface, interfaces)
    {
-    sprintf(str,"-A %s -s %s -o %s -j ACCEPT", interface->chain, qos_free_zone, interface->name);
+    sprintf(str,"-A %s -%c %s -o %s -j ACCEPT", interface->chain, (interface->is_upstream?'d':'s'), qos_free_zone, interface->name);
     iptables_save_line(str, FALSE);
    }
   }
@@ -868,10 +868,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
       buf = interface->chain;
      }
 
-     sprintf(str,"-A %s -d %s/%d -o %s -j %s_%s", buf, subnet, idx->bitmask, interface->name, interface->idxprefix, idx->id);
+     sprintf(str, "-A %s -%c %s/%d -o %s -j %s_%s", 
+                  buf, (interface->is_upstream?'s':'d'), subnet, idx->bitmask, interface->name, interface->idxprefix, idx->id);
      iptables_save_line(str, idx->ipv6);
 
-     sprintf(str,"-A %s -d %s/%d -o %s -j %s_common", buf, subnet, idx->bitmask, interface->name, interface->idxprefix);
+     sprintf(str, "-A %s -%c %s/%d -o %s -j %s_common",
+                  buf, (interface->is_upstream?'s':'d'), subnet, idx->bitmask, interface->name, interface->idxprefix);
      iptables_save_line(str, idx->ipv6);
     }
    }
@@ -1257,25 +1259,27 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  #endif
 
    /* ------------------------------------------------ iptables classify */
-   sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
-                chain, ip->addr, ip->mask,
+   sprintf(str, "-A %s -%c %s/%d -o %s -j %s%d",
+                chain, (interface->is_upstream?'s':'d'), ip->addr, ip->mask,
                 interface->name, mark_iptables, ip->mark);
    iptables_save_line(str, ip->v6);
 
-   sprintf(str, "-A %s -d %s/%d -o %s %s-j ACCEPT",
-                chain, ip->addr, ip->mask, interface->name, limit_pkts);
+   sprintf(str, "-A %s -%c %s/%d -o %s %s-j ACCEPT",
+                chain, (interface->is_upstream?'s':'d'),ip->addr, ip->mask,
+                interface->name, limit_pkts);
    iptables_save_line(str, ip->v6);
 
    if(limit_pkts)
    {
     /* classify overlimit packets to separate overlimit class */
-    sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
-                 chain, ip->addr, ip->mask,
+    sprintf(str, "-A %s -%c %s/%d -o %s -j %s%d",
+                 chain, (interface->is_upstream?'s':'d'), ip->addr, ip->mask,
                  interface->name, mark_iptables, OVERLIMIT_CLASS);
     iptables_save_line(str, ip->v6);
 
-    sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
-                 chain, ip->addr, ip->mask, interface->name);
+    sprintf(str, "-A %s -%c %s/%d -o %s -j ACCEPT",
+                 chain, (interface->is_upstream?'s':'d'), ip->addr, ip->mask,
+                 interface->name);
     iptables_save_line(str, ip->v6);
    }
 
