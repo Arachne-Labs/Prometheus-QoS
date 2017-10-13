@@ -1266,15 +1266,18 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                 chain, ip->addr, ip->mask, interface->name, limit_pkts);
    iptables_save_line(str, ip->v6);
 
-   /* classify overlimit packets to separate overlimit class */
-   sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
-                chain, ip->addr, ip->mask,
-                interface->name, mark_iptables, OVERLIMIT_CLASS);
-   iptables_save_line(str, ip->v6);
+   if(limit_pkts)
+   {
+    /* classify overlimit packets to separate overlimit class */
+    sprintf(str, "-A %s -d %s/%d -o %s -j %s%d",
+                 chain, ip->addr, ip->mask,
+                 interface->name, mark_iptables, OVERLIMIT_CLASS);
+    iptables_save_line(str, ip->v6);
 
-   sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
-                chain, ip->addr, ip->mask, interface->name);
-   iptables_save_line(str, ip->v6);
+    sprintf(str, "-A %s -d %s/%d -o %s -j ACCEPT",
+                 chain, ip->addr, ip->mask, interface->name);
+    iptables_save_line(str, ip->v6);
+   }
 
    if(ip->min)
    {
