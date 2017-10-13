@@ -558,7 +558,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    interface->chain = "POSTROUTING";
    interface->idxprefix = "post";
    push(interface, interfaces);
-   printf("Upstream interface %s: medium %s capacity %ld kbps\n", interface->name, medium, interface->speed);
+   printf("Downstream interface %s: medium %s capacity %ld kbps\n", interface->name, medium, interface->speed);
   }
  }
  done; /* ugly macro end */
@@ -1369,14 +1369,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    /* tc handle 1 fw flowid */
    sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, interface->name, FREE_CLASS, FREE_CLASS);
    safe_run(str);
-
-   /*-----------------------------------------------------------------*/
-   puts("Generating bandwith class for overlimit packets...");
-   /*-----------------------------------------------------------------*/
-   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, interface->name, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority);
-   safe_run(str);
   }
+  /*-----------------------------------------------------------------*/
+  puts("Generating bandwith class for overlimit packets...");
+  /*-----------------------------------------------------------------*/
+  sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+               tc, interface->name, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority);
+  safe_run(str);
  } 
  printf("Total IP count: %d\n", i);
  run_iptables_restore();
