@@ -2,7 +2,7 @@
 /* Prometheus QoS - you can "steal fire" from your ISP         */
 /* "fair-per-IP" quality of service (QoS) utility              */
 /* requires Linux 2.4.x or 2.6.x with HTB support              */
-/* Copyright(C) 2005-2015 Michael Polak, Arachne Aerospace     */
+/* Copyright(C) 2005-2017 Michael Polak, Arachne Aerospace     */
 /* iptables-restore support Copyright(C) 2007-2008 ludva       */
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
@@ -471,7 +471,7 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2015 Michael Polak, Arachne Labs\n\
+Version %s - Copyright (C)2005-2017 Michael Polak, Arachne Labs\n\
 iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
