@@ -22,6 +22,7 @@ extern int found_lmsid;
 extern char *lms_url;
 extern char *log_dir;
 extern char *ip6prefix;
+extern int traffic_detected;
 
 const char *tr_odd_even(void);
 /* implemented in prometheus.c, shared with parselogs.c */
@@ -402,7 +403,7 @@ style=\"cursor: pointer;\">+%d</a>]</span>",
     insert(sum,sums,order_by,i);
    }
 
-   if(!just_preview)
+   if(!just_preview && traffic_detected)
    {
     append_log(ip);
     for_each(sharedip,ips) if(eq(ip->name, sharedip->sharing))

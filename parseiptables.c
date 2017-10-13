@@ -13,12 +13,15 @@ extern int free_min;
 extern int free_max;
 extern int include_upload;
 
+int traffic_detected = 0;
+
 /* ===================== traffic analyser - uses iptables  ================ */ 
 
 void get_traffic_statistics(const char *whichiptables, int ipv6)
 {
  char *str,*cmd;
- int downloadflag=0;
+ int downloadflag = 0;
+ traffic_detected = 0;
 
  textfile(Pipe,str) *line,*lines=NULL;
  string(str,STRLEN);
@@ -78,6 +81,10 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
            else
            {
             sscanf(ptr,"%Lu",&traffic); 
+            if(traffic)
+            {
+             traffic_detected = 1;
+            }
             traffic += (1<<19);
             traffic >>= 20;
            }
