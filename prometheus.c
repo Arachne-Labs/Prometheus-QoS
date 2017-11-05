@@ -395,6 +395,10 @@ void iptables_save_line(char *line, int ipv6)
  }
 }
 
+#define IPv4 FALSE
+#define IPv6 TRUE
+
+
 void run_iptables_restore(void)
 {
  char *restor;
@@ -404,7 +408,7 @@ void run_iptables_restore(void)
  printf("Running %s <%s ...\n", iptablesrestore, iptablesfile);
  /*-----------------------------------------------------------------*/
 
- iptables_save_line("COMMIT", FALSE);
+ iptables_save_line("COMMIT", IPv4);
  fclose(iptables_file);
  if(dry_run) 
  {
@@ -423,7 +427,7 @@ void run_iptables_restore(void)
   /*-----------------------------------------------------------------*/
   printf("Running %s <%s ...\n", ip6tablesrestore, ip6tablesfile);
   /*-----------------------------------------------------------------*/
-  iptables_save_line("COMMIT", TRUE);
+  iptables_save_line("COMMIT", IPv6);
   fclose(ip6tables_file);
   if(dry_run) 
   {
@@ -705,7 +709,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     perror(iptablesfile);
     exit(-1);
   }
-  iptables_save_line(iptablespreamble, FALSE);
+  iptables_save_line(iptablespreamble, IPv4);
 
   if(ip6prefix)
   {
@@ -715,8 +719,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
      perror(ip6tablesfile);
      exit(-1);
    }
-   iptables_save_line(iptablespreamble, TRUE);
-   iptables_save_line(ip6preamble, TRUE);
+   iptables_save_line(iptablespreamble, IPv6);
+   iptables_save_line(ip6preamble, IPv6);
   }
 
   run_iptables_restore();
@@ -735,12 +739,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
   
   iptables_file=fopen(iptablesfile,"w");
-  iptables_save_line(iptablespreamble, FALSE);
+  iptables_save_line(iptablespreamble, IPv4);
   if(ip6prefix)
   {
    ip6tables_file=fopen(ip6tablesfile,"w");
-   iptables_save_line(iptablespreamble, TRUE);
-   iptables_save_line(ip6preamble, TRUE);
+   iptables_save_line(iptablespreamble, IPv6);
+   iptables_save_line(ip6preamble, IPv6);
   }
 
   if(qos_free_zone && *qos_free_zone!='0') /* this is currently supported only for IPv4 */
@@ -748,7 +752,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    for_each(interface, interfaces)
    {
     sprintf(str,"-A %s -%c %s -o %s -j ACCEPT", interface->chain, (interface->is_upstream?'d':'s'), qos_free_zone, interface->name);
-    iptables_save_line(str, FALSE);
+    iptables_save_line(str, IPv4);
    }
   }
   
@@ -760,12 +764,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    printf("Detected %d addresses - indexing iptables rules to improve performance...\n",ip_count);
    /*-----------------------------------------------------------------*/
 
-   iptables_save_line(":post_common - [0:0]", FALSE);
-   iptables_save_line(":forw_common - [0:0]", FALSE);
+   iptables_save_line(":post_common - [0:0]", IPv4);
+   iptables_save_line(":forw_common - [0:0]", IPv4);
    if(ip6prefix)
    {
-    iptables_save_line(":post_common - [0:0]", TRUE);
-    iptables_save_line(":forw_common - [0:0]", TRUE);
+    iptables_save_line(":post_common - [0:0]", IPv6);
+    iptables_save_line(":forw_common - [0:0]", IPv6);
    }
 
    for_each(ip,ips) if(ip->addr && *(ip->addr) && !eq(ip->addr,"0.0.0.0/0")) 
@@ -882,11 +886,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    for_each(interface, interfaces)
    {
     sprintf(str,"-A %s -o %s -j %s_common", interface->chain, interface->name, interface->idxprefix);
-    iptables_save_line(str, FALSE);
+    iptables_save_line(str, IPv4);
     if(ip6prefix)
     {
      sprintf(str,"-A %s -o %s -j %s_common", interface->chain, interface->name, interface->idxprefix);
-     iptables_save_line(str, TRUE);
+     iptables_save_line(str, IPv6);
     }
    }
   }
@@ -1348,15 +1352,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
    sprintf(str, "-A %s -o %s -j %s%d",
                 chain, interface->name, mark_iptables, FREE_CLASS);
-   iptables_save_line(str, FALSE); /* only for IPv4 */
+   iptables_save_line(str, IPv4); /* only for IPv4 */
   }
 
   sprintf(str,"-A %s -o %s -j %s", chain, interface->name, final_chain);
-  iptables_save_line(str, FALSE);
+  iptables_save_line(str, IPv4);
   if(ip6prefix)
   {
    sprintf(str,"-A %s -o %s -j %s", chain, interface->name, final_chain);
-   iptables_save_line(str, TRUE);
+   iptables_save_line(str, IPv6);
   }
 
   if(free_min) /* allocate free bandwith if it is not zero... */ 
