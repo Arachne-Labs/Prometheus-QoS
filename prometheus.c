@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20171012
+/* Modified by: xChaos, 20171106
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.9.0-a";
+const char *version = "0.9.0-b";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.9.0 is development release, 1.0 will be "stable"    */
