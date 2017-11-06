@@ -61,6 +61,7 @@ char           *hosts = "/etc/prometheus/hosts"; /* per-IP bandwidth definition 
 char      *macrosfile = "/etc/prometheus/prometheus.macros"; /* rewrite rules for most common tariffs */
 char    *upstreamfile = "/etc/prometheus/upstream.interfaces"; /* list of interfaces to manage */
 char  *downstreamfile = "/etc/prometheus/downstream.interfaces"; /* list of interfaces to manage */
+char     *qosfreefile = "/etc/prometheus/qosfree.interfaces"; /* list of interfaces to manage */
 char    *iptablesfile = "/var/spool/prometheus.iptables"; /* temporary file for iptables-restore*/
 char   *ip6tablesfile = "/var/spool/prometheus.ip6tables"; /* temporary file for ip6tables-restore*/
 char          *credit = "/var/lib/misc/prometheus.credit"; /* credit log file */
@@ -138,6 +139,7 @@ struct Keyword *keyword, *defaultkeyword=NULL, *keywords = NULL;
 struct Macro *macro, *macros = NULL;
 struct Index *idxs = NULL, *idx, *metaindex;
 struct Interface *interfaces = NULL, *interface;
+struct QosFreeInterface *qosfreeinterfaces = NULL, *qosfreeinterface;
 
 #define FREE_CLASS      3
 #define OVERLIMIT_CLASS 4
@@ -290,6 +292,7 @@ void get_config(char *config_filename)
   option("hosts",hosts);
   option("downstream-interfaces-list-filename",downstreamfile);
   option("upstream-interfaces-list-filename",upstreamfile);
+  option("qos-free-interfaces-list-filename",qosfreefile);
   option("macros-filename",macrosfile);
   option("ip6-prefix",ip6prefix);
   option("medium",medium);
@@ -566,7 +569,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
  }
  done; /* ugly macro end */
-
  
  if(just_logs)
  {
@@ -604,6 +606,12 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  /*-----------------------------------------------------------------*/
  string(str, STRLEN); 
  string(limit_pkts, STRLEN);
+
+ /*-----------------------------------------------------------------*/
+ printf("Parsing qos free interfaces file %s ...\n", qosfreefile);
+ /*-----------------------------------------------------------------*/
+ load(qosfreeinterface, qosfreeinterfaces,
+      qosfreefile, QosFreeInterface, name);
 
  /*-----------------------------------------------------------------*/
  printf("Parsing macro definition file %s ...\n", macrosfile);
@@ -754,6 +762,16 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     sprintf(str,"-A %s -%c %s -o %s -j ACCEPT", interface->chain, (interface->is_upstream?'d':'s'), qos_free_zone, interface->name);
     iptables_save_line(str, IPv4);
    }
+  }
+  
+  for_each(qosfreeinterface, qosfreeinterfaces)
+  {
+    sprintf(str,"-A FORWARD -i %s -j ACCEPT", qosfreeinterface->name);
+    iptables_save_line(str, IPv4);  
+    iptables_save_line(str, IPv6);
+    sprintf(str,"-A POSTROUTING -o %s -j ACCEPT", qosfreeinterface->name);
+    iptables_save_line(str, IPv4);
+    iptables_save_line(str, IPv6);
   }
   
   if(ip_count > idxtable_treshold1 && !just_flush)

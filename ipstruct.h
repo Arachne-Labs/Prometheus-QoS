@@ -72,6 +72,13 @@ struct Macro
  list(Macro);
 };
 
+struct QosFreeInterface
+{
+ char *name;
+ int _eoln;
+ list(QosFreeInterface);
+};
+
 struct Index
 {
  char *addr;
