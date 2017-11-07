@@ -1291,7 +1291,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                 interface->name, limit_pkts);
    iptables_save_line(str, ip->v6);
 
-   if(limit_pkts)
+   if(*limit_pkts) /* non-empty string?*/
    {
     /* classify overlimit packets to separate overlimit class */
     sprintf(str, "-A %s -%c %s/%d -o %s -j %s%d",
