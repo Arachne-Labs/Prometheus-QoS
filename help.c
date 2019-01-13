@@ -12,6 +12,7 @@ void help(void)
 -r   Run (reset all statistics and start shaping - daily usage)\n\
 -p   just generate Preview of data transfer statistics and exit (after -r)\n\
 -s   Start shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
+-x   miX new address added to configuration after startup (after -r)\n\
 -q   Quit shaping FUP limits (keeps data transfer stat like -p) (after -r)\n\
 -2   Reduce HTB ceil (min+(max-min)/2 + keep stats like -p) (after -r)\n\
 -4   Reduce HTB ceil (min+(max-min)/4 + keep stats like -p) (after -r)\n\
