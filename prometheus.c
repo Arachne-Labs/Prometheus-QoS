@@ -2,12 +2,12 @@
 /* Prometheus QoS - you can "steal fire" from your ISP         */
 /* "fair-per-IP" quality of service (QoS) utility              */
 /* requires Linux 2.4.x or 2.6.x with HTB support              */
-/* Copyright(C) 2005-2017 Michael Polak, Arachne Aerospace     */
+/* Copyright(C) 2005-2019 Michael Polak, Arachne Aerospace     */
 /* iptables-restore support Copyright(C) 2007-2008 ludva       */
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20171106
+/* Modified by: xChaos, 20190127
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -87,6 +87,7 @@ char      *final_chain = "DROP"; /* REJECT would be better, but it is impossible
 char             *mark = "MARK";
 char    *mark_iptables = "MARK --set-mark ";
 int            dry_run = FALSE; /* preview - use puts() instead of system() */
+int      mix_new_hosts = FALSE; /* execute only commands not already in log of iptables */
 char *iptablespreamble = "*mangle\n:PREROUTING ACCEPT [0:0]\n:POSTROUTING ACCEPT [0:0]\n:INPUT ACCEPT [0:0]\n:OUTPUT ACCEPT [0:0]\n:FORWARD ACCEPT [0:0]";
 char      *ip6preamble = "-A FORWARD -p ipv6-icmp -j ACCEPT\n-A POSTROUTING -p ipv6-icmp -j ACCEPT\n-A FORWARD -s fe80::/10 -j ACCEPT\n-A FORWARD -d ff00::/8 -j ACCEPT\n-A POSTROUTING -s fe80::/10 -j ACCEPT\n-A POSTROUTING -d ff00::/8 -j ACCEPT";
 FILE    *iptables_file = NULL;
@@ -126,12 +127,12 @@ int           ip_count = 0;
 FILE         *log_file = NULL;
 char              *kwd = "via-prometheus"; /* /etc/hosts comment, eg. #qos-64-128 */
 
-const int highest_priority   = 0; /* highest HTB priority (HTB built-in value is 0) */
-const int lowest_priority    = 7; /* lowest HTB priority /include/uapi/linux/pkt_sched.h: #define TC_HTB_NUMPRIO 8 */
-const int idxtable_treshold1 = 24;      /* this is no longer configurable */
-const int idxtable_treshold2 = 12;      /* this is no longer configurable */
-const int idxtable_bitmask1  = 3;        /* this is no longer configurable */
-const int idxtable_bitmask2  = 3;        /* this is no longer configurable */
+const int highest_priority   = 0;  /* highest HTB priority (HTB built-in value is 0) */
+const int lowest_priority    = 7;  /* lowest HTB priority /include/uapi/linux/pkt_sched.h: #define TC_HTB_NUMPRIO 8 */
+const int idxtable_treshold1 = 24; /* this is no longer configurable */
+const int idxtable_treshold2 = 12; /* this is no longer configurable */
+const int idxtable_bitmask1  = 3;  /* this is no longer configurable */
+const int idxtable_bitmask2  = 3;  /* this is no longer configurable */
 
 struct IP *ips = NULL, *networks = NULL, *ip, *sharedip;
 struct Group *groups = NULL, *group;
@@ -140,6 +141,7 @@ struct Macro *macro, *macros = NULL;
 struct Index *idxs = NULL, *idx, *metaindex;
 struct Interface *interfaces = NULL, *interface;
 struct QosFreeInterface *qosfreeinterfaces = NULL, *qosfreeinterface;
+struct Textfile *previous_commands = NULL, *previous_iptables = NULL, *previous_ip6tables = NULL, *textline;
 
 #define FREE_CLASS      3
 #define OVERLIMIT_CLASS 4
@@ -183,7 +185,6 @@ const char *tr_odd_even(void)
   return "<tr class=\"odd\">\n";
  }
 }
-
 
 /* ====== iptables indexes are used to reduce complexity to log8(N) ===== */
 
@@ -378,7 +379,23 @@ void safe_run(char *cmd)
  }
  else
  {
-  system(cmd);
+  int skip_cmd = FALSE;
+  if(mix_new_hosts)
+   for_each(textline, previous_commands)
+    if(eq(textline->str, cmd))
+    {
+     skip_cmd = TRUE;
+     break;
+    }
+ 
+  if(!skip_cmd)
+  {
+   if(mix_new_hosts)
+   {
+    printf("Executing command: %s\n", cmd);
+   }
+   system(cmd);
+  }
  }
  if(log_file)
  {
@@ -387,15 +404,29 @@ void safe_run(char *cmd)
 }
 
 void iptables_save_line(char *line, int ipv6)
-{
+{   
  if(ipv6)
  {
+  if(mix_new_hosts)
+   for_each(textline, previous_ip6tables)
+    if(eq(textline->str, line))
+     return;
+
   fprintf(ip6tables_file,"%s\n",line);
  }
  else
  {
+  if(mix_new_hosts)
+   for_each(textline, previous_iptables)
+    if(eq(textline->str, line))
+     return; 
+
   fprintf(iptables_file,"%s\n",line);
  }
+ if(mix_new_hosts)
+ {
+  printf("Adding iptables/ip6tables rule: %s\n", line);
+ } 
 }
 
 #define IPv4 FALSE
@@ -469,7 +500,7 @@ program
  int just_preview  = FALSE;       /* preview - generate just stats */
  int start_shaping = FALSE;       /* apply FUP - requires classmap file */
  int stop_shaping  = FALSE;       /* lift FUP - requires classmap file */
- int reduce_ceil     = 0;           /* allow only rate+(ceil-rate)/2, /4, etc. */
+ int reduce_ceil   = 0;           /* allow only rate+(ceil-rate)/2, /4, etc. */
  int just_logs     = FALSE;       /* just parse logs */
  int run           = FALSE;
  int total         = 0;
@@ -478,7 +509,7 @@ program
   
  printf("\n\
 Prometheus QoS - \"fair-per-IP\" Quality of Service setup utility.\n\
-Version %s - Copyright (C)2005-2017 Michael Polak, Arachne Labs\n\
+Version %s - Copyright (C)2005-2019 Michael Polak, Arachne Labs\n\
 iptables-restore & burst tunning & classify modification by Ludva\n\
 Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
@@ -487,20 +518,21 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  {
   argument("-c") { nextargument(config); }
   argument("-h") { nextargument(althosts);}
-  argument("-d") { run=TRUE; dry_run=TRUE; }
-  argument("-f") { run=TRUE; just_flush=TRUE; }
-  argument("-9") { run=TRUE; just_flush=9; }
-  argument("-p") { run=TRUE; just_preview=TRUE; }
-  argument("-q") { run=TRUE; just_preview=TRUE; stop_shaping=TRUE; }
-  argument("-2") { run=TRUE; just_preview=TRUE; reduce_ceil=2; }
-  argument("-4") { run=TRUE; just_preview=TRUE; reduce_ceil=4; }
-  argument("-s") { run=TRUE; just_preview=TRUE; start_shaping=TRUE; }
-  argument("-r") { run=TRUE; }
-  argument("-n") { run=TRUE; nodelay=TRUE; }
-  argument("-a") { run=TRUE; just_networks=TRUE; }
-  argument("-l") { just_logs=TRUE; }
-  argument("-m") { just_logs=TRUE; }
-  argument("-y") { just_logs=TRUE; }
+  argument("-d") { run = TRUE; dry_run = TRUE; }
+  argument("-f") { run = TRUE; just_flush = TRUE; }
+  argument("-9") { run = TRUE; just_flush = 9; }
+  argument("-p") { run = TRUE; just_preview = TRUE; }
+  argument("-q") { run = TRUE; just_preview = TRUE; stop_shaping = TRUE; }
+  argument("-2") { run = TRUE; just_preview = TRUE; reduce_ceil = 2; }
+  argument("-4") { run = TRUE; just_preview = TRUE; reduce_ceil = 4; }
+  argument("-s") { run = TRUE; just_preview = TRUE; start_shaping = TRUE; }
+  argument("-x") { run = TRUE; just_preview = TRUE; mix_new_hosts = TRUE; }
+  argument("-r") { run = TRUE; }
+  argument("-n") { run = TRUE; nodelay = TRUE; }
+  argument("-a") { run = TRUE; just_networks = TRUE; }
+  argument("-l") { just_logs = TRUE; }
+  argument("-m") { just_logs = TRUE; }
+  argument("-y") { just_logs = TRUE; }
   argument("-?") { help(); exit(0); }
   argument("--help") { help(); exit(0); }
   argument("-v") { exit(0); } 
@@ -586,7 +618,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   hosts = althosts;
  }
 
- if(just_flush<9)
+ if(!mix_new_hosts && just_flush<9)
  {
   /*-----------------------------------------------------------------*/
   puts("Parsing iptables verbose output ...");
@@ -630,8 +662,6 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
  done; /* ugly macro end */
 
-
-
  /*-----------------------------------------------------------------*/
  printf("Parsing class defintion file %s ...\n", hosts);
  /*-----------------------------------------------------------------*/
@@ -644,6 +674,33 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   exit(-1); 
  }
 */
+
+ if(mix_new_hosts)
+ {
+  char *new_filename;
+  /*-----------------------------------------------------------------*/
+  printf("Loading log of previously executed commands %s ...\n", cmdlog);
+  /*-----------------------------------------------------------------*/
+  load(textline, previous_commands, cmdlog, Textfile, str);
+  /*-----------------------------------------------------------------*/
+  printf("Loading log of iptables-restore commands %s ...\n", iptablesfile);
+  /*-----------------------------------------------------------------*/
+  load(textline, previous_iptables, iptablesfile, Textfile, str);
+  /*-----------------------------------------------------------------*/
+  printf("Loading log of ip6tables-restore commands %s ...\n", ip6tablesfile);
+  /*-----------------------------------------------------------------*/
+  load(textline, previous_ip6tables, ip6tablesfile, Textfile, str);
+
+  string(new_filename, strlen(iptablesfile)+2);
+  strcpy(new_filename, iptablesfile);
+  strcat(new_filename, "-x");
+  iptablesfile = new_filename;
+
+  string(new_filename, strlen(ip6tablesfile)+2);
+  strcpy(new_filename, ip6tablesfile);
+  strcat(new_filename, "-x");
+  ip6tablesfile = new_filename;
+ }
 
  /*-----------------------------------------------------------------*/
  puts("Resolving shared connections ...");
@@ -685,7 +742,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
  }
 
- if(enable_credit && just_flush<9)
+ if(!mix_new_hosts && enable_credit && just_flush<9)
  {
   /*-----------------------------------------------------------------*/
   printf("Parsing credit file %s ...\n", credit);
@@ -705,7 +762,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
 
 
- if(!just_preview)
+ if(!mix_new_hosts && !just_preview)
  {
   /*-----------------------------------------------------------------*/
   puts("Initializing iptables and tc classes ...");
@@ -925,7 +982,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   exit(0);
  }
 
- if(!just_preview)
+ if(!mix_new_hosts && !just_preview)
  {
   if(!dry_run && !nodelay && qos_free_delay)
   {
@@ -949,10 +1006,13 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   }
  }
 
- /*-----------------------------------------------------------------*/
- puts("Locating heavy downloaders and generating root classes ...");
- /*-----------------------------------------------------------------*/
- sort(ip,ips,desc_order_by,traffic); 
+ if(mix_new_hosts)
+ {
+  /*-----------------------------------------------------------------*/
+  puts("Locating heavy downloaders and generating root classes ...");
+  /*-----------------------------------------------------------------*/
+  sort(ip,ips,desc_order_by,traffic);
+ }
 
  /*-----------------------------------------------------------------*/
  for_each(interface, interfaces)
@@ -1187,7 +1247,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   json_traffic=json_preview;
  }
 
- if(!dry_run && !just_flush)
+ if(!mix_new_hosts && !dry_run && !just_flush)
  {
   /*-----------------------------------------------------------------*/
   printf("Writing json traffic overview  %s ... ", json_traffic);
@@ -1218,8 +1278,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   printf("Statistics preview generated (-%c switch) - now exiting ...\n", swchar);
   exit(0);
- }  
-
+ }
+ 
  i=0;
 #ifdef DEBUG
  printf("%-22s %-15s mark\n","name","ip");
