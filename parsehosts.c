@@ -11,7 +11,9 @@ extern struct IP *ips, *ip, *sharedip, *networks;
 extern struct Group *groups, *group;
 extern struct Keyword *keyword, *defaultkeyword, *keywords;
 extern struct Macro *macro, *macros;
+extern struct Textfile *previous_classmap, *textline;
 extern int class_count;
+extern int mix_new_hosts;
 extern int ip_count;
 extern int found_lmsid;
 extern int free_min;
@@ -342,7 +344,23 @@ void parse_hosts(char *hosts)
       }
      }
 
-     ip->mark = FIRSTIPCLASS+1+class_count++;     
+     if(mix_new_hosts)
+      for_each(textline, previous_classmap)
+      {
+       ptr = strchr(textline->str, ' ');
+       if(ptr)
+       {
+        if(!strncmp(ip->addr, textline->str, ptr-textline->str))
+        {
+         ip->mark = atoi(ptr+1);
+         printf("Match class: %s %d\n", ip->addr, ip->mark);
+        }
+       }      
+      }
+     
+     if(!mix_new_hosts || !ip->mark)
+      ip->mark = FIRSTIPCLASS+1+class_count++;
+          
      update_network(ip->addr, ip);
 
      if_exists(group,groups,(group->min == ip->min)) 
