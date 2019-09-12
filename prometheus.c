@@ -2,12 +2,12 @@
 /* Prometheus QoS - you can "steal fire" from your ISP         */
 /* "fair-per-IP" quality of service (QoS) utility              */
 /* requires Linux 2.4.x or 2.6.x with HTB support              */
-/* Copyright(C) 2005-2017 Michael Polak, Arachne Aerospace     */
+/* Copyright(C) 2005-2019 Michael Polak, Arachne Aerospace     */
 /* iptables-restore support Copyright(C) 2007-2008 ludva       */
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20171106
+/* Modified by: xChaos, 20190912
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "0.9.0-b";
+const char *version = "0.9.0-c";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.9.0 is development release, 1.0 will be "stable"    */
@@ -101,6 +101,8 @@ char           *medium = "1000Mbit"; /* 10Mbit/100Mbit ethernet */
 char        *ip6prefix = NULL; /* Prefix for global /48 IPv6 subnet */
 char         *qos_leaf = "sfq perturb 5"; /* leaf discipline */
 char    *qos_free_zone = NULL; /* QoS free zone */
+char *qos_free_dst_ipset = NULL; /* QoS free zone - dst match ipset name, must be prepared outside prometheus */
+char *qos_free_src_ipset = NULL; /* QoS free zone - src match ipset name, must be prepared outside prometheus */
 /* int          qos_proxy = TRUE; include proxy port to QoS */
 int        found_lmsid = FALSE; /* show links to users in LMS information system */
 int     include_upload = TRUE; /* upload+download=total traffic */
@@ -314,6 +316,8 @@ void get_config(char *config_filename)
   option("lms-url",lms_url);
   ioption("use-jquery-popups",use_jquery_popups);
   option("qos-free-zone",qos_free_zone);
+  option("qos-free-dst-ipset",qos_free_dst_ipset);
+  option("qos-free-src-ipset",qos_free_src_ipset);
   ioption("qos-free-delay",qos_free_delay);
 /*  ioption("qos-proxy-enable",qos_proxy); */
 /*  option("qos-proxy-ip",proxy_ip);*/
@@ -755,11 +759,29 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    iptables_save_line(ip6preamble, IPv6);
   }
 
-  if(qos_free_zone && *qos_free_zone!='0') /* this is currently supported only for IPv4 */
+  if(qos_free_zone && *qos_free_zone != '0') /* this is currently supported only for IPv4 */
   {
    for_each(interface, interfaces)
    {
     sprintf(str,"-A %s -%c %s -o %s -j ACCEPT", interface->chain, (interface->is_upstream?'d':'s'), qos_free_zone, interface->name);
+    iptables_save_line(str, IPv4);
+   }
+  }
+
+  if(qos_free_dst_ipset && *qos_free_dst_ipset != '0') /* this is currently supported only for IPv4 */
+  {
+   for_each(interface, interfaces)
+   {
+    sprintf(str,"-A %s -m set --match-set %s %s -o %s -j ACCEPT", interface->chain, (interface->is_upstream?"dst":"src"), qos_free_dst_ipset, interface->name);
+    iptables_save_line(str, IPv4);
+   }
+  }
+
+  if(qos_free_src_ipset && *qos_free_src_ipset != '0') /* this is currently supported only for IPv4 */
+  {
+   for_each(interface, interfaces)
+   {
+    sprintf(str,"-A %s -m set --match-set %s %s -o %s -j ACCEPT", interface->chain, (interface->is_upstream?"src":"dst"), qos_free_src_ipset, interface->name);
     iptables_save_line(str, IPv4);
    }
   }
