@@ -79,13 +79,6 @@ struct QosFreeInterface
  list(QosFreeInterface);
 };
 
-struct Textfile
-{
- char *str;
- int _eoln;
- list(Textfile);
-};
-
 struct Index
 {
  char *addr;

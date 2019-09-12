@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id$
+# $Id: make-pimp 166 2012-05-12 18:15:42Z aquarius $
 pimp_2way_nat="/dev/shm/pimp-2way-nat.tmp"
 pimp_snat="/dev/shm/pimp-snat.tmp"
 etchosts="/mnt/mtdblock0/hosts"

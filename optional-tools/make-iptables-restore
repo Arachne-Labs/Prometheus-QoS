@@ -1,5 +1,5 @@
 #!/bin/bash
-# $Id$
+# $Id: make-iptables-restore 172 2012-05-13 16:10:52Z aquarius $
 iptables="/sbin/iptables"
 iptablesrestore="/sbin/iptables-restore"
 ifconfig="/sbin/ifconfig"
