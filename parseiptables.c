@@ -21,7 +21,6 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
 {
  char *str,*cmd;
  int downloadflag = 0;
- traffic_detected = 0;
 
  textfile(Pipe,str) *line,*lines=NULL;
  string(str,STRLEN);
