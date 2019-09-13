@@ -772,7 +772,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    for_each(interface, interfaces)
    {
-    sprintf(str,"-A %s -m set --match-set %s %s -o %s -j ACCEPT", interface->chain, qos_free_dst_ipset, (interface->is_upstream?"src":"dst"), interface->name);
+    sprintf(str,"-A %s -m set --match-set %s %s -o %s -j ACCEPT", interface->chain, qos_free_dst_ipset, (interface->is_upstream?"dst":"src"), interface->name);
     iptables_save_line(str, IPv4);
    }
   }
@@ -781,7 +781,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    for_each(interface, interfaces)
    {
-    sprintf(str,"-A %s -m set --match-set %s %s -o %s -j ACCEPT", interface->chain, qos_free_src_ipset, (interface->is_upstream?"dst":"src"), interface->name);
+    sprintf(str,"-A %s -m set --match-set %s %s -o %s -j ACCEPT", interface->chain, qos_free_src_ipset, (interface->is_upstream?"src":"dst"), interface->name);
     iptables_save_line(str, IPv4);
    }
   }
