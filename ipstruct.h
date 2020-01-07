@@ -1,4 +1,6 @@
-/* Modified by: xChaos, 20131029 */
+/* Modified by: xChaos, 20200104 */
+
+#define MONITORINGTRHU_CTU
 
 struct IP
 {
@@ -26,6 +28,10 @@ struct IP
  unsigned long pktsup;
  unsigned long pktsdown;
  struct Keyword *keyword;
+#ifdef MONITORINGTRHU_CTU
+ char *technology_str;
+ char *ruian_id_str;
+#endif
  int v6;
  int mask;
  struct IP *uplink;
@@ -102,3 +108,13 @@ struct Interface
 
 void TheIP(char *ipaddr, int is_network);
 /* function implemented in parsehosts.c */
+
+#ifdef MONITORINGTRHU_CTU
+struct Technology
+{
+ char *filename;
+ list(Technology);
+};
+
+extern struct Technology *technologies, *technology;
+#endif

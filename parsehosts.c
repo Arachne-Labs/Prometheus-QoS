@@ -57,9 +57,17 @@ void TheIP(char *ipaddr, int is_network)
  {
   push(ip, ips); 
  }
+#ifdef MONITORINGTRHU_CTU
+ ip->technology_str = NULL;
+ ip->ruian_id_str   = NULL;
+#endif
+
  ip_count++;
 }
 
+#ifdef MONITORINGTRHU_CTU
+struct Technology *technologies = NULL, *technology = NULL;
+#endif
 struct IP *lastIP6range, *lastIP6uplink;
 
 /* == This function strips extra characters after IPv4 address and stores it = */
@@ -251,7 +259,7 @@ void parse_hosts(char *hosts)
   else
   {
    substring = strstr(str, "#255.");
-   if(substring and not strstr(str, "#255.255.255.255")) /* do not ping /32 uplinks */
+   if(substring and not strstr(str, "#255.255.255.255")) /* ignore /32 subnets */
    {
     /* netmask detected - save network*/
     unsigned bit;
@@ -280,9 +288,45 @@ void parse_hosts(char *hosts)
    }
    else
    {
+    /* Main branch - most IP addresses go here */
     /*Do we have to create new QoS class for this IP ? */
     if_exists(keyword,keywords,(substring=strstr(str,keyword->key)))
     {
+#ifdef MONITORINGTRHU_CTU
+//special hack only to generate certain required CSV statistics for www.ctu.cz (regulation body)
+     char *found_at = strchr(str, '@');
+     char *ruian_id_str = NULL;
+     technology = NULL;
+     if(found_at)
+     {
+      int len;
+      char *found_ruian_end = strchr(found_at, ' ');
+      char *found_tech_str = found_at;
+      while(found_tech_str-- > str && *found_tech_str != ' ' && *found_tech_str != '#');
+      if(found_tech_str > str)
+      {
+       len = found_at - found_tech_str - 1;
+       for_each(technology, technologies)
+        if(!strncmp(technology->filename, found_tech_str + 1, len))
+         break;
+       if(!technology)
+       {
+        create(technology,Technology);
+        string(technology->filename, len + 1);
+        strncpy(technology->filename, found_tech_str + 1, len);
+        technology->filename[len] = 0;
+        push(technology, technologies);
+       }
+       if(found_ruian_end)
+       {
+        len = found_ruian_end - found_at - 1;
+        string(ruian_id_str, len + 1);
+        strncpy(ruian_id_str, found_at + 1, len);
+        ruian_id_str[len] = 0;
+       }
+      }
+     }
+#endif
      parse_and_append_ip(str, ips);
      if(lastIP6range)
      {
@@ -345,6 +389,15 @@ void parse_hosts(char *hosts)
      ip->mark = FIRSTIPCLASS+1+class_count++;     
      update_network(ip->addr, ip);
 
+#ifdef MONITORINGTRHU_CTU
+     if(technology)
+     {
+      ip->technology_str = technology->filename;
+      ip->ruian_id_str = ruian_id_str;
+      /* debug printf("[%s,%d,%s,%d]\n", ip->technology_str,ip->lmsid, ip->ruian_id_str, ip->max); */
+     }
+#endif
+
      if_exists(group,groups,(group->min == ip->min)) 
      { 
       group->count++;      
@@ -367,7 +420,7 @@ void parse_hosts(char *hosts)
       group->desired = ip->min;   
       insert(group, groups, desc_order_by,min);
      }
-    }//endif keyword-
+    }//endif keyword-   
    }//endif netmask
   }//endif sharing-
  }

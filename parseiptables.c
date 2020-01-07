@@ -3,7 +3,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-#define STRLEN 512
+#define STRLEN 256
 
 /* globals declared in prometheus.c */
 extern struct IP *ips, *ip, *sharedip;
@@ -14,6 +14,7 @@ extern int free_max;
 extern int include_upload;
 
 int traffic_detected = 0;
+extern char *iptablesdump;
 
 /* ===================== traffic analyser - uses iptables  ================ */ 
 
@@ -21,29 +22,31 @@ void get_traffic_statistics(const char *whichiptables, int ipv6)
 {
  char *str,*cmd;
  int downloadflag = 0;
-
- textfile(Pipe,str) *line,*lines=NULL;
- string(str,STRLEN);
+ FILE *f;
  string(cmd,STRLEN);
 
- sprintf(cmd,"%s -L -v -x -n -t mangle", whichiptables);
- shell(cmd);
- input(str,STRLEN)
- {
-  create(line,Pipe);
-  line->str=str;
-  string(str,STRLEN);
-  append(line,lines);
- }
+ sprintf(cmd, "%s -L -v -x -n -t mangle>%s", whichiptables, iptablesdump);
+ /*-----------------------------------------------------------------*/
+ printf("Running %s ...\n", cmd);
+ /*-----------------------------------------------------------------*/
+ system(cmd);
+ /*-----------------------------------------------------------------*/
+ printf("Processing %s ...\n", iptablesdump);
+ /*-----------------------------------------------------------------*/
+ f = fopen(iptablesdump,"r");
+ if(!f)
+  perror(iptablesdump);
 
- for_each(line,lines)
+ while(!feof(f))
  {
   int col, accept = 0, /*proxyflag = 0, */valid = 1, setchainname = 0, commonflag = 0; 
   unsigned long long traffic = 0;
   unsigned long pkts = 0;
   char *ipaddr = NULL,*ptr;
   
-  valid_columns(ptr, line->str, ' ', col)
+  string(str, STRLEN);
+  fgets(str, STRLEN, f);
+  valid_columns(ptr, str, ' ', col)
   if(valid) switch(col)
   { 
    case 1: if(eq(ptr,"Chain"))
