@@ -651,7 +651,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   char *filename;
   FILE *f;
   string(filename, strlen(log_dir) + strlen(technology->filename) + 5);
-  strcpy(filename, html_log_dir);
+  strcpy(filename, log_dir);
   strcat(filename, technology->filename); 
   strcat(filename, ".csv");
   /*-----------------------------------------------------------------*/

@@ -307,7 +307,7 @@ void parse_hosts(char *hosts)
       {
        len = found_at - found_tech_str - 1;
        for_each(technology, technologies)
-        if(!strncmp(technology->filename, found_tech_str + 1, len))
+        if(strlen(technology->filename)==len && !strncmp(technology->filename, found_tech_str + 1, len))
          break;
        if(!technology)
        {
