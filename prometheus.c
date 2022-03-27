@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20200107
+/* Modified by: xChaos, 20220327
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "1.0.0-a";
+const char *version = "1.0.0-b";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.9.0 is development release, 1.0 will be "stable"    */
@@ -118,7 +118,8 @@ int      overlimit_max = 512; /* maximum allowed bandwidth for all undefined hos
 int     qos_free_delay = 0; /* seconds to sleep before applying new QoS rules */
 int     digital_divide = 2; /* controls digital divide weirdness ratio, 1...3 */ 
 int        max_nesting = 5; /* /include/uapi/linux/pkt_sched.h: #define TC_HTB_MAXDEPTH 8 [... - 3 parent classes] */
-int            htb_r2q = 256; /* should work for leaf values 512 kbps to 8 Mbps */
+//obsolete: int            htb_r2q = 256; /* should work for leaf values 512 kbps to 8 Mbps */
+int        htb_quantum = 1514; /* MTU + ethernet header */
 int              burst = 8; /* HTB burst (in kbits) */
 int         burst_main = 64;
 int        burst_group = 32;
@@ -333,7 +334,7 @@ void get_config(char *config_filename)
   ioption("htb-burst-main",burst_main);
   ioption("htb-burst-group",burst_group);
   ioption("htb-nesting-limit",max_nesting);
-  ioption("htb-r2q",htb_r2q);
+  ioption("htb-quantum",htb_quantum);
   ioption("magic-include-upload",include_upload);
   ioption("magic-treshold",magic_treshold);  
   option("filter-type", cnf);  
@@ -374,7 +375,7 @@ void get_config(char *config_filename)
 }
 
  
-/* ========== This function executes, logs OR ALSO prints command ========== */
+/* ========== This function executes, logs or also prints command ========== */
 
 void safe_run(char *cmd)
 {
@@ -979,16 +980,16 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
 
   for_each(interface, interfaces)
   {
-   sprintf(str, "%s qdisc add dev %s root handle 1: htb r2q %d default 1",
-                tc, interface->name, htb_r2q);
+   sprintf(str, "%s qdisc add dev %s root handle 1: htb default 1",
+                tc, interface->name);
    safe_run(str);
 
-   sprintf(str, "%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio %d",
-                tc, interface->name, medium, medium, burst_main, highest_priority);
+   sprintf(str, "%s class add dev %s parent 1: classid 1:2 htb rate %s ceil %s burst %dk prio %d quantum %d",
+                tc, interface->name, medium, medium, burst_main, highest_priority, htb_quantum);
    safe_run(str);
 
-   sprintf(str, "%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d",
-                tc, interface->name, interface->speed, interface->speed, burst_main, highest_priority);
+   sprintf(str, "%s class add dev %s parent 1:2 classid 1:1 htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d quantum %d",
+                tc, interface->name, interface->speed, interface->speed, burst_main, highest_priority, htb_quantum);
    safe_run(str);
   }
  }
@@ -1015,8 +1016,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    if(!just_preview)
    {
-    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d #down desired %d", 
-                  tc, interface->name, parent, group->id, rate, max, burst_group, highest_priority+1, group->desired);
+    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %Ldkbit ceil %Ldkbit burst %dk prio %d quantum %d #down desired %d", 
+                  tc, interface->name, parent, group->id, rate, max, burst_group, highest_priority+1, htb_quantum, group->desired);
     safe_run(str);
    }
 
@@ -1191,8 +1192,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
          {
           printf("[down %s: %dk-%dk wants %d]", interface->name, ip->min, ip->max, ip->desired);
          }
-         sprintf(str, "%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
-                      tc, interface->name, ip->group, ip->mark, ip->min, ip->max, burst, ip->prio);
+         sprintf(str, "%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d", 
+                      tc, interface->name, ip->group, ip->mark, ip->min, ip->max, burst, ip->prio, htb_quantum);
          safe_run(str);
         }
         else
@@ -1203,10 +1204,10 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
                                              (int)((ip->desired/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed),
                                              (int)((ip->desired/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed));
          }
-         sprintf(str,"%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
+         sprintf(str,"%s class change dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d",
                       tc, interface->name, ip->group, ip->mark,
                       (int)((ip->min/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed),
-                      (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), burst, ip->prio);
+                      (int)((ip->max/ip->keyword->asymetry_ratio)-ip->keyword->asymetry_fixed), burst, ip->prio, htb_quantum);
          safe_run(str);
         }
        }
@@ -1359,8 +1360,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
     printf("[down: %dk-%dk]", ip->min, ip->max);
  #endif
 
-    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d", 
-                 tc, interface->name, ip->group, ip->mark, ip->min, ip->max, burst, ip->prio);
+    sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d", 
+                 tc, interface->name, ip->group, ip->mark, ip->min, ip->max, burst, ip->prio, htb_quantum);
     safe_run(str);
 
     if(strcmpi(ip->keyword->leaf_discipline, "none"))
@@ -1431,8 +1432,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    /*-----------------------------------------------------------------*/
    puts("Generating free bandwith class ...");
    /*-----------------------------------------------------------------*/
-   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
-                tc, interface->name, parent, FREE_CLASS, free_min, free_max,burst, lowest_priority);
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d",
+                tc, interface->name, parent, FREE_CLASS, free_min, free_max,burst, lowest_priority, htb_quantum);
    safe_run(str);
    /* tc SFQ */
    if(strcmpi(qos_leaf, "none"))
@@ -1447,8 +1448,8 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   /*-----------------------------------------------------------------*/
   puts("Generating bandwith class for overlimit packets...");
   /*-----------------------------------------------------------------*/
-  sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d",
-               tc, interface->name, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority);
+  sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d",
+               tc, interface->name, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority, htb_quantum);
   safe_run(str);
  } 
  printf("Total IP count: %d\n", i);
