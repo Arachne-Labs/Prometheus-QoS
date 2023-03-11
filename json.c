@@ -15,7 +15,7 @@ void write_json_traffic(char *json)
 
    for_each(ip, ips)
    {
-    if(      ip->lmsid > 0 
+    if(      ip->code[0] > 0 
         and (ip->traffic or ip->direct or ip->proxy or ip->upload))
     {
      if(jsoncount)
@@ -23,10 +23,10 @@ void write_json_traffic(char *json)
       fprintf(f, ",\n");
      }
      fprintf(f, 
-             " \"%s\":{ \"lms\": %d, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \
+             " \"%s\":{ \"code\": %s, \"ip\":\"%s\", \"total\":%Lu, \"down\":%Lu, \
              \"proxy\":%Lu, \"up\":%Lu, \"min\":%d, \"max\":%d, \"limit\":%d, \
              \"pktsup\":%Lu, \"pktsdown\":%Lu, \"realquota\":%Lu, \"credit\":%Lu, \"dailyquota\":%ld }",
-             ip->name, ip->lmsid, ip->addr, ip->traffic, ip->direct, ip->proxy, 
+             ip->name, ip->code, ip->addr, ip->traffic, ip->direct, ip->proxy, 
              ip->upload, ip->min, ip->desired, ip->max, ip->pktsup, ip->pktsdown,
              ip->realquota, ip->credit, (ip->min*ip->keyword->data_limit+(ip->keyword->fixed_limit<<20)));
      jsoncount++;

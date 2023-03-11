@@ -13,7 +13,7 @@ extern struct Keyword *keyword, *defaultkeyword, *keywords;
 extern struct Macro *macro, *macros;
 extern int class_count;
 extern int ip_count;
-extern int found_lmsid;
+extern int found_code;
 extern int free_min;
 extern const int highest_priority;
 extern char *ip6prefix;
@@ -29,7 +29,7 @@ void TheIP(char *ipaddr, int is_network)
  ip->addr         = ipaddr;
  ip->sharing      = NULL;
  ip->prio         = highest_priority+1;
- ip->lmsid        = -1;
+ ip->code         = "-----";
  ip->fixedprio    = \
  ip->aggregated   = \
  ip->mark         = \
@@ -74,7 +74,7 @@ struct IP *lastIP6range, *lastIP6uplink;
 void parse_and_append_ip(char *str, struct IP *listhead)
 {
  char *ptr, *ipaddr, *nextip6, *ip6buf; 
- char *ip6uplink = NULL, *ip6range = NULL, *ipname = NULL, *lmsid = NULL;
+ char *ip6uplink = NULL, *ip6range = NULL, *ipname = NULL, *code = NULL;
 
  if(ip6prefix) /* Try this only if IPv6 subsystem is active... */
  {
@@ -105,7 +105,7 @@ void parse_and_append_ip(char *str, struct IP *listhead)
  ptr = strchr(str, '{');
  if(ptr)
  {
-  lmsid = ++ptr;
+  code = ++ptr;
   while(*ptr and *ptr != '}')
   {
    ptr++;
@@ -144,9 +144,9 @@ void parse_and_append_ip(char *str, struct IP *listhead)
   }
   ip->name = ip6range;
   ip->keyword = defaultkeyword; /* settings for default keyword */
-  if(lmsid)
+  if(code)
   {
-   ip->lmsid = atoi(lmsid);
+   ip->code = code;
   }
   lastIP6range = ip;
  }
@@ -163,9 +163,9 @@ void parse_and_append_ip(char *str, struct IP *listhead)
   TheIP(ip6uplink, FALSE); /* always new IP - more IPs in single uplink network */
   ip->name = ip6uplink;
   ip->keyword = defaultkeyword; /* settings for default keyword */
-  if(lmsid)
+  if(code)
   {
-   ip->lmsid = atoi(lmsid);
+   ip->code = code;
   }
   lastIP6uplink = ip;
  }
@@ -180,10 +180,10 @@ void parse_and_append_ip(char *str, struct IP *listhead)
   TheIP(ipaddr, (listhead==networks));
  }
  ip->name = ipname;
- if(lmsid)
+ if(code)
  {
-  ip->lmsid = atoi(lmsid);
-  found_lmsid = TRUE;
+  ip->code = code;
+  found_code = TRUE;
  }
 }
 
@@ -375,14 +375,17 @@ void parse_hosts(char *hosts)
       }
      }
 
-     /* avg MTU bytes * 8 >> 10 = in bits, max is in kb/s  */
-     pktratio = (ip->keyword->allowed_avgmtu*8) >> 10;
-     if(pktratio > 0)
+     if(ip->keyword->allowed_avgmtu)
      {
-      ip->pps_limit = ip->max/pktratio;
-      if(ip->pps_limit > 10000) /* this limit seems to be hardcoded in iptables */
+      /* avg MTU bytes * 8 >> 10 = in bits, max is in kb/s  */
+      pktratio = (ip->keyword->allowed_avgmtu*8) >> 10;
+      if(pktratio > 0)
       {
-       ip->pps_limit = 0; /* do not apply packet limits */
+       ip->pps_limit = ip->max/pktratio;
+       if(ip->pps_limit > 10000) /* this limit seems to be hardcoded in iptables */
+       {
+        ip->pps_limit = 0; /* do not apply packet limits */
+       }
       }
      }
 

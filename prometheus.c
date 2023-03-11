@@ -7,7 +7,7 @@
 /* Credit: CZFree.Net,Martin Devera,Netdave,Aquarius,Gandalf  */
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 
-/* Modified by: xChaos, 20220327
+/* Modified by: xChaos, 20220607
                  ludva, 20080415
  
    Prometheus QoS is free software; you can redistribute it and/or
@@ -29,7 +29,7 @@
 #include "cll1-0.6.2.h"
 #include "ipstruct.h"
 
-const char *version = "1.0.0-b";
+const char *version = "1.0.0-d";
 
 /* - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
 /* Versions: 0.9.0 is development release, 1.0 will be "stable"    */
@@ -105,7 +105,7 @@ char    *qos_free_zone = NULL; /* QoS free zone */
 char *qos_free_dst_ipset = NULL; /* QoS free zone - dst match ipset name, must be prepared outside prometheus */
 char *qos_free_src_ipset = NULL; /* QoS free zone - src match ipset name, must be prepared outside prometheus */
 /* int          qos_proxy = TRUE; include proxy port to QoS */
-int        found_lmsid = FALSE; /* show links to users in LMS information system */
+int         found_code = FALSE; /* show links to users in LMS information system */
 int     include_upload = TRUE; /* upload+download=total traffic */
 /* char         *proxy_ip = "192.168.1.1/32";  our IP with proxy port */
 /* int         proxy_port = 3128; proxy port number */
@@ -663,7 +663,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    for_each(ip, ips) if(eq(technology->filename, ip->technology_str))
    {
-    fprintf(f,"%d,%s,%d\n", ip->lmsid, ip->ruian_id_str, ip->max);
+    fprintf(f,"%s,%s,%d\n", ip->code, ip->ruian_id_str, ip->max);
    }
    fclose(f);
   }
@@ -684,7 +684,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sharedip->traffic_up += ip->upload;
    ip->traffic = 0;
    ip->mark = sharedip->mark; 
-   ip->lmsid = sharedip->lmsid;
+   ip->code = sharedip->code;
    ip->pps_limit = sharedip->pps_limit; /* no other way to do this */
 
    /* Ugly hack: append IPv4 addresses of sharedip to IPv6 uplinks */
@@ -781,6 +781,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    iptables_save_line(iptablespreamble, IPv6);
    iptables_save_line(ip6preamble, IPv6);
   }
+
+  /* this doesn't seem to be way to go... about 2/3 of all packets have ACK flag set
+     maybe with --length 40:100 it would make some sense, but not enought 
+  for_each(interface, interfaces)
+  {
+   sprintf(str,"-A %s -m tcp -p tcp --tcp-flags ACK ACK -o %s -j ACCEPT", interface->chain, interface->name);
+   iptables_save_line(str, IPv4);
+  }
+  */
 
   if(qos_free_zone && *qos_free_zone != '0') /* this is currently supported only for IPv4 */
   {
@@ -1279,7 +1288,7 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
  }
 
  /*-----------------------------------------------------------------*/
- printf(" + generating iptables and tc classes ... ");
+ printf(" + generating iptables and tc classes ... \n");
  /*-----------------------------------------------------------------*/
 
  for_each(ip, ips) if(ip->mark > 0)
@@ -1390,10 +1399,11 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
   {
    fprintf(f, "%s %d\n", ip->addr, ip->mark);
   }
+  printf(".");
  }
  if(f > 0)
  {
-  puts("done.");
+  puts(" done.");
   fclose(f);
  }
 
@@ -1445,12 +1455,15 @@ Credit: CZFree.Net, Martin Devera, Netdave, Aquarius, Gandalf\n\n",version);
    sprintf(str,"%s filter add dev %s parent 1:0 protocol ip handle %d fw flowid 1:%d", tc, interface->name, FREE_CLASS, FREE_CLASS);
    safe_run(str);
   }
-  /*-----------------------------------------------------------------*/
-  puts("Generating bandwith class for overlimit packets...");
-  /*-----------------------------------------------------------------*/
-  sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d",
-               tc, interface->name, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority, htb_quantum);
-  safe_run(str);
+  if(*limit_pkts) /* non-empty string?*/
+  {
+   /*-----------------------------------------------------------------*/
+   puts("Generating bandwith class for overlimit packets...");
+   /*-----------------------------------------------------------------*/
+   sprintf(str, "%s class add dev %s parent 1:%d classid 1:%d htb rate %dkbit ceil %dkbit burst %dk prio %d quantum %d", 
+                tc, interface->name, parent, OVERLIMIT_CLASS, overlimit_min, overlimit_max, burst, lowest_priority, htb_quantum);
+   safe_run(str);
+  }
  } 
  printf("Total IP count: %d\n", i);
  run_iptables_restore();

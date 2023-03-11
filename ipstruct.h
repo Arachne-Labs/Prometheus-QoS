@@ -15,7 +15,7 @@ struct IP
  int aggregated;
  int fixedprio;
  int group;
- int lmsid;
+ char *code;
  int pps_limit;
  unsigned long long direct;
  unsigned long long proxy;

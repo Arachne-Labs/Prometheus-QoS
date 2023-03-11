@@ -18,7 +18,7 @@ extern int dry_run;
 extern int qos_proxy;
 extern char *title;
 extern char *log_url;
-extern int found_lmsid;
+extern int found_code;
 extern char *lms_url;
 extern char *log_dir;
 extern char *ip6prefix;
@@ -42,9 +42,9 @@ void append_log(struct IP *self) /*using global variables*/
  f = fopen(str, "a");
  if(f > 0)
  {
-  fprintf(f, "%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%d\t%s",
+  fprintf(f, "%ld\t%s\t%Lu\t%Lu\t%Lu\t%Lu\t%d\t%d\t%d\t%s\t%s",
              time(NULL), self->name, self->traffic, self->direct, self->proxy,
-             self->upload, self->min, self->max, self->desired, self->lmsid, d); /* d = date*/
+             self->upload, self->min, self->max, self->desired, self->code, d); /* d = date*/
   fclose(f);
  }
  else
@@ -125,7 +125,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
  i=0;
  if(f > 0)
  {
-  unsigned long long total_traffic=0, total_direct=0, total_proxy=0, total_upload=0, tmp_sum = 0;
+  unsigned long long total_traffic = 1 /* prevent divide by zero */ , total_direct=0, total_proxy=0, total_upload=0, tmp_sum = 0;
   unsigned long long total_pktup = 0, total_pktdown = 0;
   int active_classes = 0;
 //  int colspan = 14;
@@ -133,7 +133,7 @@ void write_htmlandlogs(char *html, char *d, int total, int just_preview)
   int agreg_count = 0, limit_count = 0, prio_count = 0;
   int popup_button = 0;
   /* IPv6 vs. IPv4 stats */
-  unsigned long long pkts4 =0, pkts6 = 0, bytes4 = 0, bytes6 = 0;
+  unsigned long long pkts4 = 1, pkts6 = 1 /*prevent divide by zero */, bytes4 = 0, bytes6 = 0;
   int count4 = 0, count6 = 0;
   int mpkts;
   double perc6;
@@ -255,15 +255,15 @@ style=\"cursor: pointer;\">+%d</a>]</span>",
    fputs("</td>\n",f);
    /* ----------------------------------------------- */
 
-   if(found_lmsid)
+   if(found_code)
    {
     fputs("<td style=\"text-align: right\">",f);
-    if(ip->lmsid > 0)
+    if(ip->code[0])
     {
-     fprintf(f, "<a class=\"blue\" target=\"_blank\" href=\"%s%d\">%04d</a>\n",
-                lms_url, ip->lmsid, ip->lmsid);
+     fprintf(f, "<a class=\"blue\" target=\"_blank\" href=\"%s%s\">%s</a>\n",
+                lms_url, ip->code, ip->code);
     }
-    else if(ip->lmsid == 0)
+    else if(ip->code[0] == 0)
     {
      fputs("------",f);
     }
